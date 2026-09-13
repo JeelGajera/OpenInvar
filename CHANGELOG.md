@@ -77,6 +77,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **A moved symbol was reported in a pull request comment as `name` → `name`.**
+  The markdown renderer printed only the before and after names, dropping both
+  the kind of continuity and the files involved — so a symbol that kept its
+  name and changed file rendered as an arrow between two identical values,
+  which is a row that costs a reader their attention and returns nothing. The
+  terminal renderer for the same delta had always named the files.
+
+  Each of the three kinds now renders what that kind actually tells you: a move
+  names both files without repeating the name, a rename shows both names and
+  the one file it happened in, and a renamed-and-moved symbol — the weakest
+  evidence of the three, and so the one most likely to be checked by hand —
+  shows all four values.
+
+  The same list was also the only one in the report that truncated silently. It
+  stopped at ten and said nothing, while every other list said how much it left
+  out. It now says so too.
+
+  Found by running the action against this repository's own rename pull
+  request, where it produced 1,991 rows of the form `` `banner` → `banner` ``.
+
 - **The README claimed a default binary carries every supported language.** It
   carries Tier 1 only; `full` is the everything binary. The size figures beside
   the claim were stale as well: measured now at 21.2 MB for a TypeScript-only
