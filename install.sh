@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 set -e
 
-# Graphyn Installation Script
+# OpenInvar Installation Script
 
-GITHUB_REPO="JeelGajera/graphyn"
+GITHUB_REPO="JeelGajera/OpenInvar"
 INSTALL_DIR="${HOME}/.local/bin"
 
 if [ "$EUID" -eq 0 ]; then
@@ -59,31 +59,31 @@ esac
 if [ "$OS" = "Darwin" ] && [ "$ARCH" = "x86_64" ]; then
     warn "Pre-built binaries are not available for Intel Macs (x86_64 Darwin)."
     info "Install from source with Cargo:"
-    info "  cargo install graphyn-cli --git https://github.com/JeelGajera/graphyn"
+    info "  cargo install openinvar-cli --git https://github.com/JeelGajera/OpenInvar"
     exit 0
 fi
 
 TARGET="${ARCH}-${PLATFORM}"
-ASSET_NAME="graphyn-${TARGET}.tar.gz"
+ASSET_NAME="openinvar-${TARGET}.tar.gz"
 DOWNLOAD_URL="https://github.com/${GITHUB_REPO}/releases/latest/download/${ASSET_NAME}"
 
 info "Detected Platform: ${BOLD}${OS} (${ARCH})${RESET}"
 info "Target: ${BOLD}${TARGET}${RESET}"
 
 # 3. Check for existing installation
-if command -v graphyn &> /dev/null; then
-    EXISTING_PATH=$(command -v graphyn)
-    OLD_VERSION=$(graphyn --version 2>/dev/null | awk '{print $NF}' || echo "unknown")
+if command -v openinvar &> /dev/null; then
+    EXISTING_PATH=$(command -v openinvar)
+    OLD_VERSION=$(openinvar --version 2>/dev/null | awk '{print $NF}' || echo "unknown")
     step "Updating existing installation..."
-    info "Found Graphyn ${BOLD}${OLD_VERSION}${RESET} at ${BOLD}${EXISTING_PATH}${RESET}"
+    info "Found OpenInvar ${BOLD}${OLD_VERSION}${RESET} at ${BOLD}${EXISTING_PATH}${RESET}"
     INSTALL_TARGET="${EXISTING_PATH}"
 else
     step "Preparing new installation..."
-    INSTALL_TARGET="${INSTALL_DIR}/graphyn"
+    INSTALL_TARGET="${INSTALL_DIR}/openinvar"
 fi
 
 # 4. Create temp directory
-TMP_DIR=$(mktemp -d -t graphyn-install-XXXXXXXXXX)
+TMP_DIR=$(mktemp -d -t openinvar-install-XXXXXXXXXX)
 trap 'rm -rf "${TMP_DIR}"' EXIT
 
 # 5. Download
@@ -102,7 +102,7 @@ success "Download complete."
 # 6. Extract
 step "Extracting binary..."
 tar -xzf "${TMP_DIR}/${ASSET_NAME}" -C "${TMP_DIR}"
-chmod +x "${TMP_DIR}/graphyn"
+chmod +x "${TMP_DIR}/openinvar"
 success "Extraction complete."
 
 # 7. Install
@@ -111,25 +111,25 @@ mkdir -p "$(dirname "${INSTALL_TARGET}")"
 
 # Move binary (handle permission issues)
 if [ -w "$(dirname "${INSTALL_TARGET}")" ]; then
-    mv "${TMP_DIR}/graphyn" "${INSTALL_TARGET}"
+    mv "${TMP_DIR}/openinvar" "${INSTALL_TARGET}"
 else
     warn "Root privileges required to install to $(dirname "${INSTALL_TARGET}")"
-    sudo mv "${TMP_DIR}/graphyn" "${INSTALL_TARGET}"
+    sudo mv "${TMP_DIR}/openinvar" "${INSTALL_TARGET}"
 fi
 
 # 8. Verification
 NEW_VERSION=$("${INSTALL_TARGET}" --version | awk '{print $NF}')
-success "Graphyn ${BOLD}${NEW_VERSION}${RESET} has been installed!"
+success "OpenInvar ${BOLD}${NEW_VERSION}${RESET} has been installed!"
 
 # 9. PATH Check
 if [[ ":$PATH:" != *":$(dirname "${INSTALL_TARGET}"):"* ]]; then
     printf "\n"
     warn "${BOLD}Installation directory is not in your PATH!${RESET}"
-    info "To use Graphyn from anywhere, add this to your shell profile (.bashrc, .zshrc, etc.):"
+    info "To use OpenInvar from anywhere, add this to your shell profile (.bashrc, .zshrc, etc.):"
     printf "\n  ${MAGENTA}export PATH=\"$(dirname "${INSTALL_TARGET}"):\$PATH\"${RESET}\n\n"
 else
     printf "\n"
-    success "${BOLD}Graphyn is ready!${RESET} Run '${BOLD}graphyn --help${RESET}' to get started.\n"
+    success "${BOLD}OpenInvar is ready!${RESET} Run '${BOLD}openinvar --help${RESET}' to get started.\n"
 fi
 
 printf "${BLUE}==========================================${RESET}\n"

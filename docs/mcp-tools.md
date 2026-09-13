@@ -1,6 +1,6 @@
-# Graphyn MCP Tools Reference
+# OpenInvar MCP Tools Reference
 
-This document describes the MCP tools Graphyn exposes to coding agents.
+This document describes the MCP tools OpenInvar exposes to coding agents.
 
 ## Overview
 
@@ -51,7 +51,7 @@ Input:
 
 ## refresh_graph_index
 
-Rebuilds Graphyn index and updates both on-disk snapshot and in-memory MCP server graph.
+Rebuilds OpenInvar index and updates both on-disk snapshot and in-memory MCP server graph.
 
 Input:
 

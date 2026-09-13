@@ -1,0 +1,48 @@
+[package]
+name = "openinvar-cli"
+description = "The OpenInvar CLI — audit a change, check it against rules, and query the graph behind both"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
+authors.workspace = true
+categories.workspace = true
+keywords.workspace = true
+
+[[bin]]
+name = "openinvar"
+path = "src/main.rs"
+
+[features]
+# The languages a default binary carries. `--no-default-features --features
+# python` builds a Python-only `openinvar`; `full` is the published everything
+# binary, and is the same set until Tier 2 languages land.
+default = ["typescript", "python", "rust", "go", "c"]
+full = ["default", "java", "ruby", "csharp"]
+typescript = ["openinvar-lang/typescript", "openinvar-mcp/typescript"]
+python = ["openinvar-lang/python", "openinvar-mcp/python"]
+rust = ["openinvar-lang/rust", "openinvar-mcp/rust"]
+go = ["openinvar-lang/go", "openinvar-mcp/go"]
+c = ["openinvar-lang/c", "openinvar-mcp/c"]
+java = ["openinvar-lang/java", "openinvar-mcp/java"]
+ruby = ["openinvar-lang/ruby", "openinvar-mcp/ruby"]
+csharp = ["openinvar-lang/csharp", "openinvar-mcp/csharp"]
+
+[dependencies]
+clap = { version = "4", features = ["derive"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+notify = "6"
+tokio = { version = "1", features = ["full"] }
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+openinvar-core = { path = "../openinvar-core", version = "0.2.0" }
+openinvar-lang = { path = "../openinvar-lang", version = "0.2.0", default-features = false }
+openinvar-store = { path = "../openinvar-store", version = "0.2.0" }
+openinvar-mcp = { path = "../openinvar-mcp", version = "0.2.0", default-features = false }
+
+[dev-dependencies]
+walkdir = "2"
+serde_json = "1"

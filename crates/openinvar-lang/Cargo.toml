@@ -1,0 +1,64 @@
+[package]
+name = "openinvar-lang"
+description = "Language parsing and resolution for OpenInvar — one module and one feature per language"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
+authors.workspace = true
+categories.workspace = true
+keywords.workspace = true
+
+[features]
+# The languages 0.2.0 shipped, so a default build behaves as it always has.
+default = ["typescript", "python", "rust", "go", "c"]
+# Everything, including Tier 2 languages.
+full = ["default", "java", "ruby", "csharp"]
+
+# Each language pulls in its own grammars and nothing else, so a slim build
+# leaves the rest out of the binary entirely. `supported_languages()` is built
+# from these, so it reports what a build can actually analyse.
+typescript = ["dep:tree-sitter-typescript", "dep:tree-sitter-javascript", "dep:walkdir", "dep:serde_json"]
+python = ["dep:tree-sitter-python"]
+rust = ["dep:tree-sitter-rust", "dep:toml", "dep:glob"]
+go = ["dep:tree-sitter-go"]
+c = ["dep:tree-sitter-c", "dep:tree-sitter-cpp"]
+# Tier 2: analysed through the structural analyzer using the grammar's own
+# tags.scm. Not in `default` — a Tier 2 language is advisory, and a default
+# build should carry the languages OpenInvar can actually resolve.
+java = ["dep:tree-sitter-java"]
+ruby = ["dep:tree-sitter-ruby"]
+csharp = ["dep:tree-sitter-c-sharp"]
+
+[dependencies]
+tree-sitter = "0.22"
+rayon = "1"
+openinvar-core = { path = "../openinvar-core", version = "0.2.0", features = ["ast"] }
+
+tree-sitter-typescript = { version = "0.21", optional = true }
+tree-sitter-javascript = { version = "0.21", optional = true }
+tree-sitter-python = { version = "0.21", optional = true }
+tree-sitter-rust = { version = "0.21", optional = true }
+tree-sitter-go = { version = "0.21", optional = true }
+tree-sitter-c = { version = "0.21", optional = true }
+tree-sitter-cpp = { version = "0.21", optional = true }
+tree-sitter-java = { version = "0.21", optional = true }
+tree-sitter-ruby = { version = "0.21", optional = true }
+tree-sitter-c-sharp = { version = "0.21", optional = true }
+
+# TypeScript-only: tsconfig parsing and its path-alias walk.
+walkdir = { version = "2", optional = true }
+serde_json = { version = "1", optional = true }
+# Rust-only: Cargo.toml parsing and workspace member globs.
+toml = { version = "0.8", optional = true }
+glob = { version = "0.3", optional = true }
+
+[dev-dependencies]
+walkdir = "2"
+
+[[bin]]
+name = "openinvar-lang-test-run"
+path = "src/bin/test_run.rs"
+required-features = ["typescript"]

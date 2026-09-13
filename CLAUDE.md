@@ -1,12 +1,12 @@
-# Working on Graphyn
+# Working on OpenInvar
 
 Guidance for Claude Code and other agents contributing to this repository.
 
 Note this is *not* `agent-configs/claude/CLAUDE.md` — that file is a template
-Graphyn ships to its users, telling their agent how to call Graphyn. This file
-is about changing Graphyn itself.
+OpenInvar ships to its users, telling their agent how to call OpenInvar. This file
+is about changing OpenInvar itself.
 
-## What Graphyn is
+## What OpenInvar is
 
 A deterministic symbol relationship graph for a repository, so developers and
 coding agents can answer: what breaks if I change this, where is this used
@@ -42,13 +42,13 @@ removed 27 `assert!(true)` stubs, so do not reintroduce that pattern.
 
 ### Golden snapshots
 
-`crates/graphyn-cli/tests/golden/` records the full analysis of every fixture
+`crates/openinvar-cli/tests/golden/` records the full analysis of every fixture
 project. A change there is not a failure — it is the diff you are being asked
 to review — but it must never be invisible. After an intended change:
 
 ```bash
-UPDATE_GOLDEN=1 cargo test -p graphyn-cli --test golden_ir
-git diff crates/graphyn-cli/tests/golden
+UPDATE_GOLDEN=1 cargo test -p openinvar-cli --test golden_ir
+git diff crates/openinvar-cli/tests/golden
 ```
 
 Read that diff before committing. For a change that claims to preserve
@@ -57,7 +57,7 @@ wrong or needs explaining in the PR.
 
 ## Dogfooding
 
-Graphyn analyzing Graphyn is the best available test corpus, and a standing
+OpenInvar analyzing OpenInvar is the best available test corpus, and a standing
 integration test:
 
 ```bash
@@ -89,19 +89,19 @@ regression, not a quirk.
 
 | Crate | Role |
 |---|---|
-| `graphyn-core` | Graph engine, IR (`RepoIR`), symbol IDs, AST helpers, relationship model |
-| `graphyn-lang` | Every language: `lang/<name>/` per language, `dispatch` routes and merges |
-| `graphyn-store` | RocksDB persistence (`.graphyn/db`) |
-| `graphyn-mcp` | MCP server (`serve --stdio`) |
-| `graphyn-cli` | The `graphyn` binary |
+| `openinvar-core` | Graph engine, IR (`RepoIR`), symbol IDs, AST helpers, relationship model |
+| `openinvar-lang` | Every language: `lang/<name>/` per language, `dispatch` routes and merges |
+| `openinvar-store` | RocksDB persistence (`.openinvar/db`) |
+| `openinvar-mcp` | MCP server (`serve --stdio`) |
+| `openinvar-cli` | The `openinvar` binary |
 
-Adding a language is a module under `crates/graphyn-lang/src/lang/` and a
+Adding a language is a module under `crates/openinvar-lang/src/lang/` and a
 Cargo feature — not a crate, a manifest, and an entry in the publish job.
-Features are forwarded through `graphyn-mcp` to `graphyn-cli`, so a slim build
+Features are forwarded through `openinvar-mcp` to `openinvar-cli`, so a slim build
 stays slim all the way to the binary; check a new language builds alone:
 
 ```bash
-cargo clippy -p graphyn-lang --no-default-features --features <lang> --all-targets -- -D warnings
+cargo clippy -p openinvar-lang --no-default-features --features <lang> --all-targets -- -D warnings
 ```
 
 Parsing is tree-sitter and is essentially a solved, vendored problem. **Quality

@@ -1,13 +1,13 @@
-# Graphyn MCP Configs
+# OpenInvar MCP Configs
 
-Graphyn exposes MCP tools over stdio:
+OpenInvar exposes MCP tools over stdio:
 
 ```bash
-graphyn serve --stdio
+openinvar serve --stdio
 ```
 
-Use these snippets as starting points. Set `GRAPHYN_ROOT` to the repository you
-want Graphyn to index/query.
+Use these snippets as starting points. Set `OPENINVAR_ROOT` to the repository you
+want OpenInvar to index/query.
 
 ## Cursor
 
@@ -16,11 +16,11 @@ Project file: `.cursor/mcp.json`
 ```json
 {
   "mcpServers": {
-    "graphyn": {
-      "command": "graphyn",
+    "openinvar": {
+      "command": "openinvar",
       "args": ["serve", "--stdio"],
       "env": {
-        "GRAPHYN_ROOT": "${workspaceFolder}"
+        "OPENINVAR_ROOT": "${workspaceFolder}"
       }
     }
   }
@@ -34,12 +34,12 @@ Project file: `.mcp.json`
 ```json
 {
   "mcpServers": {
-    "graphyn": {
+    "openinvar": {
       "type": "stdio",
-      "command": "graphyn",
+      "command": "openinvar",
       "args": ["serve", "--stdio"],
       "env": {
-        "GRAPHYN_ROOT": "."
+        "OPENINVAR_ROOT": "."
       }
     }
   }
@@ -49,7 +49,7 @@ Project file: `.mcp.json`
 Equivalent CLI:
 
 ```bash
-claude mcp add-json graphyn '{"type":"stdio","command":"graphyn","args":["serve","--stdio"],"env":{"GRAPHYN_ROOT":"."}}' --scope project
+claude mcp add-json openinvar '{"type":"stdio","command":"openinvar","args":["serve","--stdio"],"env":{"OPENINVAR_ROOT":"."}}' --scope project
 ```
 
 ### Antigravity
@@ -59,8 +59,8 @@ Antigravity reads MCP servers from `.gemini/settings.json`:
 ```json
 {
   "mcpServers": {
-    "graphyn": {
-      "command": "graphyn",
+    "openinvar": {
+      "command": "openinvar",
       "args": ["serve", "--stdio"],
       "cwd": "${workspaceFolder}"
     }
@@ -75,11 +75,11 @@ Project or user `settings.json` entry:
 ```json
 {
   "mcpServers": {
-    "graphyn": {
-      "command": "graphyn",
+    "openinvar": {
+      "command": "openinvar",
       "args": ["serve", "--stdio"],
       "env": {
-        "GRAPHYN_ROOT": "."
+        "OPENINVAR_ROOT": "."
       }
     }
   }
@@ -91,12 +91,12 @@ Project or user `settings.json` entry:
 User file: `~/.codex/config.toml`
 
 ```toml
-[mcp_servers.graphyn]
-command = "graphyn"
+[mcp_servers.openinvar]
+command = "openinvar"
 args = ["serve", "--stdio"]
 
-[mcp_servers.graphyn.env]
-GRAPHYN_ROOT = "."
+[mcp_servers.openinvar.env]
+OPENINVAR_ROOT = "."
 ```
 
 ## Tools
@@ -107,7 +107,7 @@ GRAPHYN_ROOT = "."
 | `get_dependencies` | What does this symbol depend on? | `symbol`, `file`, `depth`, `kinds`, `min_resolution` |
 | `get_symbol_usages` | Where is this used, including aliases? | `symbol`, `file`, `kinds`, `min_resolution` |
 | `graph_diff` | What did this change break? | `base`, `head` |
-| `check_rules` | Does this change violate `.graphyn/rules.toml`? | `base`, `head` |
+| `check_rules` | Does this change violate `.openinvar/rules.toml`? | `base`, `head` |
 | `refresh_graph_index` | Re-analyze after changes | `path`, `include`, `exclude`, `respect_gitignore` |
 
 Six is a deliberate ceiling. A large tool surface degrades an agent's ability
@@ -118,8 +118,8 @@ does not get its own.
 first:
 
 ```bash
-graphyn analyze . --snapshot HEAD
-graphyn analyze . --snapshot worktree
+openinvar analyze . --snapshot HEAD
+openinvar analyze . --snapshot worktree
 ```
 
 Both default to comparing `HEAD` against `worktree`. Without a snapshot they
@@ -136,14 +136,14 @@ rather than that nothing was wrong.
 ## Common Checks
 
 ```bash
-graphyn analyze .
-graphyn status
-graphyn serve --stdio
+openinvar analyze .
+openinvar status
+openinvar serve --stdio
 ```
 
-If a client cannot find `graphyn`, use the full path from:
+If a client cannot find `openinvar`, use the full path from:
 
 ```bash
-which graphyn
+which openinvar
 ```
 

@@ -1,6 +1,6 @@
-# Graphyn Guidance
+# OpenInvar Guidance
 
-Use Graphyn before risky code changes.
+Use OpenInvar before risky code changes.
 
 ## When To Query
 
@@ -21,10 +21,10 @@ Use MCP if available:
 Fallback:
 
 ```bash
-graphyn analyze .
-graphyn query blast-radius SymbolName
-graphyn query usages SymbolName
-graphyn query deps SymbolName
+openinvar analyze .
+openinvar query blast-radius SymbolName
+openinvar query usages SymbolName
+openinvar query deps SymbolName
 ```
 
 Pay attention to aliases and `properties_accessed`.

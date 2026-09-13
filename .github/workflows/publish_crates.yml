@@ -51,8 +51,8 @@ jobs:
         env:
           CARGO_REGISTRY_TOKEN: ${{ steps.auth.outputs.token }}
         run: |
-          cargo publish -p graphyn-core
-          cargo publish -p graphyn-lang
-          cargo publish -p graphyn-store
-          cargo publish -p graphyn-mcp
-          cargo publish -p graphyn-cli
+          cargo publish -p openinvar-core
+          cargo publish -p openinvar-lang
+          cargo publish -p openinvar-store
+          cargo publish -p openinvar-mcp
+          cargo publish -p openinvar-cli

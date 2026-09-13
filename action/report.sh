@@ -2,17 +2,17 @@
 # Record a snapshot of each side and build the markdown report.
 #
 # Both sides are analyzed from the same checkout so that both snapshots land in
-# one `.graphyn/db`, which is what lets `report` compare them. The base is
+# one `.openinvar/db`, which is what lets `report` compare them. The base is
 # checked out, analyzed, and the head restored — the working tree is left as it
 # was found.
 set -euo pipefail
 
-path="${GRAPHYN_PATH:-.}"
+path="${OPENINVAR_PATH:-.}"
 cd "$path"
 
 # What to compare against. The pull request base is the useful default; a push
 # compares against the commit it replaced.
-base_ref="${GRAPHYN_BASE_REF:-}"
+base_ref="${OPENINVAR_BASE_REF:-}"
 if [ -z "$base_ref" ]; then
   if [ "${GITHUB_EVENT_NAME:-}" = "pull_request" ]; then
     base_ref="origin/${GITHUB_BASE_REF}"
@@ -39,7 +39,7 @@ fi
 #
 # The tip is wrong and wrong in the worst direction: everything merged into the
 # base branch since this one diverged then reads as removed by this change. On
-# Graphyn's own pull request that produced a comment claiming a file the branch
+# OpenInvar's own pull request that produced a comment claiming a file the branch
 # never touched had lost most of its symbols. A confidently wrong answer is the
 # one thing this tool must not produce, so the range is the branch's own work
 # and nothing else.
@@ -66,17 +66,17 @@ echo "Comparing ${base_sha} -> ${head_sha}"
 # The base tree, snapshotted under its own SHA so the record still means
 # something after the branch moves.
 git checkout --quiet --force "$base_sha"
-graphyn analyze . --snapshot "$base_sha" >/dev/null
+openinvar analyze . --snapshot "$base_sha" >/dev/null
 
 git checkout --quiet --force "$head_sha"
-graphyn analyze . --snapshot "$head_sha" >/dev/null
+openinvar analyze . --snapshot "$head_sha" >/dev/null
 
-report_path="${RUNNER_TEMP:-/tmp}/graphyn-report.md"
+report_path="${RUNNER_TEMP:-/tmp}/openinvar-report.md"
 rules_arg=()
-[ -n "${GRAPHYN_RULES:-}" ] && rules_arg=(--rules "${GRAPHYN_RULES}")
+[ -n "${OPENINVAR_RULES:-}" ] && rules_arg=(--rules "${OPENINVAR_RULES}")
 
 set +e
-graphyn report . --base "$base_sha" --head "$head_sha" "${rules_arg[@]}" > "$report_path"
+openinvar report . --base "$base_sha" --head "$head_sha" "${rules_arg[@]}" > "$report_path"
 status=$?
 set -e
 
@@ -86,7 +86,7 @@ case $status in
   *)
     # The report could not be produced. That is not a violation and must not be
     # reported as one — nor as a clean run.
-    echo "::warning::Graphyn could not produce a report (exit $status). Nothing was enforced." >&2
+    echo "::warning::OpenInvar could not produce a report (exit $status). Nothing was enforced." >&2
     cat "$report_path" >&2 || true
     verdict=undecided
     ;;
@@ -101,9 +101,9 @@ fi
 # The audit is a separate question from the rules, and its answer belongs in
 # the same comment: a reviewer should not have to open a job log to find out
 # that a change looks like it was made to pass a check.
-audit_path="${RUNNER_TEMP:-/tmp}/graphyn-audit.txt"
+audit_path="${RUNNER_TEMP:-/tmp}/openinvar-audit.txt"
 set +e
-graphyn audit . --base "$base_sha" --head "$head_sha" --severity "${GRAPHYN_AUDIT_SEVERITY:-error}" > "$audit_path" 2>&1
+openinvar audit . --base "$base_sha" --head "$head_sha" --severity "${OPENINVAR_AUDIT_SEVERITY:-error}" > "$audit_path" 2>&1
 audit_status=$?
 set -e
 
@@ -120,7 +120,7 @@ if [ $audit_status -eq 1 ]; then
   } >> "$report_path"
   verdict=audit
 elif [ $audit_status -ne 0 ]; then
-  echo "::warning::Graphyn could not run the audit (exit $audit_status); no audit was performed." >&2
+  echo "::warning::OpenInvar could not run the audit (exit $audit_status); no audit was performed." >&2
 fi
 
 echo "Verdict: $verdict"

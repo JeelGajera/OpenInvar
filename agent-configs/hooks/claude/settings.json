@@ -6,7 +6,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": ".claude/hooks/graphyn-pre-edit.sh",
+            "command": ".claude/hooks/openinvar-pre-edit.sh",
             "timeout": 10,
             "statusMessage": "Checking blast radius"
           }
@@ -19,7 +19,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": ".claude/hooks/graphyn-post-edit.sh",
+            "command": ".claude/hooks/openinvar-post-edit.sh",
             "timeout": 30,
             "statusMessage": "Checking for broken references"
           }
@@ -31,13 +31,13 @@
         "hooks": [
           {
             "type": "command",
-            "command": ".claude/hooks/graphyn-stop-check.sh",
+            "command": ".claude/hooks/openinvar-stop-check.sh",
             "timeout": 60,
-            "statusMessage": "Enforcing Graphyn rules"
+            "statusMessage": "Enforcing OpenInvar rules"
           },
           {
             "type": "command",
-            "command": ".claude/hooks/graphyn-audit-check.sh",
+            "command": ".claude/hooks/openinvar-audit-check.sh",
             "timeout": 60,
             "statusMessage": "Auditing the change"
           }

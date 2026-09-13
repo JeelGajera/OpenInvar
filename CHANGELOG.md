@@ -1,6 +1,11 @@
 # Changelog
 
-All notable changes to Graphyn are documented here.
+All notable changes to OpenInvar are documented here.
+
+Entries written before the rename still say `graphyn`, `graphyn-core`,
+`.graphyn/` and so on. They are deliberately left as written: those were the
+real names at the time, and rewriting them would make this file quietly
+dishonest about what shipped, and under what name.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
@@ -9,11 +14,47 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **The project is renamed from `graphyn` to OpenInvar, and repositioned.**
+  The tagline is now "Deterministic integrity checks for AI-written code" —
+  structural violations, test tampering, contract erosion, with no model in
+  the loop. `audit` and `check` lead the README as the two commands that gate;
+  `query`, `impact` and `context` move to an "it also answers graph questions"
+  section near the bottom. Those commands are unchanged and still supported —
+  the demotion is about what the project leads with, not what it does.
+
+  The renames, in full:
+
+  | From | To |
+  |---|---|
+  | binary `graphyn` | `openinvar` |
+  | `graphyn-core`, `-lang`, `-store`, `-mcp`, `-cli` | `openinvar-core`, `-lang`, `-store`, `-mcp`, `-cli` |
+  | `graphyn_core::` and friends | `openinvar_core::` and friends |
+  | `GraphynGraph`, `GraphynError`, `GraphynMcpServer` | `InvarGraph`, `InvarError`, `InvarMcpServer` |
+  | `.graphyn/` | `.openinvar/` |
+  | `GRAPHYN_*` environment variables | `OPENINVAR_*` |
+  | `.github/workflows/graphyn.yml` | `openinvar.yml` |
+  | hook scripts `graphyn-*.sh` | `openinvar-*.sh` |
+
+  There is no short alias: the command is `openinvar`, not `invar`.
+
+  The repository was renamed in place, so its history, issues and pull requests
+  are intact and GitHub redirects the old URL. Existing `.graphyn/` directories
+  are not migrated — the graph is derived data, so re-run `openinvar analyze`
+  and delete the old directory.
+
+  crates.io keywords drop `blast-radius` and `dependency-graph` for `ci`,
+  `code-review`, `static-analysis` and `agents`, which is where the project now
+  claims to belong.
+
+  No analysis behaviour changed: the golden snapshots are byte-identical across
+  this change, which is the evidence that it is a rename and nothing more.
+
 - **The README is repositioned around enforcement rather than exploration.**
-  The tagline is now "Deterministic guardrails for agentic code changes", and
-  the three questions are framed around the agent that is about to write:
-  what breaks, which tests cover it, and does this violate a rule the
-  repository wrote down.
+  Written before the rename, when the tagline read "Deterministic guardrails
+  for agentic code changes"; the entry above supersedes that wording. The
+  three questions are framed around the agent that is about to write: what
+  breaks, which tests cover it, and does this violate a rule the repository
+  wrote down.
 
   Determinism leads "Why Graphyn" with the reason it matters rather than as one
   bullet among five: you cannot gate CI on an opinion. A check that returns a

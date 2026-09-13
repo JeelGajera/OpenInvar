@@ -1,6 +1,6 @@
-name: 'Graphyn'
-description: 'Deterministic blast radius and rule enforcement for pull requests. No model participates in the analysis.'
-author: 'Graphyn Contributors'
+name: 'OpenInvar'
+description: 'Deterministic integrity checks for AI-written code — structural violations, test tampering, contract erosion. No model in the loop.'
+author: 'OpenInvar Contributors'
 branding:
   icon: 'git-merge'
   color: 'purple'
@@ -24,7 +24,7 @@ inputs:
     required: false
     default: ''
   rules:
-    description: 'Rules file. Defaults to <path>/.graphyn/rules.toml.'
+    description: 'Rules file. Defaults to <path>/.openinvar/rules.toml.'
     required: false
     default: ''
   comment:
@@ -61,10 +61,10 @@ outputs:
 runs:
   using: composite
   steps:
-    - name: Install graphyn
+    - name: Install openinvar
       shell: bash
       env:
-        GRAPHYN_VERSION: ${{ inputs.version }}
+        OPENINVAR_VERSION: ${{ inputs.version }}
         GITHUB_TOKEN: ${{ inputs.github-token }}
       run: ${{ github.action_path }}/action/install.sh
 
@@ -72,10 +72,10 @@ runs:
       id: report
       shell: bash
       env:
-        GRAPHYN_PATH: ${{ inputs.path }}
-        GRAPHYN_BASE_REF: ${{ inputs.base-ref }}
-        GRAPHYN_RULES: ${{ inputs.rules }}
-        GRAPHYN_AUDIT_SEVERITY: ${{ inputs.audit-severity }}
+        OPENINVAR_PATH: ${{ inputs.path }}
+        OPENINVAR_BASE_REF: ${{ inputs.base-ref }}
+        OPENINVAR_RULES: ${{ inputs.rules }}
+        OPENINVAR_AUDIT_SEVERITY: ${{ inputs.audit-severity }}
       run: ${{ github.action_path }}/action/report.sh
 
     - name: Comment on the pull request
@@ -83,19 +83,19 @@ runs:
       shell: bash
       env:
         GITHUB_TOKEN: ${{ inputs.github-token }}
-        GRAPHYN_REPORT: ${{ steps.report.outputs.report-path }}
+        OPENINVAR_REPORT: ${{ steps.report.outputs.report-path }}
       run: ${{ github.action_path }}/action/comment.sh
 
     - name: Fail on violation
       if: inputs.fail-on-violation == 'true' && steps.report.outputs.verdict == 'violated'
       shell: bash
       run: |
-        echo "::error::Graphyn: a rule in .graphyn/rules.toml was violated by this change."
+        echo "::error::OpenInvar: a rule in .openinvar/rules.toml was violated by this change."
         exit 1
 
     - name: Fail on audit finding
       if: inputs.fail-on-violation == 'true' && steps.report.outputs.verdict == 'audit'
       shell: bash
       run: |
-        echo "::error::Graphyn: the audit found a change that looks like it was made to pass a check rather than to work."
+        echo "::error::OpenInvar: the audit found a change that looks like it was made to pass a check rather than to work."
         exit 1
