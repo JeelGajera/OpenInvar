@@ -14,6 +14,73 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **The store is SQLite, and the build no longer needs a pinned compiler.**
+  One change, two problems: `librocksdb-sys` vendored a C++ database that does
+  not compile on GCC 14 or newer, so every build was pinned to `gcc-13` — a
+  workaround that lived in the CI workflows and nowhere a contributor would
+  look. `cargo build --release`, exactly as the README documents it, now works
+  on a current toolchain with nothing set in the environment. A CI job builds
+  with the newest GCC the runner offers, and with no `CC`/`CXX` at all, so it
+  cannot regress silently.
+
+  | | Before | After |
+  |---|---|---|
+  | `--features typescript` | 21.2 MB | **14.9 MB** |
+  | `default` | 28.8 MB | **22.5 MB** |
+  | `full` | 36.6 MB | **30.3 MB** |
+
+  About 6.3 MB of every binary was a key-value store used as a two-key
+  dictionary.
+
+  **The snapshot encoder was not touched.** `GraphSnapshot::from_graph` still
+  emits the same hand-written length-prefixed binary blob, byte for byte;
+  SQLite holds it in a `BLOB` where RocksDB held it under a key. The conformance
+  suites — `tests/revisions.rs` and `tests/cache.rs` — pass **unmodified**,
+  which is the evidence the port preserved the contract rather than the tests
+  being taught to accept it.
+
+  Two tables replace two column families: `graph` holds the single working
+  graph, `revisions` holds snapshots keyed by revision with a `sequence` and an
+  index on it. `PRAGMA user_version` replaces the layout-version key.
+
+  **Every query that feeds output carries an explicit `ORDER BY`.** RocksDB's
+  prefix iterator was implicitly ordered, so `list_revisions` was *accidentally*
+  stable; SQLite guarantees no row order without one. That is this project's
+  determinism rule in its SQL form, and `tests/sqlite_layout.rs` asserts the
+  order holds across repeated reopens and a mid-list rewrite. Two consecutive
+  `analyze --json` runs remain byte-identical.
+
+  `journal_mode=WAL` and `synchronous=NORMAL`, because `watch` holding the
+  store open while a hook invocation opens it again is a real scenario and the
+  default rollback journal makes a reader and a writer exclude each other.
+
+- **The graph database moved to `.openinvar/graph.db` — a file, not a
+  directory.** There is no migration, deliberately: the graph is derived data
+  that rebuilds in about a quarter of a second, so converting a cache would be
+  wasted work. A store directory left by an earlier release is **reported, not
+  deleted** — a read command names it and says to run `openinvar analyze`, and
+  `analyze` itself notes once that the old directory is now dead weight and can
+  be removed. Removing it stays the user's decision.
+
+  `.graphyn/db` is recognised too, so someone upgrading from a release made
+  before the rename gets the same message rather than a bare "no graph found".
+
+### Fixed
+
+- **The agent hooks stopped seeing the graph after the store moved, and would
+  have failed silently.** `openinvar_has_graph` tested for a *directory*. These
+  hooks fail open by design, so the pre-edit hook would have gone quiet rather
+  than gone wrong — the failure nobody notices. Caught by
+  `the_pre_edit_hook_reports_the_same_counts_the_cli_does`, which exists for
+  exactly this.
+
+- **`docs/architecture.md` claimed the store serialized with `serde_json`.** It
+  never did, at any point. The encoder has always been hand-written and binary.
+  That is the kind of wrong that costs a day when somebody plans a change
+  around it, so the document now describes the real format.
+
+### Changed
+
 - **The project is renamed from `graphyn` to OpenInvar, and repositioned.**
   The tagline is now "Deterministic integrity checks for AI-written code" —
   structural violations, test tampering, contract erosion, with no model in

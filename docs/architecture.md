@@ -56,7 +56,7 @@ Source files on disk
    (petgraph DiGraph + DashMap indexes + AliasChains)
         ↓
    openinvar-store
-   (serialize to RocksDB → .openinvar/db)
+   (serialize to SQLite → .openinvar/graph.db)
 
    On subsequent startup:
    openinvar-store deserialize → InvarGraph (< 2s, no reparse)
@@ -272,9 +272,26 @@ step is not linked.
 
 Persistence and caching.
 
-### db.rs
+### sqlite.rs
 
-Serializes the full `InvarGraph` to RocksDB at `.openinvar/db` in the repo root. Uses `serde_json` for serialization. On startup, deserializes and validates freshness by comparing file modification times against the stored index — files modified since the last store trigger a targeted re-parse rather than a full rebuild.
+Serializes the full `InvarGraph` into SQLite at `.openinvar/graph.db` in the repo root — a file, not a directory.
+
+**Serialization is not `serde_json`, and never was.** `GraphSnapshot::from_graph` emits a hand-written, length-prefixed little-endian binary blob: a `u32` length before every string, a `0`/`1` tag before every optional one, and a byte per enum discriminant. A cursor-based reader walks it back. An earlier revision of this document claimed JSON; that was wrong, and it is the kind of wrong that costs a day when somebody plans a change around it.
+
+That encoder is storage-agnostic — it produces a `Vec<u8>`. SQLite holds those bytes in a `BLOB`, which is why the move off RocksDB did not touch a line of it.
+
+Two tables:
+
+| Table | Holds |
+|---|---|
+| `graph` | The single working graph. Constrained to one row (`CHECK (id = 1)`). |
+| `revisions` | Snapshots keyed by revision, with a monotonic `sequence` and an index on it. |
+
+`PRAGMA user_version` carries the schema version. A database written under a different one has its `revisions` table dropped rather than misread — revisions are a cache of something reproducible from git, and a stale index pointing at snapshots that no longer parse is silent corruption in commands whose whole purpose is to be trusted. The working graph survives that reset.
+
+`journal_mode=WAL` and `synchronous=NORMAL`: `watch` holds the store open while a hook invocation opens it again, and under the default rollback journal a reader and a writer exclude each other.
+
+**Every query that feeds output carries an explicit `ORDER BY`.** RocksDB's prefix iterator was implicitly ordered, so `list_revisions` was *accidentally* stable; SQLite guarantees no row order without one. This is the determinism rule from `CLAUDE.md` in its SQL form, and the reason `tests/sqlite_layout.rs` asserts the order across repeated reopens.
 
 ### cache.rs
 
@@ -314,18 +331,18 @@ Developer-facing CLI. Orchestrates the other crates. Contains no business logic.
 1. Discovers all source files (adapter walker)
 2. Parses them in parallel (rayon + adapter parser + extractor)
 3. Builds the graph (openinvar-core)
-4. Persists to RocksDB (openinvar-store)
+4. Persists to SQLite (openinvar-store)
 5. Prints stats: files parsed, symbols found, relationships found, time taken
 
 ### commands/query.rs
 
-1. Loads graph from RocksDB (openinvar-store)
+1. Loads graph from SQLite (openinvar-store)
 2. Calls the appropriate query function (openinvar-core)
 3. Formats output as a terminal table
 
 ### commands/watch.rs
 
-1. Loads graph from RocksDB
+1. Loads graph from SQLite
 2. Starts the MCP server
 3. Starts the file watcher (notify crate)
 4. On file change: incremental update (openinvar-core) + persist delta + notify MCP server
@@ -350,9 +367,15 @@ Parsing is embarrassingly parallel — each file is independent. `rayon` distrib
 
 Graph mutations (incremental updates) and read queries must be able to happen concurrently. `DashMap` is a lock-free concurrent hash map — it shards internally so reads and writes to different symbols do not block each other. This is critical for watch mode where a file change triggers a mutation while the MCP server is simultaneously serving queries.
 
-### Why RocksDB
+### Why SQLite
 
-RocksDB provides fast key-value storage with good compression. A serialized 100k-symbol graph occupies approximately 20–30MB on disk. Deserialization (startup after the first run) takes under 2 seconds because RocksDB's read path is heavily optimized for sequential key reads.
+The graph is a single blob written once per analyse and read once per command. That is close to the least demanding thing a storage engine can be asked to do, so the engine was chosen on what it costs rather than on what it can do.
+
+RocksDB came first and cost too much. `librocksdb-sys` vendors a C++ database that does not compile on GCC 14 or newer, which pinned every build to `gcc-13` — a workaround that lived in the CI workflows and nowhere a contributor would look. It also put roughly 6 MB into every binary for a key-value store this project used as a two-key dictionary.
+
+`rusqlite` with `bundled` compiles the SQLite amalgamation: one C file, a few seconds, no system dependency, and no toolchain to fight. `cargo build --release` works on a current distribution with nothing set in the environment, which is what the README has always claimed.
+
+What it gives up is nothing this workload used: RocksDB's write throughput and compaction matter to a database taking sustained writes, and this one takes one write per `analyze`.
 
 ---
 

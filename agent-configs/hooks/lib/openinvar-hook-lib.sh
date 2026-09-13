@@ -28,7 +28,11 @@ openinvar_bin() {
 # Without one every answer would be "nothing depends on this", which is the
 # single most dangerous thing these hooks could say.
 openinvar_has_graph() {
-  [ -d "$(openinvar_root)/.openinvar/db" ]
+  # A file, not a directory: the store is SQLite. Testing for the directory an
+  # older release wrote would report "no graph" forever after an upgrade, and
+  # these hooks fail open — so the hook would go quiet rather than go wrong,
+  # which is the failure nobody notices.
+  [ -f "$(openinvar_root)/.openinvar/graph.db" ]
 }
 
 # Run a command under a wall-clock limit.

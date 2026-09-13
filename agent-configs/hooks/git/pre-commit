@@ -50,7 +50,7 @@ root=$(openinvar_root)
 [ -f "$root/.openinvar/rules.toml" ] || exit 0
 
 if ! openinvar_has_graph; then
-  echo "openinvar: no graph at .openinvar/db — rules were not checked." >&2
+  echo "openinvar: no graph at .openinvar/graph.db — rules were not checked." >&2
   echo "         Run: openinvar analyze . --snapshot HEAD" >&2
   exit 0
 fi

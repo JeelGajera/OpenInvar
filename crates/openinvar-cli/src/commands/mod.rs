@@ -38,7 +38,28 @@ pub fn normalize_path(path: &Path) -> PathBuf {
     }
 }
 
-/// Convention: graph database lives at `<repo_root>/.openinvar/db`
+/// Convention: the graph database lives at `<repo_root>/.openinvar/graph.db`
+///
+/// A file, not a directory — the store is SQLite. Releases before this one put
+/// a RocksDB directory at `<repo_root>/.openinvar/db`, and one of those may
+/// still be sitting there; see [`legacy_store_dir`].
 pub fn db_path(repo_root: &Path) -> PathBuf {
-    normalize_path(repo_root).join(".openinvar").join("db")
+    normalize_path(repo_root).join(".openinvar").join("graph.db")
+}
+
+/// A store directory left by a release that used RocksDB, if one is here.
+///
+/// Checked so a command can say *why* there is no graph rather than only that
+/// there is none. Both the current data directory and the one the project used
+/// before it was renamed are looked at, because a repository analysed by an
+/// older release carries `.graphyn/db` and nothing has told its owner that the
+/// name moved.
+///
+/// Nothing here deletes anything. The graph is derived data and rebuilding it
+/// takes under a second, but the directory is still the user's to remove.
+pub fn legacy_store_dir(repo_root: &Path) -> Option<PathBuf> {
+    let root = normalize_path(repo_root);
+    [root.join(".openinvar").join("db"), root.join(".graphyn").join("db")]
+        .into_iter()
+        .find(|dir| openinvar_store::sqlite::is_legacy_rocksdb_store(dir))
 }

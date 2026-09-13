@@ -185,7 +185,7 @@ pub async fn serve_stdio(repo_root: PathBuf) -> Result<(), Box<dyn std::error::E
 // ── helpers ──────────────────────────────────────────────────
 
 fn load_graph(repo_root: &Path) -> Result<InvarGraph, String> {
-    let db = repo_root.join(".openinvar").join("db");
+    let db = repo_root.join(".openinvar").join("graph.db");
     if !db.exists() {
         // Not an error — agent can call refresh_graph_index later
         eprintln!(

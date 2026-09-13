@@ -22,13 +22,6 @@ jobs:
       - name: Setup Cache
         uses: Swatinem/rust-cache@v2
 
-      - name: Install gcc-13
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y gcc-13 g++-13
-          echo "CC=gcc-13" >> $GITHUB_ENV
-          echo "CXX=g++-13" >> $GITHUB_ENV
-
       # Automatically exchanges the GitHub Actions OIDC token for a short-lived crates.io token
       - name: Authenticate with crates.io
         uses: rust-lang/crates-io-auth-action@v1

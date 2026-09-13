@@ -1,6 +1,6 @@
 [package]
 name = "openinvar-store"
-description = "Persistence layer for OpenInvar — RocksDB graph storage and LRU cache"
+description = "Persistence layer for OpenInvar — SQLite graph storage and LRU cache"
 version.workspace = true
 edition.workspace = true
 rust-version.workspace = true
@@ -12,5 +12,13 @@ categories.workspace = true
 keywords.workspace = true
 
 [dependencies]
-rocksdb = { version = "0.22", default-features = false }
+# `bundled` compiles the SQLite amalgamation: one C file, a few seconds, and
+# no system dependency. That is the point — the vendored C++ database this
+# replaced would not compile on GCC 15, which pinned every build to gcc-13.
+rusqlite = { version = "0.32", features = ["bundled"] }
 openinvar-core = { path = "../openinvar-core", version = "0.2.0", default-features = false }
+
+[dev-dependencies]
+# The layout tests stamp `user_version` directly, to assert what this crate
+# does when it meets a store written under a layout it does not know.
+rusqlite = { version = "0.32", features = ["bundled"] }

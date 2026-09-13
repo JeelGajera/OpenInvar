@@ -190,6 +190,18 @@ pub fn run(
         &root.join(".openinvar/").display().to_string(),
     );
 
+    // The rebuild is the fix for an upgrade, so say once that the old store is
+    // now dead weight. Deleting it is the user's call, not this command's —
+    // and after this the read path never mentions it again, so if nothing said
+    // it here the directory would sit there indefinitely.
+    if let Some(old_store) = super::legacy_store_dir(&root) {
+        output::warning(&format!(
+            "A store from an earlier release is still at {}. \
+             Nothing reads it now; it can be deleted.",
+            old_store.display()
+        ));
+    }
+
     // The working graph is always written; a revision snapshot is additional,
     // so `analyze --snapshot` leaves the repository queryable exactly as a
     // plain `analyze` does.
@@ -378,6 +390,19 @@ pub fn build_graph(repo_ir: &RepoIR) -> (InvarGraph, AnalyzeStats) {
 pub fn load_graph(repo_root: &Path) -> Result<InvarGraph, Box<dyn std::error::Error>> {
     let db = super::db_path(repo_root);
     if !db.exists() {
+        // A store directory from a release that used RocksDB is the one case
+        // where "no graph" has a cause worth naming: the graph is there, this
+        // build just cannot read it. Saying only "run analyze" would leave the
+        // user looking at a `.openinvar/db` directory that plainly exists.
+        if let Some(old_store) = super::legacy_store_dir(repo_root) {
+            return Err(format!(
+                "The store format changed in this release. Run {} to rebuild.\n\
+                 The old store at {} is no longer read, and can be deleted.",
+                output::bold_cyan("openinvar analyze <path>"),
+                old_store.display(),
+            )
+            .into());
+        }
         return Err(format!(
             "No graph found at {}. Run {} first.",
             db.display(),

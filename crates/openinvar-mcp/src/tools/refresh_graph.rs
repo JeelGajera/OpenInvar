@@ -59,7 +59,7 @@ pub fn execute(
     let diagnostics: usize = repo_ir.files.iter().map(|f| f.diagnostics.len()).sum();
     let graph = build_graph(&repo_ir);
 
-    let db = root.join(".openinvar").join("db");
+    let db = root.join(".openinvar").join("graph.db");
     if let Some(parent) = db.parent() {
         std::fs::create_dir_all(parent).map_err(|e| format!("failed to create db dir: {e}"))?;
     }

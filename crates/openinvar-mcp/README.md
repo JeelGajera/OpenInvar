@@ -27,5 +27,5 @@ server::serve_stdio(PathBuf::from(".")) .await?;
 
 ## Notes
 
-- The server expects a graph store at `.openinvar/db` under the repo root.
+- The server expects a graph store at `.openinvar/graph.db` under the repo root.
 - Tool formatting for agent-readable output is handled in `context_builder`.

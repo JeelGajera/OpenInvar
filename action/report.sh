@@ -2,7 +2,7 @@
 # Record a snapshot of each side and build the markdown report.
 #
 # Both sides are analyzed from the same checkout so that both snapshots land in
-# one `.openinvar/db`, which is what lets `report` compare them. The base is
+# one `.openinvar/graph.db`, which is what lets `report` compare them. The base is
 # checked out, analyzed, and the head restored — the working tree is left as it
 # was found.
 set -euo pipefail

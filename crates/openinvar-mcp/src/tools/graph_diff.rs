@@ -43,7 +43,7 @@ pub fn execute(repo_root: &Path, params: GraphDiffParams) -> Result<String, Stri
     let base_rev = openinvar_store::revision::resolve(repo_root, base)?;
     let head_rev = openinvar_store::revision::resolve(repo_root, head)?;
 
-    let store = RocksGraphStore::open(&repo_root.join(".openinvar").join("db"))
+    let store = RocksGraphStore::open(&repo_root.join(".openinvar").join("graph.db"))
         .map_err(|e| format!("failed to open the graph store: {e}"))?;
 
     let before = load(&store, &base_rev, base)?;
