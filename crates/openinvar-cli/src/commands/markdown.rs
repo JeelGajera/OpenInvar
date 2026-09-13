@@ -18,7 +18,7 @@
 //! decided, or a diff with no gate-safe evidence in it, says so in the comment
 //! rather than only in the exit status. The comment is what gets read.
 
-use openinvar_core::delta::{self, GraphDelta};
+use openinvar_core::delta::{self, Continuation, GraphDelta};
 use openinvar_core::findings::{DiffFindings, FindingKind};
 use openinvar_core::ir::Resolution;
 use openinvar_core::rule_eval::{Evaluation, Verdict};
@@ -249,12 +249,40 @@ fn diff_section(base: &str, head: &str, delta: &GraphDelta, found: &DiffFindings
     if !delta.continuities.is_empty() {
         // Separate from add/remove because that is the point of pairing them:
         // a rename is one change, not a destruction and a creation.
+        //
+        // Each kind is rendered differently because each answers a different
+        // question, and rendering them alike answers none of them. A move
+        // keeps its name, so `banner` → `banner` is a line that costs the
+        // reader a row and tells them nothing — what they need is the file it
+        // went to. A rename keeps its file, so repeating the path on both
+        // sides is noise. Only the third case has four values worth printing.
         out.push_str("**Renamed or moved**\n\n");
         for continuity in delta.continuities.iter().take(LIST_LIMIT) {
+            let before_name = escape(&continuity.before.name);
+            let after_name = escape(&continuity.after.name);
+            let before_file = escape(&continuity.before.file);
+            let after_file = escape(&continuity.after.file);
+
+            out.push_str(&match continuity.how {
+                Continuation::Renamed => {
+                    format!("- `{before_name}` → `{after_name}` (renamed in `{after_file}`)\n")
+                }
+                Continuation::Moved => {
+                    format!("- `{after_name}` moved (`{before_file}` → `{after_file}`)\n")
+                }
+                Continuation::RenamedAndMoved => format!(
+                    "- `{before_name}` → `{after_name}` \
+                     (renamed and moved, `{before_file}` → `{after_file}`)\n"
+                ),
+            });
+        }
+        // Every other list in this report says how much it left out. This one
+        // did not, so a rename touching two thousand symbols showed ten of
+        // them and stopped, with nothing to say the list was cut.
+        if delta.continuities.len() > LIST_LIMIT {
             out.push_str(&format!(
-                "- `{}` → `{}`\n",
-                escape(&continuity.before.name),
-                escape(&continuity.after.name)
+                "- … and {} more\n",
+                delta.continuities.len() - LIST_LIMIT
             ));
         }
         out.push('\n');
@@ -501,5 +529,125 @@ mod tests {
         let out = report("a", "b", Some(&delta), Some(&found), None);
 
         assert!(out.contains("No graph change"), "{out}");
+    }
+
+    fn symbol(name: &str, file: &str) -> openinvar_core::ir::Symbol {
+        openinvar_core::ir::Symbol {
+            id: format!("{file}::{name}::function"),
+            name: name.to_string(),
+            kind: openinvar_core::ir::SymbolKind::Function,
+            language: openinvar_core::ir::Language::Rust,
+            file: file.to_string(),
+            line_start: 1,
+            line_end: 1,
+            signature: None,
+        }
+    }
+
+    fn continuity(
+        before: (&str, &str),
+        after: (&str, &str),
+        how: Continuation,
+    ) -> openinvar_core::delta::Continuity {
+        openinvar_core::delta::Continuity {
+            before: symbol(before.0, before.1),
+            after: symbol(after.0, after.1),
+            how,
+        }
+    }
+
+    fn changes_for(continuities: Vec<openinvar_core::delta::Continuity>) -> String {
+        let delta = GraphDelta {
+            continuities,
+            ..GraphDelta::default()
+        };
+        report("a", "b", Some(&delta), Some(&empty_findings()), None)
+    }
+
+    #[test]
+    fn a_moved_symbol_names_the_files_rather_than_repeating_itself() {
+        // The bug this test exists for: every continuity rendered as
+        // `name` → `name`, so the rename to OpenInvar produced 1,991 comment
+        // rows of the form `banner` → `banner`. A move keeps its name — the
+        // only thing worth printing is where it went.
+        let out = changes_for(vec![continuity(
+            ("banner", "crates/graphyn-cli/src/output.rs"),
+            ("banner", "crates/openinvar-cli/src/output.rs"),
+            Continuation::Moved,
+        )]);
+
+        assert!(
+            out.contains("`banner` moved (`crates/graphyn-cli/src/output.rs` → `crates/openinvar-cli/src/output.rs`)"),
+            "a move must name both files:\n{out}"
+        );
+        assert!(
+            !out.contains("`banner` → `banner`"),
+            "a move rendered as an arrow between identical names tells the reader nothing:\n{out}"
+        );
+    }
+
+    #[test]
+    fn a_renamed_symbol_shows_both_names_and_its_one_file() {
+        // A rename stays put, so printing the same path on both sides of an
+        // arrow would be the mirror of the bug above.
+        let out = changes_for(vec![continuity(
+            ("oldName", "src/a.rs"),
+            ("newName", "src/a.rs"),
+            Continuation::Renamed,
+        )]);
+
+        assert!(
+            out.contains("`oldName` → `newName` (renamed in `src/a.rs`)"),
+            "a rename must show both names and where it happened:\n{out}"
+        );
+        assert!(
+            !out.contains("`src/a.rs` → `src/a.rs`"),
+            "the file did not change; printing it twice is noise:\n{out}"
+        );
+    }
+
+    #[test]
+    fn a_symbol_that_was_renamed_and_moved_reports_all_four_values() {
+        // The weakest evidence of the three, so it is the one a reviewer is
+        // most likely to want to check by hand. Nothing may be elided.
+        let out = changes_for(vec![continuity(
+            ("oldName", "src/a.rs"),
+            ("newName", "src/b.rs"),
+            Continuation::RenamedAndMoved,
+        )]);
+
+        for needle in ["oldName", "newName", "src/a.rs", "src/b.rs", "renamed and moved"] {
+            assert!(out.contains(needle), "missing {needle} from:\n{out}");
+        }
+    }
+
+    #[test]
+    fn a_truncated_continuity_list_says_how_much_it_left_out() {
+        // Every other list in this report already did. This one stopped at ten
+        // and said nothing, so a large rename looked like a small one to
+        // anyone reading the list rather than the counts table.
+        let many: Vec<_> = (0..LIST_LIMIT + 7)
+            .map(|i| {
+                continuity(
+                    (&format!("sym{i}"), "src/old.rs"),
+                    (&format!("sym{i}"), "src/new.rs"),
+                    Continuation::Moved,
+                )
+            })
+            .collect();
+        let out = changes_for(many);
+
+        assert!(out.contains("… and 7 more"), "{out}");
+    }
+
+    #[test]
+    fn a_pipe_in_a_moved_file_path_cannot_break_the_comment() {
+        let out = changes_for(vec![continuity(
+            ("f", "src/a|b.rs"),
+            ("f", "src/c.rs"),
+            Continuation::Moved,
+        )]);
+
+        assert!(out.contains(r"src/a\|b.rs"), "{out}");
     }
 }
