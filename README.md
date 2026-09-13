@@ -122,7 +122,7 @@ Everything they are built on:
 
 | Command | Purpose |
 |---|---|
-| `openinvar analyze <path> [--snapshot <rev>] [--json]` | Build the graph into `.openinvar/db`, optionally recording it |
+| `openinvar analyze <path> [--snapshot <rev>] [--json]` | Build the graph into `.openinvar/graph.db`, optionally recording it |
 | `openinvar diff --base <rev> --head <rev>` | What changed between two recorded revisions |
 | `openinvar tests <symbol> \| --diff` | Which tests exercise a symbol or a change |
 | `openinvar report --base <rev> --head <rev>` | One markdown report for a PR comment |
@@ -707,9 +707,9 @@ on a repository the `full` binary reports 99.7% on.
 
 | Build | Languages | Size |
 |---|---|---|
-| `--no-default-features --features typescript` | TypeScript / JavaScript | 21.2 MB |
-| `default` | TypeScript, Python, Rust, Go, C/C++ | 28.8 MB |
-| `full` | the above plus Java, Ruby, C# | 36.6 MB |
+| `--no-default-features --features typescript` | TypeScript / JavaScript | 14.9 MB |
+| `default` | TypeScript, Python, Rust, Go, C/C++ | 22.5 MB |
+| `full` | the above plus Java, Ruby, C# | 30.3 MB |
 
 Measured on one machine with `--release`; treat them as relative, not absolute.
 
@@ -731,6 +731,11 @@ cargo build --release
 cargo test --workspace
 cargo clippy --workspace -- -D warnings
 ```
+
+Nothing to set in the environment and no system libraries to install. The store
+is SQLite, compiled from the bundled amalgamation — one C file. A CI job builds
+with the newest GCC the runner offers, and with no `CC`/`CXX` at all, so that
+stays true.
 
 ## Changelog
 

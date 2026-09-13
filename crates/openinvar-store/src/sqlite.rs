@@ -1,35 +1,37 @@
+//! Graph persistence, on SQLite.
+//!
+//! The storage engine is deliberately boring. What matters is above it: the
+//! snapshot encoder further down this file turns a graph into a
+//! length-prefixed little-endian blob, and that encoding is storage-agnostic —
+//! SQLite holds the same bytes RocksDB used to, in a `BLOB` column.
+//!
+//! Two tables replace what were two column families: `graph` holds the single
+//! working graph, `revisions` holds snapshots keyed by revision. Keeping them
+//! apart still means the retention sweep cannot reach the working graph.
+
 use std::fmt::{Display, Formatter};
-use std::path::Path;
+use std::path::{Path, PathBuf};
 
 use openinvar_core::graph::InvarGraph;
 use openinvar_core::ir::{Language, ReExportEntry, Relationship, RelationshipKind, Resolution, Symbol, SymbolKind};
 use openinvar_core::resolver::{AliasEntry, AliasScope};
-use rocksdb::{ColumnFamilyDescriptor, Options, DB};
+use rusqlite::{params, Connection, OptionalExtension};
 
-const KEY_GRAPH_SNAPSHOT: &[u8] = b"graph_snapshot_v1";
+/// The single row id in `graph`. The table is constrained to it.
+const GRAPH_ROW_ID: i64 = 1;
 
-/// Where snapshots keyed by revision live.
+/// What the database is called when [`GraphStore::open`] is handed a directory.
+const DEFAULT_DB_FILENAME: &str = "graph.db";
+
+/// Schema version, in SQLite's own `PRAGMA user_version`.
 ///
-/// A separate column family rather than a key prefix in the default one. The
-/// working graph is read on every query and rewritten on every analyse;
-/// revisions are written once and read only by `diff`. Keeping them apart
-/// means the retention sweep cannot iterate over, or delete, the working
-/// graph — and a format change here can drop this family alone.
-const CF_REVISIONS: &str = "revisions";
-
-/// Layout version for [`CF_REVISIONS`], distinct from [`SNAPSHOT_VERSION`].
-///
-/// `SNAPSHOT_VERSION` versions the bytes of one snapshot. This versions how
-/// revisions are keyed and indexed around them. A mismatch drops the family
-/// and starts over: a stale index pointing at snapshots that no longer parse
-/// is exactly the silent corruption the handoff asks this to prevent, and a
+/// This versions how revisions are keyed and indexed, not the bytes of a
+/// snapshot — [`SNAPSHOT_VERSION`] does that. A mismatch drops the revisions
+/// table and starts over: a stale index pointing at snapshots that no longer
+/// parse is exactly the silent corruption this is here to prevent, and a
 /// revision snapshot is a cache of something reproducible from git.
-const REVISION_LAYOUT_VERSION: u8 = 1;
+const SCHEMA_VERSION: i32 = 1;
 
-const KEY_REVISION_LAYOUT: &[u8] = b"revision_layout_version";
-const KEY_REVISION_SEQUENCE: &[u8] = b"revision_sequence";
-const PREFIX_REVISION_SNAPSHOT: &str = "snapshot|";
-const PREFIX_REVISION_INDEX: &str = "index|";
 /// Bumped to 3 for the per-edge resolution byte.
 ///
 /// A version 1 or 2 snapshot carries no resolution, and is read back as
@@ -40,22 +42,41 @@ const SNAPSHOT_VERSION: u8 = 3;
 
 #[derive(Debug)]
 pub enum StoreError {
-    RocksDb(String),
+    Database(String),
     Serialization(String),
     SnapshotNotFound,
+    /// A store directory written by a release that used RocksDB.
+    ///
+    /// Carried as its own variant rather than folded into `Database` because
+    /// the remedy is specific and the caller should be able to print it: the
+    /// graph is derived data, so the fix is to re-analyse, not to migrate.
+    /// Nothing here deletes the old directory — that is the user's to do.
+    LegacyStore(PathBuf),
 }
 
 impl Display for StoreError {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         match self {
-            Self::RocksDb(err) => write!(f, "rocksdb error: {err}"),
+            Self::Database(err) => write!(f, "database error: {err}"),
             Self::Serialization(err) => write!(f, "serialization error: {err}"),
             Self::SnapshotNotFound => write!(f, "snapshot not found"),
+            Self::LegacyStore(path) => write!(
+                f,
+                "the store format changed in this release; run 'openinvar analyze' to rebuild \
+                 (the old store at {} is no longer read, and can be deleted)",
+                path.display()
+            ),
         }
     }
 }
 
 impl std::error::Error for StoreError {}
+
+impl From<rusqlite::Error> for StoreError {
+    fn from(err: rusqlite::Error) -> Self {
+        Self::Database(err.to_string())
+    }
+}
 
 /// One stored revision, and when it was stored relative to the others.
 ///
@@ -78,69 +99,114 @@ pub struct GraphSnapshot {
     pub file_reexports: Vec<(String, Vec<ReExportEntry>)>,
 }
 
-pub struct RocksGraphStore {
-    db: DB,
+pub struct GraphStore {
+    conn: Connection,
 }
 
-impl RocksGraphStore {
+/// The former name of [`GraphStore`], kept for one release.
+///
+/// Renaming the type and rewriting its fifty-six call sites in the same change
+/// would bury a storage-engine swap in a diff that mostly renames things. The
+/// alias goes away in 1.0.0.
+pub type RocksGraphStore = GraphStore;
+
+/// Is this a store directory written by a release that used RocksDB?
+///
+/// `CURRENT` is RocksDB's own marker — it names the live manifest and is
+/// written by every RocksDB database — so testing for it distinguishes an old
+/// store from an ordinary directory without a false positive on either. A bare
+/// `is_dir()` would reject any directory, which is a legitimate thing to hand
+/// this function.
+pub fn is_legacy_rocksdb_store(path: &Path) -> bool {
+    path.is_dir() && path.join("CURRENT").is_file()
+}
+
+impl GraphStore {
+    /// Open — or create — the store at `path`.
+    ///
+    /// `path` is normally the database file. A *directory* is also accepted,
+    /// and means "put the database inside it" — the shape every caller used
+    /// when the store was RocksDB, and what the conformance tests still pass.
+    ///
+    /// The one directory that is refused is a RocksDB store, recognised by the
+    /// `CURRENT` file it always writes. That is reported as
+    /// [`StoreError::LegacyStore`] rather than deleted or quietly ignored:
+    /// silently removing a directory a user pointed us at is not a thing a
+    /// tool should do on their behalf, and writing a new database beside the
+    /// old one would leave them wondering where their revisions went.
     pub fn open(path: &Path) -> Result<Self, StoreError> {
-        let normalized = normalize_rocksdb_path(path);
-        let mut options = Options::default();
-        options.create_if_missing(true);
-        options.create_missing_column_families(true);
+        if is_legacy_rocksdb_store(path) {
+            return Err(StoreError::LegacyStore(path.to_path_buf()));
+        }
 
-        // Opened with the revisions family declared so a database written
-        // before it existed gains it rather than failing to open.
-        let db = DB::open_cf_descriptors(
-            &options,
-            &normalized,
-            vec![
-                ColumnFamilyDescriptor::new(rocksdb::DEFAULT_COLUMN_FAMILY_NAME, Options::default()),
-                ColumnFamilyDescriptor::new(CF_REVISIONS, Options::default()),
-            ],
-        )
-        .map_err(|err| StoreError::RocksDb(err.to_string()))?;
+        let file = if path.is_dir() {
+            path.join(DEFAULT_DB_FILENAME)
+        } else {
+            path.to_path_buf()
+        };
 
-        let store = Self { db };
-        store.reconcile_revision_layout()?;
+        if let Some(parent) = file.parent() {
+            if !parent.as_os_str().is_empty() {
+                std::fs::create_dir_all(parent)
+                    .map_err(|err| StoreError::Database(err.to_string()))?;
+            }
+        }
+
+        let conn = Connection::open(&file)?;
+
+        // WAL so a `watch` process and a hook invocation can hold the store at
+        // the same time — a real scenario, and the default rollback journal
+        // makes a reader and a writer exclude each other. `synchronous=NORMAL`
+        // is the matching trade: a power loss can cost the most recent commit,
+        // and the most recent commit is a cache of something re-derivable in
+        // under a second.
+        conn.pragma_update(None, "journal_mode", "WAL")?;
+        conn.pragma_update(None, "synchronous", "NORMAL")?;
+        conn.pragma_update(None, "foreign_keys", "ON")?;
+
+        let store = Self { conn };
+        store.create_schema()?;
+        store.reconcile_schema_version()?;
         Ok(store)
     }
 
-    /// Drop the revisions family if it was written by a different layout.
-    ///
-    /// Reindexing costs one analyse; misreading a stale index costs a wrong
-    /// answer from a command whose whole purpose is to be trusted.
-    fn reconcile_revision_layout(&self) -> Result<(), StoreError> {
-        let cf = self.revisions_cf()?;
-        let stored = self
-            .db
-            .get_cf(cf, KEY_REVISION_LAYOUT)
-            .map_err(|err| StoreError::RocksDb(err.to_string()))?;
-
-        match stored.as_deref() {
-            Some([version]) if *version == REVISION_LAYOUT_VERSION => Ok(()),
-            None => self
-                .db
-                .put_cf(cf, KEY_REVISION_LAYOUT, [REVISION_LAYOUT_VERSION])
-                .map_err(|err| StoreError::RocksDb(err.to_string())),
-            _ => {
-                for revision in self.list_revisions()? {
-                    self.delete_revision(&revision.revision)?;
-                }
-                self.db
-                    .delete_cf(cf, KEY_REVISION_SEQUENCE)
-                    .map_err(|err| StoreError::RocksDb(err.to_string()))?;
-                self.db
-                    .put_cf(cf, KEY_REVISION_LAYOUT, [REVISION_LAYOUT_VERSION])
-                    .map_err(|err| StoreError::RocksDb(err.to_string()))
-            }
-        }
+    fn create_schema(&self) -> Result<(), StoreError> {
+        self.conn.execute_batch(
+            "CREATE TABLE IF NOT EXISTS graph (
+                 id       INTEGER PRIMARY KEY CHECK (id = 1),
+                 snapshot BLOB NOT NULL
+             );
+             CREATE TABLE IF NOT EXISTS revisions (
+                 revision   TEXT PRIMARY KEY,
+                 sequence   INTEGER NOT NULL,
+                 created_at INTEGER NOT NULL,
+                 snapshot   BLOB NOT NULL
+             );
+             CREATE INDEX IF NOT EXISTS idx_revisions_sequence
+                 ON revisions(sequence);",
+        )?;
+        Ok(())
     }
 
-    fn revisions_cf(&self) -> Result<&rocksdb::ColumnFamily, StoreError> {
-        self.db.cf_handle(CF_REVISIONS).ok_or_else(|| {
-            StoreError::RocksDb(format!("column family '{CF_REVISIONS}' is missing"))
-        })
+    /// Drop the revisions table if it was written by a different layout.
+    ///
+    /// Reindexing costs one analyse; misreading a stale index costs a wrong
+    /// answer from a command whose whole purpose is to be trusted. A brand-new
+    /// database reads `user_version` 0 and is simply stamped.
+    fn reconcile_schema_version(&self) -> Result<(), StoreError> {
+        let stored: i32 = self
+            .conn
+            .pragma_query_value(None, "user_version", |row| row.get(0))?;
+
+        if stored == SCHEMA_VERSION {
+            return Ok(());
+        }
+        if stored != 0 {
+            self.conn.execute("DELETE FROM revisions", [])?;
+        }
+        self.conn
+            .pragma_update(None, "user_version", SCHEMA_VERSION)?;
+        Ok(())
     }
 
     pub fn save_graph(&self, graph: &InvarGraph) -> Result<(), StoreError> {
@@ -155,16 +221,23 @@ impl RocksGraphStore {
 
     pub fn save_snapshot(&self, snapshot: &GraphSnapshot) -> Result<(), StoreError> {
         let bytes = snapshot.to_bytes()?;
-        self.db
-            .put(KEY_GRAPH_SNAPSHOT, bytes)
-            .map_err(|err| StoreError::RocksDb(err.to_string()))
+        self.conn.execute(
+            "INSERT INTO graph (id, snapshot) VALUES (?1, ?2)
+             ON CONFLICT(id) DO UPDATE SET snapshot = excluded.snapshot",
+            params![GRAPH_ROW_ID, bytes],
+        )?;
+        Ok(())
     }
 
     pub fn load_snapshot(&self) -> Result<GraphSnapshot, StoreError> {
-        let bytes = self
-            .db
-            .get(KEY_GRAPH_SNAPSHOT)
-            .map_err(|err| StoreError::RocksDb(err.to_string()))?
+        let bytes: Vec<u8> = self
+            .conn
+            .query_row(
+                "SELECT snapshot FROM graph WHERE id = ?1",
+                params![GRAPH_ROW_ID],
+                |row| row.get(0),
+            )
+            .optional()?
             .ok_or(StoreError::SnapshotNotFound)?;
 
         GraphSnapshot::from_bytes(&bytes)
@@ -185,31 +258,33 @@ impl RocksGraphStore {
         revision: &str,
         snapshot: &GraphSnapshot,
     ) -> Result<(), StoreError> {
-        let cf = self.revisions_cf()?;
         let sequence = self.next_sequence()?;
+        let created_at = std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH)
+            .map(|d| d.as_secs() as i64)
+            .unwrap_or(0);
 
-        self.db
-            .put_cf(
-                cf,
-                format!("{PREFIX_REVISION_SNAPSHOT}{revision}"),
-                snapshot.to_bytes()?,
-            )
-            .map_err(|err| StoreError::RocksDb(err.to_string()))?;
-        self.db
-            .put_cf(
-                cf,
-                format!("{PREFIX_REVISION_INDEX}{revision}"),
-                sequence.to_be_bytes(),
-            )
-            .map_err(|err| StoreError::RocksDb(err.to_string()))
+        self.conn.execute(
+            "INSERT INTO revisions (revision, sequence, created_at, snapshot)
+             VALUES (?1, ?2, ?3, ?4)
+             ON CONFLICT(revision) DO UPDATE SET
+                 sequence   = excluded.sequence,
+                 created_at = excluded.created_at,
+                 snapshot   = excluded.snapshot",
+            params![revision, sequence as i64, created_at, snapshot.to_bytes()?],
+        )?;
+        Ok(())
     }
 
     pub fn load_revision(&self, revision: &str) -> Result<GraphSnapshot, StoreError> {
-        let cf = self.revisions_cf()?;
-        let bytes = self
-            .db
-            .get_cf(cf, format!("{PREFIX_REVISION_SNAPSHOT}{revision}"))
-            .map_err(|err| StoreError::RocksDb(err.to_string()))?
+        let bytes: Vec<u8> = self
+            .conn
+            .query_row(
+                "SELECT snapshot FROM revisions WHERE revision = ?1",
+                params![revision],
+                |row| row.get(0),
+            )
+            .optional()?
             .ok_or(StoreError::SnapshotNotFound)?;
 
         GraphSnapshot::from_bytes(&bytes)
@@ -217,47 +292,37 @@ impl RocksGraphStore {
 
     /// Every stored revision, most recently written first.
     ///
-    /// Ties break on the revision name so the order is total. RocksDB iterates
-    /// keys in order, but two revisions can never share a sequence, so the tie
-    /// break exists only to make the sort provably deterministic rather than
-    /// to resolve a case that occurs.
+    /// The `ORDER BY` is not decoration. SQLite guarantees no row order
+    /// without one, so an unordered `SELECT` here would make `openinvar diff`
+    /// and the retention sweep depend on the query planner. Ties break on the
+    /// revision name so the order is total; two revisions can never share a
+    /// sequence, so the tie break exists to make the ordering provably
+    /// deterministic rather than to resolve a case that occurs.
     pub fn list_revisions(&self) -> Result<Vec<RevisionEntry>, StoreError> {
-        let cf = self.revisions_cf()?;
+        let mut stmt = self.conn.prepare(
+            "SELECT revision, sequence FROM revisions
+             ORDER BY sequence DESC, revision ASC",
+        )?;
+        let rows = stmt.query_map([], |row| {
+            Ok(RevisionEntry {
+                revision: row.get(0)?,
+                sequence: row.get::<_, i64>(1)? as u64,
+            })
+        })?;
+
         let mut out = Vec::new();
-
-        for item in self.db.prefix_iterator_cf(cf, PREFIX_REVISION_INDEX) {
-            let (key, value) = item.map_err(|err| StoreError::RocksDb(err.to_string()))?;
-            let Some(revision) = std::str::from_utf8(&key)
-                .ok()
-                .and_then(|k| k.strip_prefix(PREFIX_REVISION_INDEX))
-            else {
-                continue;
-            };
-            let sequence = u64::from_be_bytes(value.as_ref().try_into().map_err(|_| {
-                StoreError::Serialization(format!("revision '{revision}' has a corrupt index entry"))
-            })?);
-            out.push(RevisionEntry {
-                revision: revision.to_string(),
-                sequence,
-            });
+        for row in rows {
+            out.push(row?);
         }
-
-        out.sort_by(|a, b| {
-            b.sequence
-                .cmp(&a.sequence)
-                .then_with(|| a.revision.cmp(&b.revision))
-        });
         Ok(out)
     }
 
     pub fn delete_revision(&self, revision: &str) -> Result<(), StoreError> {
-        let cf = self.revisions_cf()?;
-        self.db
-            .delete_cf(cf, format!("{PREFIX_REVISION_SNAPSHOT}{revision}"))
-            .map_err(|err| StoreError::RocksDb(err.to_string()))?;
-        self.db
-            .delete_cf(cf, format!("{PREFIX_REVISION_INDEX}{revision}"))
-            .map_err(|err| StoreError::RocksDb(err.to_string()))
+        self.conn.execute(
+            "DELETE FROM revisions WHERE revision = ?1",
+            params![revision],
+        )?;
+        Ok(())
     }
 
     /// Keep the `keep` most recently written revisions, dropping the rest.
@@ -265,6 +330,12 @@ impl RocksGraphStore {
     /// Returns what it removed, in the order removed, so a caller can report
     /// it rather than deleting silently. `keep` of zero removes everything,
     /// which is what a caller asking to keep nothing means.
+    ///
+    /// The list is read first and deleted by name rather than expressed as one
+    /// `DELETE ... WHERE revision NOT IN (...)`, because the caller is owed
+    /// the names in the order they went, and that ordering comes from
+    /// [`Self::list_revisions`] rather than from whatever order a delete
+    /// happens to visit rows in.
     pub fn prune_revisions(&self, keep: usize) -> Result<Vec<String>, StoreError> {
         let stale: Vec<String> = self
             .list_revisions()?
@@ -279,45 +350,20 @@ impl RocksGraphStore {
         Ok(stale)
     }
 
+    /// The next revision sequence number.
+    ///
+    /// Derived from the table rather than held in a counter row: the maximum
+    /// sequence plus one is the same number the counter would hold, and it
+    /// cannot drift out of step with the rows it orders. Pruning lowers the
+    /// maximum, which is harmless — the only property retention needs is that
+    /// a newer write sorts above every row present when it was made.
     fn next_sequence(&self) -> Result<u64, StoreError> {
-        let cf = self.revisions_cf()?;
-        let current = self
-            .db
-            .get_cf(cf, KEY_REVISION_SEQUENCE)
-            .map_err(|err| StoreError::RocksDb(err.to_string()))?
-            .and_then(|bytes| bytes.as_slice().try_into().ok())
-            .map(u64::from_be_bytes)
-            .unwrap_or(0);
-
-        let next = current.saturating_add(1);
-        self.db
-            .put_cf(cf, KEY_REVISION_SEQUENCE, next.to_be_bytes())
-            .map_err(|err| StoreError::RocksDb(err.to_string()))?;
-        Ok(next)
-    }
-}
-
-/// Normalize a filesystem path for RocksDB.
-///
-/// On Windows, this strips the extended-length `\\?\`/`\\?\UNC\` prefix that
-/// may be introduced by `canonicalize`, because RocksDB's internal path joining
-/// can produce invalid mixed-separator paths with that prefix.
-fn normalize_rocksdb_path(path: &Path) -> std::path::PathBuf {
-    #[cfg(windows)]
-    {
-        let s = path.to_string_lossy();
-        let stripped = if s.starts_with(r"\\?\UNC\") {
-            format!(r"\\{}", &s[8..])
-        } else if s.starts_with(r"\\?\") {
-            s[4..].to_string()
-        } else {
-            s.into_owned()
-        };
-        std::path::PathBuf::from(stripped.replace('/', "\\"))
-    }
-    #[cfg(not(windows))]
-    {
-        path.to_path_buf()
+        let current: i64 = self.conn.query_row(
+            "SELECT COALESCE(MAX(sequence), 0) FROM revisions",
+            [],
+            |row| row.get(0),
+        )?;
+        Ok((current as u64).saturating_add(1))
     }
 }
 

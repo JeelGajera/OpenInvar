@@ -44,22 +44,6 @@ jobs:
       - name: Setup Cache
         uses: Swatinem/rust-cache@v2
 
-      - name: Install gcc-13 (Linux)
-        if: runner.os == 'Linux'
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y gcc-13 g++-13
-
-      - name: Set CC/CXX (Linux)
-        if: runner.os == 'Linux'
-        run: |
-          echo "CC=gcc-13" >> $GITHUB_ENV
-          echo "CXX=g++-13" >> $GITHUB_ENV
-
-      - name: Set LIBCLANG_PATH (Windows)
-        if: runner.os == 'Windows'
-        run: echo "LIBCLANG_PATH=C:\Program Files\LLVM\bin" >> $env:GITHUB_ENV
-
       - name: Build Binary
         run: cargo build --locked --release -p openinvar-cli --target ${{ matrix.target }}
 
