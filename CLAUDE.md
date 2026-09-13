@@ -91,7 +91,7 @@ regression, not a quirk.
 |---|---|
 | `openinvar-core` | Graph engine, IR (`RepoIR`), symbol IDs, AST helpers, relationship model |
 | `openinvar-lang` | Every language: `lang/<name>/` per language, `dispatch` routes and merges |
-| `openinvar-store` | RocksDB persistence (`.openinvar/db`) |
+| `openinvar-store` | SQLite persistence (`.openinvar/graph.db`) |
 | `openinvar-mcp` | MCP server (`serve --stdio`) |
 | `openinvar-cli` | The `openinvar` binary |
 
