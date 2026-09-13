@@ -33,16 +33,16 @@ jobs:
       # Determinism is the property every other claim rests on: you cannot gate
       # CI on a graph that disagrees with itself between runs. The golden tests
       # cover each fixture; this covers the largest polyglot repository to hand,
-      # which is Graphyn itself. It reuses the binary `cargo test` already
+      # which is OpenInvar itself. It reuses the binary `cargo test` already
       # built, so it costs a fraction of a second.
       #
       # `language_stats` was a `HashMap` and serialized in a different order on
       # every run. Nothing caught it because nothing compared two runs.
       - name: Verify analysis is reproducible
         run: |
-          cargo build -p graphyn-cli
-          ./target/debug/graphyn analyze . --json > /tmp/analysis-1.json
-          ./target/debug/graphyn analyze . --json > /tmp/analysis-2.json
+          cargo build -p openinvar-cli
+          ./target/debug/openinvar analyze . --json > /tmp/analysis-1.json
+          ./target/debug/openinvar analyze . --json > /tmp/analysis-2.json
           if ! cmp -s /tmp/analysis-1.json /tmp/analysis-2.json; then
             echo "::error::two analyses of identical input produced different output"
             diff /tmp/analysis-1.json /tmp/analysis-2.json | head -40
@@ -76,7 +76,7 @@ jobs:
           meta = json.loads(subprocess.run(
               ["cargo", "metadata", "--no-deps", "--format-version", "1"],
               capture_output=True, text=True, check=True).stdout)
-          lang = next(p for p in meta["packages"] if p["name"] == "graphyn-lang")
+          lang = next(p for p in meta["packages"] if p["name"] == "openinvar-lang")
           print(" ".join(sorted(
               f for f in lang["features"] if f not in ("default", "full"))))
           EOF
@@ -84,10 +84,10 @@ jobs:
           echo "languages: $languages"
           status=0
           for language in $languages; do
-            echo "::group::graphyn-lang --features $language"
-            if ! cargo clippy -p graphyn-lang --no-default-features \
+            echo "::group::openinvar-lang --features $language"
+            if ! cargo clippy -p openinvar-lang --no-default-features \
                  --features "$language" --all-targets -- -D warnings; then
-              echo "::error::graphyn-lang does not build with only '$language' enabled"
+              echo "::error::openinvar-lang does not build with only '$language' enabled"
               status=1
             fi
             echo "::endgroup::"

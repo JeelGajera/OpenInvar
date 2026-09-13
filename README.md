@@ -1,20 +1,28 @@
-# Graphyn
+# OpenInvar
 
-Deterministic guardrails for agentic code changes.
+**Deterministic integrity checks for AI-written code.**
+Catches structural violations, test tampering, and eroded contracts — at the
+edit, at commit, or in CI. No model in the loop.
 
-Your agent will change seventeen symbols it did not know it was touching.
-Graphyn tells it, or stops it.
+An agent opens a pull request. It compiles, the suite is green, and one of the
+tests no longer asserts what it used to. OpenInvar reads the change as a graph
+of symbol relationships and reports the specific thing that moved:
 
-It builds a deterministic symbol relationship graph for your repository, and
-answers the questions an agent has to get right before it writes:
+- **`openinvar audit`** — a test that stopped covering a symbol the same diff
+  changed; a symbol removed while a caller still refers to it; code that only
+  its own tests reach.
+- **`openinvar check`** — the architectural constraints this repository wrote
+  down, enforced across every language in it, exiting non-zero when one breaks.
 
-- **What breaks if I change this?** — every caller, including aliased ones.
-- **Which tests cover it?** — so the verify loop is cheap enough to actually run.
-- **Does this change break a rule this repository wrote down?** — and fail CI if so.
+No model participates in either. Identical input produces identical output,
+byte for byte — which is the whole reason a gate can act on the result.
 
-No model participates in any of it.
+**Works alongside CodeGraph and GitNexus.** Those answer *what is this code*;
+OpenInvar answers *did this change break something it was not supposed to*. If
+one of them is already indexing your repository, keep it — nothing here
+competes for that job.
 
-## Why Graphyn
+## Why OpenInvar
 
 - **Deterministic: no LLM participates in graph construction, or in any gating
   decision.** Identical input produces identical output, byte for byte. This is
@@ -24,7 +32,7 @@ No model participates in any of it.
   different answer on a re-run is a check nobody can act on. Every competing
   tool is probabilistic somewhere in that path.
 - **Honest about what it does not know.** Coverage is published, per language,
-  on every run; gates fail open on regions Graphyn cannot resolve rather than
+  on every run; gates fail open on regions OpenInvar cannot resolve rather than
   reporting a pass they have not earned. See [Resolution
   coverage](#resolution-coverage).
 - Alias-aware: resolves `import { A as B }`, so a rename finds the callers a
@@ -37,7 +45,7 @@ No model participates in any of it.
 ### Resolution coverage
 
 An enforcement tool that tells you what it could **not** resolve is worth more
-than one implying completeness, so `graphyn status` publishes the figure on
+than one implying completeness, so `openinvar status` publishes the figure on
 every run — overall and per language.
 
 Measured on this repository, with the `full` binary:
@@ -66,195 +74,110 @@ Both figures are true; only one of them would be misleading on its own.
 
 macOS / Linux:
 ```bash
-curl -fsSL https://raw.githubusercontent.com/JeelGajera/graphyn/master/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/JeelGajera/OpenInvar/master/install.sh | bash
 ```
 
 Windows (PowerShell):
 ```powershell
-irm https://raw.githubusercontent.com/JeelGajera/graphyn/master/install.ps1 | iex
+irm https://raw.githubusercontent.com/JeelGajera/OpenInvar/master/install.ps1 | iex
 ```
 
 Cargo (crates.io):
 ```bash
-cargo install graphyn-cli
+cargo install openinvar-cli
 ```
 
 From source:
 ```bash
-cargo install graphyn-cli --git https://github.com/JeelGajera/graphyn
+cargo install openinvar-cli --git https://github.com/JeelGajera/OpenInvar
 ```
 
 ## Quick Start
 
-1. Index a repo:
 ```bash
-graphyn analyze ./my-repo
+# 1. record the graph as it stands before the change
+openinvar analyze . --snapshot HEAD
+
+# 2. let the agent work, then ask what the change actually did
+openinvar audit . --base HEAD --head worktree
+
+# 3. enforce the rules this repository wrote down
+openinvar check . --diff-only
 ```
 
-2. Run queries:
-```bash
-# impact analysis
-graphyn query blast-radius UserPayload
+`audit` exits `1` when it finds something at the requested severity, `check`
+exits `1` on a broken rule — so either is a CI gate with no further wiring. Both
+report what they could *not* decide rather than passing quietly.
 
-# usages (alias-aware)
-graphyn query usages UserPayload
+## Commands
 
-# dependency tree
-graphyn query deps UserPayload
+The two that gate:
 
-# graph summary
-graphyn status
-```
-
-3. Keep graph updated while coding:
-```bash
-graphyn watch ./my-repo
-```
-
-## Core Commands
-
-- `graphyn analyze <path>`: parse and build graph into `.graphyn/db`
-- `graphyn analyze <path> --json`: emit the analysis as JSON on stdout
-- `graphyn watch <path>`: keep graph in sync on file changes
-- `graphyn query blast-radius <symbol> [--file <path>] [--depth <n>] [--kind <kind>]`
-- `graphyn query usages <symbol> [--file <path>] [--kind <kind>]`
-- `graphyn query deps <symbol> [--file <path>] [--depth <n>] [--kind <kind>]`
-- `graphyn impact <file>`: what depends on one file
-- `graphyn diff --base <rev> --head <rev>`: what changed between two snapshots
-- `graphyn check [--diff-only]`: enforce `.graphyn/rules.toml`
-- `graphyn tests <symbol> | --diff`: which tests exercise a symbol or a change
-- `graphyn audit [--base <rev>] [--head <rev>]`: detect reward-hacking in a change
-- `graphyn context <symbol> [--budget <tokens>]`: a minimal working set for orienting
-- `graphyn report --base <rev> --head <rev>`: one markdown report for a PR comment
-- `graphyn status`: graph stats and coverage
-- `graphyn serve --stdio`: start MCP server
-
-## Filtering
-
-Graphyn honors `.gitignore` by default. If a symbol is missing, check whether it
-lives in an ignored folder such as `dist/`, generated output, or scratch files.
-
-Override filters when needed:
-
-```bash
-graphyn analyze . --no-gitignore
-graphyn analyze . --include "src/**/*.ts"
-graphyn analyze . --exclude "tests/**"
-graphyn watch . --include "packages/api/**/*.ts"
-```
-
-For MCP clients, `refresh_graph` accepts:
-
-- `path`
-- `respect_gitignore`
-- `include`
-- `exclude`
-
-Example:
-
-```json
-{
-  "path": ".",
-  "respect_gitignore": false,
-  "include": "src/**/*.ts",
-  "exclude": "tests/**"
-}
-```
-
-## Filtering by relationship kind
-
-Every query can be narrowed to particular kinds of reference:
-
-```bash
-# only what imports it, not what merely inherits from an importer
-graphyn query blast-radius UserPayload --kind imports
-
-# repeatable
-graphyn query usages UserPayload --kind imports --kind re-exports
-```
-
-Kinds: `imports`, `calls`, `extends`, `implements`, `uses-type`,
-`accesses-property`, `re-exports`, `instantiates`, `tests`.
-
-Filtering applies to the traversal, not to the result, so an excluded kind
-also stops the walk continuing through it. A filtered query reports the filter
-it used, and an empty filtered result is never described as safe — only part
-of the graph was searched.
-
-`tests` is derived rather than parsed: a test file's references into non-test
-code are restated under it, so `--kind tests` answers "what covers this" as a
-filter over the graph rather than a separate traversal. The underlying `calls`
-or `imports` edge is kept as well, so a query for callers still finds tests.
-
-Which kinds a given repository contains depends on its languages. A filter
-matching no edge in the analyzed graph is reported as such rather than
-returning a silent empty result.
-
-## Machine-readable output
-
-`graphyn analyze --json` writes the full analysis to stdout as a single JSON
-document and suppresses all progress output, so it can be piped directly:
-
-```bash
-graphyn analyze . --json > analysis.json
-```
-
-The document carries a `schema_version`. Pin it: fields may be added within a
-version, and anything a consumer could observe breaking bumps it.
-
-Output is deterministic — the same input produces byte-identical bytes, which
-is what makes two analyses safe to diff.
-
-## Context
-
-```bash
-graphyn context RepoIR
-graphyn context --diff --base HEAD --head worktree --budget 2000
-```
-
-Emits the symbol, what it depends on, what depends on it, and a signature for
-each — the shape of the neighbourhood rather than its contents — and reports
-what that cost against reading the same files whole.
-
-**Measured on this repository**, and worth reading with its caveat:
-
-| Question | Estimated tokens |
+| Command | Purpose |
 |---|---|
-| `graphyn context RepoIR` | ~420 |
-| Reading those 30 files whole | ~57,900 (**138x** more) |
-| `rg -n RepoIR` | ~4,050 (10x more) |
-| `rg -l RepoIR` — the file list alone | ~670 (**1.6x** more) |
+| `openinvar audit [--base <rev>] [--head <rev>]` | Detect changes made to pass a check rather than to work |
+| `openinvar check [--diff-only]` | Enforce `.openinvar/rules.toml`; exit 1 on violation |
 
-The 138x figure is real but flatters the feature. An agent orienting itself
-does not read thirty files whole; it runs a text search. Against `rg -l`, which
-answers the same "which files touch this" question, the saving is 1.6x — and
-the part a text search cannot produce, the signature skeleton, is delivered for
-only 1 of those 31 entries, because inbound edges to a widely-used type are
-attributed to each file's module symbol rather than to the function that uses
-it.
+Everything they are built on:
 
-So: useful for a narrow neighbourhood where signatures land, thin for a
-widely-imported type. This is the capability that erodes as native code search
-improves, and it is deliberately last in the release for that reason.
+| Command | Purpose |
+|---|---|
+| `openinvar analyze <path> [--snapshot <rev>] [--json]` | Build the graph into `.openinvar/db`, optionally recording it |
+| `openinvar diff --base <rev> --head <rev>` | What changed between two recorded revisions |
+| `openinvar tests <symbol> \| --diff` | Which tests exercise a symbol or a change |
+| `openinvar report --base <rev> --head <rev>` | One markdown report for a PR comment |
+| `openinvar status` | Graph stats, per-language tier, resolution coverage |
+| `openinvar watch <path>` | Keep the graph in sync on file changes |
+| `openinvar serve --stdio` | MCP server |
 
-Token figures are byte-based estimates, not a tokenizer's count. Graphyn
-vendors no tokenizer: one is model-specific, and a figure that moved with
-somebody's model would not be reproducible.
+And the graph queries underneath, covered in [It also answers graph
+questions](#it-also-answers-graph-questions): `openinvar query`,
+`openinvar impact`, `openinvar context`.
 
-A `--budget` drops the outermost hops first and reports how many symbols it
-omitted, rather than truncating silently.
+## Audit
 
-## Rules
+```bash
+openinvar audit --base HEAD --head worktree
+```
 
-A repository states its own constraints in `.graphyn/rules.toml`, and
-`graphyn check` enforces them.
+Detects changes that look like they were made to pass a check rather than to
+work. Deterministic — no model is involved, here or anywhere else.
+
+| Detector | Signal | Severity |
+|---|---|---|
+| `test-tampering` | A test stopped covering a symbol that changed in the same diff | error |
+| `contract-erosion` | A symbol was removed while a surviving caller still referred to it | error |
+| `dead-on-arrival` | A new symbol only tests refer to | warn |
+
+An audit finding is an accusation, so the output is built to be checked rather
+than believed. Every finding carries its evidence and the id you would write
+down to suppress it. Detectors that did **not** run are named with the reason,
+because an absent check otherwise reads as a passing one — and only files a
+Tier 1 adapter resolved are in scope, since a name matched inside one file
+cannot support an accusation.
+
+Record a deliberate exception in `.openinvar/audit-ignore`:
+
+```
+test-tampering-1a2b3c4d  # the test was rewritten when the API changed
+```
+
+Suppressed findings are still shown, and a suppression that matches nothing is
+reported as stale. Exit 0 when nothing was found at the requested severity, 1
+when something was, 2 when the audit could not run.
+
+## Check
+
+A repository states its own constraints in `.openinvar/rules.toml`, and
+`openinvar check` enforces them — across every language in the repository, which
+is what no single-language architecture linter can do.
 
 ```toml
 [[rule]]
 name = "core-must-not-depend-on-cli"
 kind = "forbid-dependency"
-from = "crates/graphyn-core/**"
-to   = "crates/graphyn-cli/**"
+from = "crates/openinvar-core/**"
+to   = "crates/openinvar-cli/**"
 severity = "error"          # error (default) or warn
 
 [[rule]]
@@ -287,8 +210,8 @@ to catch something, and a gate that quietly enforces four of your five rules
 reports a pass it has not earned.
 
 ```bash
-graphyn check .                # rules that need only the current graph
-graphyn check . --diff-only    # also the ones that need a change
+openinvar check .                # rules that need only the current graph
+openinvar check . --diff-only    # also the ones that need a change
 ```
 
 **A rule has three outcomes, not two.** `forbid-dependency` is a claim about
@@ -298,43 +221,11 @@ a pass, and never a failure either. That is how a Tier 2 region fails open
 instead of passing quietly. Exit `0` clean, `1` a rule broken on resolved
 evidence, `2` the check could not run at all.
 
-## Audit
-
-```bash
-graphyn audit --base HEAD --head worktree
-```
-
-Detects changes that look like they were made to pass a check rather than to
-work. Deterministic — no model is involved, here or anywhere else.
-
-| Detector | Signal | Severity |
-|---|---|---|
-| `test-tampering` | A test stopped covering a symbol that changed in the same diff | error |
-| `contract-erosion` | A symbol was removed while a surviving caller still referred to it | error |
-| `dead-on-arrival` | A new symbol only tests refer to | warn |
-
-An audit finding is an accusation, so the output is built to be checked rather
-than believed. Every finding carries its evidence and the id you would write
-down to suppress it. Detectors that did **not** run are named with the reason,
-because an absent check otherwise reads as a passing one — and only files a
-Tier 1 adapter resolved are in scope, since a name matched inside one file
-cannot support an accusation.
-
-Record a deliberate exception in `.graphyn/audit-ignore`:
-
-```
-test-tampering-1a2b3c4d  # the test was rewritten when the API changed
-```
-
-Suppressed findings are still shown, and a suppression that matches nothing is
-reported as stale. Exit 0 when nothing was found at the requested severity, 1
-when something was, 2 when the audit could not run.
-
 ## Test impact
 
 ```bash
-graphyn tests UserPayload
-graphyn tests --diff --base HEAD --head worktree
+openinvar tests UserPayload
+openinvar tests --diff --base HEAD --head worktree
 ```
 
 Returns the tests that exercise a symbol, or everything a change touched, so a
@@ -367,22 +258,22 @@ reaches the agent at the moment of the edit.
 ```bash
 mkdir -p .claude/hooks
 cp agent-configs/hooks/claude/*.sh .claude/hooks/
-cp agent-configs/hooks/lib/graphyn-hook-lib.sh .claude/hooks/
+cp agent-configs/hooks/lib/openinvar-hook-lib.sh .claude/hooks/
 chmod +x .claude/hooks/*.sh
 # then merge agent-configs/hooks/claude/settings.json into .claude/settings.json
 
 cp agent-configs/hooks/git/pre-commit  .git/hooks/pre-commit
 cp agent-configs/hooks/git/post-commit .git/hooks/post-commit
-cp agent-configs/hooks/lib/graphyn-hook-lib.sh .git/hooks/
+cp agent-configs/hooks/lib/openinvar-hook-lib.sh .git/hooks/
 chmod +x .git/hooks/pre-commit .git/hooks/post-commit
 
-graphyn analyze . --snapshot HEAD
+openinvar analyze . --snapshot HEAD
 ```
 
 Before an agent edits a file, its blast radius is put into context:
 
 ```
-Graphyn blast radius for src/models/user_payload.ts: 1 file(s) and 3
+OpenInvar blast radius for src/models/user_payload.ts: 1 file(s) and 3
 reference(s) depend on symbols defined here.
 ```
 
@@ -394,7 +285,7 @@ $ git commit -m "drop unused email field"
         src/models/user_payload.ts:5
           field 'email' removed from 'UserPayload'
 
-graphyn: commit blocked by a rule in .graphyn/rules.toml
+openinvar: commit blocked by a rule in .openinvar/rules.toml
          Override once with: git commit --no-verify
 ```
 
@@ -404,31 +295,32 @@ stderr that nothing was checked — a gate that silently stops working is worse
 than one that is plainly off. Full details, including the `post-commit` hook
 that keeps the baseline fresh, are in
 [`agent-configs/hooks/README.md`](agent-configs/hooks/README.md).
+
 ## GitHub Action
 
 ```yaml
-# .github/workflows/graphyn.yml
-name: Graphyn
+# .github/workflows/openinvar.yml
+name: OpenInvar
 on: pull_request
 permissions:
   contents: read
   pull-requests: write
 jobs:
-  graphyn:
+  openinvar:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0   # both sides of the comparison must exist locally
-      - uses: JeelGajera/graphyn@v0
+      - uses: JeelGajera/OpenInvar@v0
 ```
 
 It analyzes the base and head commits, compares them, evaluates
-`.graphyn/rules.toml`, and posts one comment — updating it on each push rather
+`.openinvar/rules.toml`, and posts one comment — updating it on each push rather
 than adding another.
 
 ```markdown
-## Graphyn
+## OpenInvar
 
 **1 rule(s) violated.** This change is blocked.
 
@@ -441,7 +333,7 @@ than adding another.
 
 **core-must-not-depend-on-cli** (forbid-dependency, error):
 
-- `crates/graphyn-core/src/ir.rs:12` — core/ir.rs -> cli/main.rs (imports)
+- `crates/openinvar-core/src/ir.rs:12` — core/ir.rs -> cli/main.rs (imports)
 ```
 
 The verdict is the first line, so a reader who stops there still has the
@@ -452,7 +344,7 @@ only in the exit status, and never fail the job.
 |---|---|---|
 | `version` | `latest` | A release tag, or `source` to build from the checkout |
 | `base-ref` | PR base | What to compare against |
-| `rules` | `.graphyn/rules.toml` | |
+| `rules` | `.openinvar/rules.toml` | |
 | `comment` | `true` | |
 | `fail-on-violation` | `true` | Undecided rules never fail the job |
 
@@ -460,7 +352,7 @@ only in the exit status, and never fail the job.
 
 Start server:
 ```bash
-graphyn serve --stdio
+openinvar serve --stdio
 ```
 
 Six tools, deliberately. A large tool surface degrades an agent's ability to
@@ -479,7 +371,7 @@ The three query tools take `kinds` and `min_resolution` filters. Results carry
 their resolution: an answer marked structural was matched within one file and
 cannot see across files, so an empty result from it is not evidence that
 nothing depends on the symbol. `graph_diff` and `check_rules` read snapshots
-recorded by `graphyn analyze --snapshot` and never re-analyze, so their answers
+recorded by `openinvar analyze --snapshot` and never re-analyze, so their answers
 depend only on the revisions named.
 
 Agent and MCP setup templates are in [`agent-configs/`](agent-configs/).
@@ -527,7 +419,7 @@ intra-file usage.
 **What it does not.** No import resolution, no aliases, no declared types — so
 no cross-file reference of any kind. A tags query reports that a call to `foo`
 happened; it does not say which `foo`, and guessing by name across a repository
-is the bug Graphyn exists to avoid.
+is the bug OpenInvar exists to avoid.
 
 **Gates do not fire on Tier 2 regions.** Not "are discouraged from" — they do
 not. `check` reports an undecided verdict rather than a pass, `tests` refuses to
@@ -583,10 +475,10 @@ Being explicit about these is more useful than a feature list:
   `test_*.py`, a Rust crate's `tests/` — the rule each language's own tooling
   uses. A Rust `#[cfg(test)] mod tests` inside an ordinary source file is *not*
   recognised, and the symbols inside such a module are not indexed at all, so
-  those tests produce no `tests` edges and `graphyn tests` will not suggest
+  those tests produce no `tests` edges and `openinvar tests` will not suggest
   them. Integration tests under `tests/` are covered.
 
-- **`graphyn tests` licenses an omission, and says when it cannot.** Naming the
+- **`openinvar tests` licenses an omission, and says when it cannot.** Naming the
   tests that cover a change is a claim that the ones left out cannot fail. Exit
   `3` means something could be missing — an uncovered changed symbol, a
   structural region, or a test selected on weak evidence — and the full suite
@@ -596,9 +488,9 @@ Being explicit about these is more useful than a feature list:
 - **Three audit detectors ship; three are held back, and say why.**
   `assertion-removal` has no signal at all: assertion calls are not in the
   graph, since Rust's assert macros are unexpanded token trees and framework
-  calls resolve to nothing. `scope-creep` has no denominator — Graphyn is never
+  calls resolve to nothing. `scope-creep` has no denominator — OpenInvar is never
   given an intended scope. `special-casing` needs control-flow analysis, and the
-  graph models references between symbols rather than flow inside one. `graphyn
+  graph models references between symbols rather than flow inside one. `openinvar
   audit` names every check that did not run, because an absent check otherwise
   reads as a passing one.
 
@@ -607,7 +499,7 @@ Being explicit about these is more useful than a feature list:
   detector firing there would be switched off in a week. It reports a test that
   *stopped* covering a symbol which changed in the same diff.
 
-- **`graphyn context` is worth less against a text search than against reading
+- **`openinvar context` is worth less against a text search than against reading
   files.** Orienting on `RepoIR` here costs ~420 estimated tokens against
   ~57,900 for reading those thirty files whole — but only ~670 for `rg -l`,
   which answers the same "which files touch this" question. The signature
@@ -632,7 +524,7 @@ Being explicit about these is more useful than a feature list:
   friends is recovered by scanning tokens; more elaborate macro-generated code
   is not expanded.
 - **Fully-qualified paths used inline are not resolved.** A type written out in
-  place — `graphyn_core::ir::RepoIR` in a signature, with no `use` bringing it
+  place — `openinvar_core::ir::RepoIR` in a signature, with no `use` bringing it
   into scope — records no edge. Resolution binds names through a file's import
   table, and a path like that never enters it. Bring the type into scope with a
   `use` and it resolves normally.
@@ -650,9 +542,9 @@ grammar's own `tags.scm`. No cross-file import resolution, no aliases, no
 declared types. Genuinely useful for locating symbols and for intra-file blast
 radius — and explicitly not something to gate on. A tags query reports that a
 call to `foo` happened; it does not say which `foo`, and guessing by name
-across a repository is the bug Graphyn exists to avoid.
+across a repository is the bug OpenInvar exists to avoid.
 
-`graphyn status` reports the tier of every language your build carries, and the
+`openinvar status` reports the tier of every language your build carries, and the
 share of edges that resolved — overall and per language. An enforcement tool
 that tells you "91% of references in this repository resolved, and here is what
 it could not" is worth more than one implying completeness.
@@ -665,16 +557,149 @@ it. On a Tier 2 repository that correctly returns nothing.
 Tier 2 today: Java, Ruby, C# — each behind its own feature, none in `default`.
 
 Still planned as Tier 2: Kotlin, PHP, Swift, Scala, SQL, Lua, Bash. These are
-not held up by Graphyn's architecture but by the grammar crates: adding one
-needs a crate that both works against the `tree-sitter` version Graphyn pins
+not held up by OpenInvar's architecture but by the grammar crates: adding one
+needs a crate that both works against the `tree-sitter` version OpenInvar pins
 and ships its own `tags.scm`. Several of the obvious candidates currently fail
 one or the other — Scala and Lua pin an incompatible `tree-sitter`, Swift and
 PHP resolve to a second copy of it, and Kotlin, SQL and Bash ship no tags query
 for the analyzer to run. A `tree-sitter` upgrade unblocks most of them.
 
+## It also answers graph questions
+
+The graph that `audit` and `check` run on is queryable directly. This is not
+what OpenInvar is for — dedicated code-graph tools do it well and there is no
+reason to switch to this one for it — but the answers are here and they are
+alias-aware.
+
+```bash
+openinvar query blast-radius UserPayload   # what breaks if I change this
+openinvar query usages UserPayload         # every caller, aliases included
+openinvar query deps UserPayload           # what it depends on
+openinvar impact src/models/user.ts        # what depends on one file
+openinvar context UserPayload              # a minimal working set for orienting
+```
+
+Each takes `[--file <path>] [--depth <n>] [--kind <kind>]`, and
+`--min-confidence resolved` to exclude structural edges.
+
+### Filtering
+
+OpenInvar honors `.gitignore` by default. If a symbol is missing, check whether it
+lives in an ignored folder such as `dist/`, generated output, or scratch files.
+
+Override filters when needed:
+
+```bash
+openinvar analyze . --no-gitignore
+openinvar analyze . --include "src/**/*.ts"
+openinvar analyze . --exclude "tests/**"
+openinvar watch . --include "packages/api/**/*.ts"
+```
+
+For MCP clients, `refresh_graph` accepts:
+
+- `path`
+- `respect_gitignore`
+- `include`
+- `exclude`
+
+Example:
+
+```json
+{
+  "path": ".",
+  "respect_gitignore": false,
+  "include": "src/**/*.ts",
+  "exclude": "tests/**"
+}
+```
+
+### Filtering by relationship kind
+
+Every query can be narrowed to particular kinds of reference:
+
+```bash
+# only what imports it, not what merely inherits from an importer
+openinvar query blast-radius UserPayload --kind imports
+
+# repeatable
+openinvar query usages UserPayload --kind imports --kind re-exports
+```
+
+Kinds: `imports`, `calls`, `extends`, `implements`, `uses-type`,
+`accesses-property`, `re-exports`, `instantiates`, `tests`.
+
+Filtering applies to the traversal, not to the result, so an excluded kind
+also stops the walk continuing through it. A filtered query reports the filter
+it used, and an empty filtered result is never described as safe — only part
+of the graph was searched.
+
+`tests` is derived rather than parsed: a test file's references into non-test
+code are restated under it, so `--kind tests` answers "what covers this" as a
+filter over the graph rather than a separate traversal. The underlying `calls`
+or `imports` edge is kept as well, so a query for callers still finds tests.
+
+Which kinds a given repository contains depends on its languages. A filter
+matching no edge in the analyzed graph is reported as such rather than
+returning a silent empty result.
+
+### Context
+
+```bash
+openinvar context RepoIR
+openinvar context --diff --base HEAD --head worktree --budget 2000
+```
+
+Emits the symbol, what it depends on, what depends on it, and a signature for
+each — the shape of the neighbourhood rather than its contents — and reports
+what that cost against reading the same files whole.
+
+**Measured on this repository**, and worth reading with its caveat:
+
+| Question | Estimated tokens |
+|---|---|
+| `openinvar context RepoIR` | ~420 |
+| Reading those 30 files whole | ~57,900 (**138x** more) |
+| `rg -n RepoIR` | ~4,050 (10x more) |
+| `rg -l RepoIR` — the file list alone | ~670 (**1.6x** more) |
+
+The 138x figure is real but flatters the feature. An agent orienting itself
+does not read thirty files whole; it runs a text search. Against `rg -l`, which
+answers the same "which files touch this" question, the saving is 1.6x — and
+the part a text search cannot produce, the signature skeleton, is delivered for
+only 1 of those 31 entries, because inbound edges to a widely-used type are
+attributed to each file's module symbol rather than to the function that uses
+it.
+
+So: useful for a narrow neighbourhood where signatures land, thin for a
+widely-imported type. This is the capability that erodes as native code search
+improves, and it is deliberately last in the release for that reason.
+
+Token figures are byte-based estimates, not a tokenizer's count. OpenInvar
+vendors no tokenizer: one is model-specific, and a figure that moved with
+somebody's model would not be reproducible.
+
+A `--budget` drops the outermost hops first and reports how many symbols it
+omitted, rather than truncating silently.
+
+### Machine-readable output
+
+`openinvar analyze --json` writes the full analysis to stdout as a single JSON
+document and suppresses all progress output, so it can be piped directly:
+
+```bash
+openinvar analyze . --json > analysis.json
+```
+
+The document carries a `schema_version`. Pin it: fields may be added within a
+version, and anything a consumer could observe breaking bumps it.
+
+Output is deterministic — the same input produces byte-identical bytes, which
+is what makes two analyses safe to diff.
+
 ## Slim builds
 
-**A default `graphyn` carries the Tier 1 languages only.** `full` is the
+**A default `openinvar` carries the Tier 1 languages only.** `full` is the
 everything binary, and is what the releases publish. This matters beyond size:
 a default build does not merely resolve less of a polyglot repository, it does
 not look at the Tier 2 files at all — which is why it can report 100% coverage
@@ -689,13 +714,13 @@ on a repository the `full` binary reports 99.7% on.
 Measured on one machine with `--release`; treat them as relative, not absolute.
 
 ```bash
-cargo install graphyn-cli --no-default-features --features python
-cargo install graphyn-cli --features full
+cargo install openinvar-cli --no-default-features --features python
+cargo install openinvar-cli --features full
 ```
 
 Tier 1 features: `typescript` (includes JavaScript), `python`, `rust`, `go`,
 `c` (includes C++) — these are `default`. Tier 2 features: `java`, `ruby`,
-`csharp`; `full` is everything. `graphyn status` and `--help` report what your
+`csharp`; `full` is everything. `openinvar status` and `--help` report what your
 build can analyse, and a build skips files in languages it does not carry
 rather than failing on them.
 

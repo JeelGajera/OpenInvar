@@ -1,25 +1,25 @@
 [workspace]
 members = [
-  "crates/graphyn-core",
-  "crates/graphyn-lang",
-  "crates/graphyn-store",
-  "crates/graphyn-mcp",
-  "crates/graphyn-cli",
+  "crates/openinvar-core",
+  "crates/openinvar-lang",
+  "crates/openinvar-store",
+  "crates/openinvar-mcp",
+  "crates/openinvar-cli",
 ]
-# Test fixtures are analyzed by Graphyn, not built by Cargo. Several are real
+# Test fixtures are analyzed by OpenInvar, not built by Cargo. Several are real
 # Cargo packages so that workspace resolution can be exercised against the
 # real thing; excluding them keeps them out of this workspace.
 exclude = ["fixtures"]
 resolver = "2"
 
 [workspace.package]
-description = "Code intelligence engine — understand the blast radius before you pull the trigger"
+description = "Deterministic integrity checks for AI-written code — structural violations, test tampering, contract erosion. No model in the loop."
 version = "0.2.0"
 edition = "2021"
 rust-version = "1.75"
 license = "Apache-2.0"
-repository = "https://github.com/JeelGajera/graphyn"
-homepage = "https://github.com/JeelGajera/graphyn"
+repository = "https://github.com/JeelGajera/OpenInvar"
+homepage = "https://github.com/JeelGajera/OpenInvar"
 authors = ["Jeel Gajera"]
 categories = ["development-tools", "command-line-utilities", "parser-implementations"]
-keywords = ["mcp", "code-intelligence", "blast-radius", "dependency-graph"]
+keywords = ["ci", "code-review", "static-analysis", "agents", "mcp"]

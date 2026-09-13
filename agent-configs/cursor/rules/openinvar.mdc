@@ -1,0 +1,29 @@
+---
+description: Use OpenInvar for symbol impact analysis before risky code edits.
+globs: "**/*"
+alwaysApply: true
+---
+
+# OpenInvar Rule
+
+Before changing, deleting, renaming, or moving exported symbols, services, DTOs,
+repositories, controllers, mappers, shared utilities, or DI wiring, use OpenInvar.
+
+Prefer MCP tools if configured:
+
+- `get_blast_radius`
+- `get_symbol_usages`
+- `get_dependencies`
+- `refresh_graph`
+
+Fallback CLI:
+
+```bash
+openinvar analyze .
+openinvar query blast-radius SymbolName
+openinvar query usages SymbolName
+openinvar query deps SymbolName
+```
+
+Treat aliased imports and property-level access as important refactor signals.
+

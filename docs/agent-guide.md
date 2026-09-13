@@ -1,10 +1,10 @@
-# Graphyn Agent Guide
+# OpenInvar Agent Guide
 
-This guide explains how coding agents should use Graphyn in day-to-day edit loops.
+This guide explains how coding agents should use OpenInvar in day-to-day edit loops.
 
 ## Why this matters
 
-Agents often miss deep alias imports and silent property-level breakage. Graphyn provides deterministic relationship data so agents can make safer edits.
+Agents often miss deep alias imports and silent property-level breakage. OpenInvar provides deterministic relationship data so agents can make safer edits.
 
 ## Recommended agent flow
 
@@ -39,7 +39,7 @@ Use this when:
 
 ## Filtering behavior
 
-Graphyn scan filtering is shared behavior in `graphyn-core` and is used by CLI and MCP refresh.
+OpenInvar scan filtering is shared behavior in `openinvar-core` and is used by CLI and MCP refresh.
 
 - `.gitignore` rules are respected by default.
 - `include` and `exclude` are comma-separated patterns.
@@ -49,10 +49,10 @@ Graphyn scan filtering is shared behavior in `graphyn-core` and is used by CLI a
 ## CLI equivalents for humans
 
 ```bash
-graphyn analyze . --include "src/**,packages/core/**" --exclude "**/*.snap.ts,dist/**"
-graphyn watch . --exclude "**/*.generated.ts" --no-gitignore
+openinvar analyze . --include "src/**,packages/core/**" --exclude "**/*.snap.ts,dist/**"
+openinvar watch . --exclude "**/*.generated.ts" --no-gitignore
 ```
 
 ## Operational tip
 
-If the agent is editing continuously, keep `graphyn watch` running and still use `refresh_graph_index` as an explicit sync point before high-risk refactors.
+If the agent is editing continuously, keep `openinvar watch` running and still use `refresh_graph_index` as an explicit sync point before high-risk refactors.

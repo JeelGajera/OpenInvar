@@ -1,9 +1,9 @@
-# Graphyn Intermediate Representation (IR) Specification
+# OpenInvar Intermediate Representation (IR) Specification
 
 **Version:** 1.0.0 (frozen for v1)
 **Status:** Stable — do not modify core structures without a formal version bump
 
-The IR is the contract between language-specific adapters and `graphyn-core`. Every adapter — TypeScript, Python, Rust, Go — must produce this exact output. The core graph engine speaks only IR. It has no knowledge of any specific language.
+The IR is the contract between language-specific adapters and `openinvar-core`. Every adapter — TypeScript, Python, Rust, Go — must produce this exact output. The core graph engine speaks only IR. It has no knowledge of any specific language.
 
 ---
 
@@ -232,7 +232,7 @@ pub enum RelationshipKind {
 
 ## 4. The alias requirement (critical)
 
-Alias resolution is the primary hard problem Graphyn solves. The `alias` field on `Relationship` is the mechanism. Adapters must handle all of the following patterns:
+Alias resolution is the primary hard problem OpenInvar solves. The `alias` field on `Relationship` is the mechanism. Adapters must handle all of the following patterns:
 
 ### Named alias import
 ```typescript
@@ -265,7 +265,7 @@ If an adapter does not handle all four patterns, it fails the alias-import-bug t
 
 ## 5. The property-level requirement (critical)
 
-It is not enough to record that file A depends on class B. Graphyn must record *which properties of B* are accessed by A. This is what enables "property X of UserPayload is accessed in 3 files" output.
+It is not enough to record that file A depends on class B. OpenInvar must record *which properties of B* are accessed by A. This is what enables "property X of UserPayload is accessed in 3 files" output.
 
 Adapters must populate `properties_accessed` on every `AccessesProperty` relationship and on any `Imports` relationship where property accesses can be statically determined.
 
@@ -357,6 +357,6 @@ The IR schema is frozen for v1. Any addition of fields, changes to existing fiel
 1. A new major version of the IR spec (this document)
 2. A migration path for existing persisted graphs
 3. Updated adapter checklist
-4. Bumped crate versions for `graphyn-core` and all adapters
+4. Bumped crate versions for `openinvar-core` and all adapters
 
 Backwards-incompatible IR changes are breaking changes for all adapters simultaneously. Treat the IR like a public API.

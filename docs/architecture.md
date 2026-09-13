@@ -1,36 +1,36 @@
-# Graphyn Architecture
+# OpenInvar Architecture
 
-This document describes the internal architecture of Graphyn — how the crates relate, how data flows from source code to query results, and the reasoning behind each design decision.
+This document describes the internal architecture of OpenInvar — how the crates relate, how data flows from source code to query results, and the reasoning behind each design decision.
 
 ---
 
 ## Overview
 
-Graphyn is a Rust workspace. Each crate has exactly one responsibility. No crate reaches outside its defined scope.
+OpenInvar is a Rust workspace. Each crate has exactly one responsibility. No crate reaches outside its defined scope.
 
 ```
-graphyn-core              Language-agnostic graph engine. No language knowledge.
-graphyn-adapter-ts        TypeScript/JavaScript → IR. No graph knowledge.
-graphyn-adapter-python    Python → IR.
-graphyn-adapter-rust      Rust → IR.
-graphyn-adapter-go        Go → IR.
-graphyn-adapter-c         C/C++ → IR.
-graphyn-adapter-dispatch  Routes files to the adapter that owns them. No parsing.
-graphyn-store             Graph persistence and cache. No parsing or query logic.
-graphyn-mcp               MCP protocol server. Calls into core. No parsing.
-graphyn-cli               Developer CLI. Orchestrates everything. No business logic.
+openinvar-core              Language-agnostic graph engine. No language knowledge.
+openinvar-adapter-ts        TypeScript/JavaScript → IR. No graph knowledge.
+openinvar-adapter-python    Python → IR.
+openinvar-adapter-rust      Rust → IR.
+openinvar-adapter-go        Go → IR.
+openinvar-adapter-c         C/C++ → IR.
+openinvar-adapter-dispatch  Routes files to the adapter that owns them. No parsing.
+openinvar-store             Graph persistence and cache. No parsing or query logic.
+openinvar-mcp               MCP protocol server. Calls into core. No parsing.
+openinvar-cli               Developer CLI. Orchestrates everything. No business logic.
 ```
 
 Dependency direction is strictly one-way:
 
 ```
-graphyn-cli
-  ├── graphyn-mcp → graphyn-adapter-dispatch, graphyn-store, graphyn-core
-  ├── graphyn-adapter-dispatch → the five adapters → graphyn-core
-  └── graphyn-store → graphyn-core
+openinvar-cli
+  ├── openinvar-mcp → openinvar-adapter-dispatch, openinvar-store, openinvar-core
+  ├── openinvar-adapter-dispatch → the five adapters → openinvar-core
+  └── openinvar-store → openinvar-core
 ```
 
-`graphyn-core` has no dependencies on any other Graphyn crate. It is the foundation.
+`openinvar-core` has no dependencies on any other OpenInvar crate. It is the foundation.
 
 ---
 
@@ -39,33 +39,33 @@ graphyn-cli
 ```
 Source files on disk
         ↓
-   graphyn-adapter-dispatch
+   openinvar-adapter-dispatch
    (detect language per file, group by owning adapter)
         ↓
-   graphyn-adapter-{ts,python,rust,go,c}
+   openinvar-adapter-{ts,python,rust,go,c}
    (tree-sitter parse → FileIR per file, parallel via rayon;
     each adapter resolves imports within its own language)
         ↓
    RepoIR
    (Vec<FileIR> + language stats, in a deterministic order)
         ↓
-   graphyn-core: graph builder
+   openinvar-core: graph builder
    (Symbol nodes inserted, Relationship edges inserted, alias chains built)
         ↓
-   GraphynGraph
+   InvarGraph
    (petgraph DiGraph + DashMap indexes + AliasChains)
         ↓
-   graphyn-store
-   (serialize to RocksDB → .graphyn/db)
+   openinvar-store
+   (serialize to RocksDB → .openinvar/db)
 
    On subsequent startup:
-   graphyn-store deserialize → GraphynGraph (< 2s, no reparse)
+   openinvar-store deserialize → InvarGraph (< 2s, no reparse)
 
    On query:
-   graphyn-core query.rs
+   openinvar-core query.rs
    (BFS/DFS traversal of in-memory graph, < 100ms)
         ↓
-   graphyn-mcp context_builder.rs
+   openinvar-mcp context_builder.rs
    (format result for agent consumption)
         ↓
    MCP tool response (JSON via stdio)
@@ -73,7 +73,7 @@ Source files on disk
 
 ---
 
-## graphyn-core
+## openinvar-core
 
 The heart of the system. Language-agnostic. Receives IR, builds graph, answers queries.
 
@@ -83,10 +83,10 @@ The IR schema. `Symbol`, `Relationship`, `FileIR`, `RepoIR`. These are the types
 
 ### graph.rs
 
-The `GraphynGraph` struct. Contains:
+The `InvarGraph` struct. Contains:
 
 ```rust
-pub struct GraphynGraph {
+pub struct InvarGraph {
     // The actual directed graph. Node payload = SymbolId. Edge payload = RelationshipMeta.
     pub graph: DiGraph<SymbolId, RelationshipMeta>,
 
@@ -174,13 +174,13 @@ The rest of the graph is untouched. This is what keeps incremental update time u
 
 ---
 
-## graphyn-adapter-ts
+## openinvar-adapter-ts
 
 TypeScript and JavaScript parser. Uses tree-sitter for parsing — no dependency on the TypeScript compiler, no `node_modules` required.
 
 ### File discovery
 
-Source-file walking/filtering lives in `graphyn-core/src/scan.rs`, not a separate
+Source-file walking/filtering lives in `openinvar-core/src/scan.rs`, not a separate
 adapter `walker.rs`. The adapter relies on scan filters and language detection to
 discover supported files.
 
@@ -220,13 +220,13 @@ Barrel file handling: when `index.ts` contains `export * from './user_payload'`,
 
 ---
 
-## graphyn-adapter-python, -rust, -go, -c
+## openinvar-adapter-python, -rust, -go, -c
 
-Each of these follows the same shape as `graphyn-adapter-ts` — `parser.rs`,
+Each of these follows the same shape as `openinvar-adapter-ts` — `parser.rs`,
 `extractor.rs`, `scope_analyzer.rs` and an import resolver — and exposes the
 same entrypoint, `analyze_files(root, files) -> Result<RepoIR, _>`. Shared
-symbol-id construction and AST traversal live in `graphyn-core/src/symbol_id.rs`
-and `graphyn-core/src/ast.rs` rather than being copied per adapter.
+symbol-id construction and AST traversal live in `openinvar-core/src/symbol_id.rs`
+and `openinvar-core/src/ast.rs` rather than being copied per adapter.
 
 What differs is the resolution model each language needs:
 
@@ -248,17 +248,17 @@ named, and one struct does not inherit another's fields.
 
 ---
 
-## graphyn-adapter-dispatch
+## openinvar-adapter-dispatch
 
 The single entrypoint the CLI and MCP server call. Detects each file's language
-via `graphyn_core::scan::detect_language_from_extension`, groups files by the
+via `openinvar_core::scan::detect_language_from_extension`, groups files by the
 adapter that owns them (TS and JS share one, C and C++ share one), runs the
 groups in parallel with rayon, and merges the `FileIR`s into a single `RepoIR`.
 Files in unsupported languages are skipped.
 
 Grouping uses an ordered key, and each group's files are sorted before analysis.
 `RepoIR.files` determines the order symbols and edges are inserted into the
-graph, and a deterministic graph is Graphyn's first documented guarantee —
+graph, and a deterministic graph is OpenInvar's first documented guarantee —
 `HashMap` iteration order made two runs over identical input produce
 differently-ordered output.
 
@@ -268,13 +268,13 @@ step is not linked.
 
 ---
 
-## graphyn-store
+## openinvar-store
 
 Persistence and caching.
 
 ### db.rs
 
-Serializes the full `GraphynGraph` to RocksDB at `.graphyn/db` in the repo root. Uses `serde_json` for serialization. On startup, deserializes and validates freshness by comparing file modification times against the stored index — files modified since the last store trigger a targeted re-parse rather than a full rebuild.
+Serializes the full `InvarGraph` to RocksDB at `.openinvar/db` in the repo root. Uses `serde_json` for serialization. On startup, deserializes and validates freshness by comparing file modification times against the stored index — files modified since the last store trigger a targeted re-parse rather than a full rebuild.
 
 ### cache.rs
 
@@ -282,9 +282,9 @@ LRU cache for frequently-queried symbols. Blast radius results for hot symbols (
 
 ---
 
-## graphyn-mcp
+## openinvar-mcp
 
-MCP server. Receives tool calls from agents via stdio, delegates to `graphyn-core`, formats results.
+MCP server. Receives tool calls from agents via stdio, delegates to `openinvar-core`, formats results.
 
 ### server.rs
 
@@ -292,7 +292,7 @@ Uses the `rmcp` crate for MCP protocol handling. Registers three tools on startu
 
 ### context_builder.rs
 
-Formats query results from `graphyn-core` into agent-friendly text. The raw graph result is a Rust struct — context_builder turns it into the structured text format shown in the README. Key design goal: the output should be immediately actionable by an agent with no additional reasoning required.
+Formats query results from `openinvar-core` into agent-friendly text. The raw graph result is a Rust struct — context_builder turns it into the structured text format shown in the README. Key design goal: the output should be immediately actionable by an agent with no additional reasoning required.
 
 ### tools/
 
@@ -305,7 +305,7 @@ One file per MCP tool. Each file:
 
 ---
 
-## graphyn-cli
+## openinvar-cli
 
 Developer-facing CLI. Orchestrates the other crates. Contains no business logic.
 
@@ -313,14 +313,14 @@ Developer-facing CLI. Orchestrates the other crates. Contains no business logic.
 
 1. Discovers all source files (adapter walker)
 2. Parses them in parallel (rayon + adapter parser + extractor)
-3. Builds the graph (graphyn-core)
-4. Persists to RocksDB (graphyn-store)
+3. Builds the graph (openinvar-core)
+4. Persists to RocksDB (openinvar-store)
 5. Prints stats: files parsed, symbols found, relationships found, time taken
 
 ### commands/query.rs
 
-1. Loads graph from RocksDB (graphyn-store)
-2. Calls the appropriate query function (graphyn-core)
+1. Loads graph from RocksDB (openinvar-store)
+2. Calls the appropriate query function (openinvar-core)
 3. Formats output as a terminal table
 
 ### commands/watch.rs
@@ -328,7 +328,7 @@ Developer-facing CLI. Orchestrates the other crates. Contains no business logic.
 1. Loads graph from RocksDB
 2. Starts the MCP server
 3. Starts the file watcher (notify crate)
-4. On file change: incremental update (graphyn-core) + persist delta + notify MCP server
+4. On file change: incremental update (openinvar-core) + persist delta + notify MCP server
 
 ### commands/serve.rs
 
@@ -362,8 +362,8 @@ Five adapters exist — TypeScript/JavaScript, Python, Rust, Go and C/C++. To ad
 the next one (Java is the nearest candidate; `Language::Java` is already in the
 IR enum but has no adapter), the process is:
 
-1. Create `crates/graphyn-adapter-<lang>/`
-2. Add the `tree-sitter-<lang>` grammar as a dependency, and `graphyn-core`
+1. Create `crates/openinvar-adapter-<lang>/`
+2. Add the `tree-sitter-<lang>` grammar as a dependency, and `openinvar-core`
    with the `ast` feature for the shared traversal and symbol-id helpers
 3. Implement `parser.rs` — tree-sitter parse per file
 4. Implement `extractor.rs` — extract symbols and relationships into IR
@@ -375,9 +375,9 @@ IR enum but has no adapter), the process is:
 8. Add `fixtures/adapter-<lang>/` with representative code, including the
    alias-import bug scenario
 9. Write tests — the alias-import equivalent for the language must pass, plus a
-   case in `crates/graphyn-cli/tests/regression.rs`
-10. Register the language in `graphyn-adapter-dispatch`: extension detection in
-    `graphyn_core::scan`, `language_rank`, `adapter_group`, `run_adapter` and
+   case in `crates/openinvar-cli/tests/regression.rs`
+10. Register the language in `openinvar-adapter-dispatch`: extension detection in
+    `openinvar_core::scan`, `language_rank`, `adapter_group`, `run_adapter` and
     `supported_languages`
 
 Only the dispatch layer learns about the new adapter. The graph engine, the IR

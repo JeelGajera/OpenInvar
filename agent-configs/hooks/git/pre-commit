@@ -1,8 +1,8 @@
 #!/bin/sh
-# Graphyn pre-commit hook — agent-agnostic enforcement at the commit boundary.
+# OpenInvar pre-commit hook — agent-agnostic enforcement at the commit boundary.
 #
 # The one integration that works for every editor, every agent, and every
-# person who has not installed either. It runs `graphyn check --diff-only`,
+# person who has not installed either. It runs `openinvar check --diff-only`,
 # which judges the staged tree against the last commit.
 #
 # Install:
@@ -10,7 +10,7 @@
 #   chmod +x .git/hooks/pre-commit
 #
 # Skip once:  git commit --no-verify
-# Disable:    GRAPHYN_SKIP=1 git commit
+# Disable:    OPENINVAR_SKIP=1 git commit
 
 # Locate the shared library.
 #
@@ -19,60 +19,60 @@
 # terminates the shell on the spot, so the fallback never runs and the hook
 # exits non-zero with no output. For a pre-commit hook that silently rejects
 # every commit; for a Stop hook it traps the agent. Both were real.
-_graphyn_lib=""
+_openinvar_lib=""
 for _candidate in \
-  "$(dirname "$0")/graphyn-hook-lib.sh" \
-  "$(dirname "$0")/../lib/graphyn-hook-lib.sh" \
-  "$(git rev-parse --show-toplevel 2>/dev/null)/agent-configs/hooks/lib/graphyn-hook-lib.sh"
+  "$(dirname "$0")/openinvar-hook-lib.sh" \
+  "$(dirname "$0")/../lib/openinvar-hook-lib.sh" \
+  "$(git rev-parse --show-toplevel 2>/dev/null)/agent-configs/hooks/lib/openinvar-hook-lib.sh"
 do
   if [ -r "$_candidate" ]; then
-    _graphyn_lib="$_candidate"
+    _openinvar_lib="$_candidate"
     break
   fi
 done
 # No library means no hook. Exiting 0 leaves the agent, and the commit, alone.
-[ -n "$_graphyn_lib" ] || exit 0
+[ -n "$_openinvar_lib" ] || exit 0
 # shellcheck source=/dev/null
-. "$_graphyn_lib"
+. "$_openinvar_lib"
 
-[ -z "$GRAPHYN_SKIP" ] || exit 0
+[ -z "$OPENINVAR_SKIP" ] || exit 0
 
-TIMEOUT="${GRAPHYN_HOOK_TIMEOUT:-30}"
+TIMEOUT="${OPENINVAR_HOOK_TIMEOUT:-30}"
 
-bin=$(graphyn_bin)
+bin=$(openinvar_bin)
 if [ -z "$bin" ]; then
-  # Not everyone who commits to this repository has Graphyn installed, and
+  # Not everyone who commits to this repository has OpenInvar installed, and
   # their commits are not ours to reject.
   exit 0
 fi
 
-root=$(graphyn_root)
-[ -f "$root/.graphyn/rules.toml" ] || exit 0
+root=$(openinvar_root)
+[ -f "$root/.openinvar/rules.toml" ] || exit 0
 
-if ! graphyn_has_graph; then
-  echo "graphyn: no graph at .graphyn/db — rules were not checked." >&2
-  echo "         Run: graphyn analyze . --snapshot HEAD" >&2
+if ! openinvar_has_graph; then
+  echo "openinvar: no graph at .openinvar/db — rules were not checked." >&2
+  echo "         Run: openinvar analyze . --snapshot HEAD" >&2
   exit 0
 fi
 
 # Record the tree being committed so `check` compares snapshots rather than
 # re-analysing, which keeps the answer a function of the commit and not of
 # whatever else happened to be on disk.
-graphyn_with_timeout "$TIMEOUT" "$bin" analyze "$root" --snapshot worktree >/dev/null 2>&1
+openinvar_with_timeout "$TIMEOUT" "$bin" analyze "$root" --snapshot worktree >/dev/null 2>&1
 
-output=$(graphyn_with_timeout "$TIMEOUT" "$bin" check "$root" --diff-only 2>&1)
+output=$(openinvar_with_timeout "$TIMEOUT" "$bin" check "$root" --diff-only 2>&1)
 status=$?
 
 # The audit runs whether or not rules exist: it reports changes that look like
 # they were made to pass a check, which is the failure a rules file cannot
 # describe in advance. Only an error-severity finding blocks.
-audit_output=$(graphyn_with_timeout "$TIMEOUT" "$bin" audit "$root" --base HEAD --head worktree --severity "${GRAPHYN_AUDIT_SEVERITY:-error}" 2>&1)
+audit_output=$(openinvar_with_timeout "$TIMEOUT" "$bin" audit "$root" --base HEAD --head worktree --severity "${OPENINVAR_AUDIT_SEVERITY:-error}" 2>&1)
 audit_status=$?
 if [ $audit_status -eq 1 ]; then
   echo "$audit_output" >&2
   echo >&2
-  echo "graphyn: commit blocked by an audit finding" >&2
-  echo "         Record a deliberate exception in .graphyn/audit-ignore, with a reason." >&2
+  echo "openinvar: commit blocked by an audit finding" >&2
+  echo "         Record a deliberate exception in .openinvar/audit-ignore, with a reason." >&2
   echo "         Override once with: git commit --no-verify" >&2
   exit 1
 fi
@@ -82,18 +82,18 @@ case $status in
   1)
     echo "$output" >&2
     echo >&2
-    echo "graphyn: commit blocked by a rule in .graphyn/rules.toml" >&2
+    echo "openinvar: commit blocked by a rule in .openinvar/rules.toml" >&2
     echo "         Override once with: git commit --no-verify" >&2
     exit 1
     ;;
   124)
-    echo "graphyn: rule check timed out after ${TIMEOUT}s — rules were not checked." >&2
+    echo "openinvar: rule check timed out after ${TIMEOUT}s — rules were not checked." >&2
     exit 0
     ;;
   *)
     # The check could not run. Saying so is the point: a silent skip here
     # looks exactly like a clean pass.
-    echo "graphyn: could not run the rule check — rules were not enforced." >&2
+    echo "openinvar: could not run the rule check — rules were not enforced." >&2
     echo "$output" >&2
     exit 0
     ;;

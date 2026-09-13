@@ -1,5 +1,5 @@
 #!/bin/sh
-# Graphyn post-commit hook — keep the baseline the pre-commit hook needs.
+# OpenInvar post-commit hook — keep the baseline the pre-commit hook needs.
 #
 # `check --diff-only` compares HEAD against the working tree, and HEAD moves
 # with every commit. Without this hook the snapshot recorded by hand goes stale
@@ -14,34 +14,34 @@
 #   cp agent-configs/hooks/git/post-commit .git/hooks/post-commit
 #   chmod +x .git/hooks/post-commit
 
-_graphyn_lib=""
+_openinvar_lib=""
 for _candidate in \
-  "$(dirname "$0")/graphyn-hook-lib.sh" \
-  "$(dirname "$0")/../lib/graphyn-hook-lib.sh" \
-  "$(git rev-parse --show-toplevel 2>/dev/null)/agent-configs/hooks/lib/graphyn-hook-lib.sh"
+  "$(dirname "$0")/openinvar-hook-lib.sh" \
+  "$(dirname "$0")/../lib/openinvar-hook-lib.sh" \
+  "$(git rev-parse --show-toplevel 2>/dev/null)/agent-configs/hooks/lib/openinvar-hook-lib.sh"
 do
   if [ -r "$_candidate" ]; then
-    _graphyn_lib="$_candidate"
+    _openinvar_lib="$_candidate"
     break
   fi
 done
-[ -n "$_graphyn_lib" ] || exit 0
+[ -n "$_openinvar_lib" ] || exit 0
 # shellcheck source=/dev/null
-. "$_graphyn_lib"
+. "$_openinvar_lib"
 
-[ -z "$GRAPHYN_SKIP" ] || exit 0
+[ -z "$OPENINVAR_SKIP" ] || exit 0
 
-TIMEOUT="${GRAPHYN_HOOK_TIMEOUT:-60}"
+TIMEOUT="${OPENINVAR_HOOK_TIMEOUT:-60}"
 
-bin=$(graphyn_bin)
+bin=$(openinvar_bin)
 [ -n "$bin" ] || exit 0
 
-root=$(graphyn_root)
-[ -f "$root/.graphyn/rules.toml" ] || exit 0
+root=$(openinvar_root)
+[ -f "$root/.openinvar/rules.toml" ] || exit 0
 
 # The commit is done and the working tree now matches it, so analysing the
 # tree and labelling it HEAD records exactly the commit that was just made.
-graphyn_with_timeout "$TIMEOUT" "$bin" analyze "$root" --snapshot HEAD >/dev/null 2>&1 \
-  || echo "graphyn: could not record a snapshot for the new HEAD; the next commit will not be checked." >&2
+openinvar_with_timeout "$TIMEOUT" "$bin" analyze "$root" --snapshot HEAD >/dev/null 2>&1 \
+  || echo "openinvar: could not record a snapshot for the new HEAD; the next commit will not be checked." >&2
 
 exit 0

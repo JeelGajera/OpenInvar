@@ -1,0 +1,42 @@
+# OpenInvar analyzing OpenInvar — the action's own integration test.
+#
+# The action is the distribution vehicle, and the only honest way to know it
+# works is to run it. This workflow runs it on every pull request to this
+# repository, from source rather than from a release, so a change to the action
+# is exercised by the pull request that makes it.
+#
+# It does not gate merges here. This repository has no .openinvar/rules.toml yet,
+# so there is nothing to violate; the value is the report and the proof that
+# the action runs.
+name: OpenInvar
+
+on:
+  pull_request:
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  report:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # Both sides of the comparison have to exist locally.
+          fetch-depth: 0
+
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+
+      - name: Install gcc-13
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y gcc-13 g++-13
+          echo "CC=gcc-13" >> $GITHUB_ENV
+          echo "CXX=g++-13" >> $GITHUB_ENV
+
+      - uses: ./
+        with:
+          version: source
+          fail-on-violation: 'false'

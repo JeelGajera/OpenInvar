@@ -1,13 +1,13 @@
 $ErrorActionPreference = 'Stop'
 
-# Graphyn Installation Script for Windows
+# OpenInvar Installation Script for Windows
 
-$GITHUB_REPO = "JeelGajera/graphyn"
+$GITHUB_REPO = "JeelGajera/OpenInvar"
 $TARGET = "x86_64-pc-windows-msvc"
-$ASSET_NAME = "graphyn-${TARGET}.zip"
+$ASSET_NAME = "openinvar-${TARGET}.zip"
 $DOWNLOAD_URL = "https://github.com/${GITHUB_REPO}/releases/latest/download/${ASSET_NAME}"
 
-$INSTALL_ROOT = [System.IO.Path]::Combine($env:LOCALAPPDATA, "Programs", "graphyn")
+$INSTALL_ROOT = [System.IO.Path]::Combine($env:LOCALAPPDATA, "Programs", "openinvar")
 $DEFAULT_BIN_DIR = [System.IO.Path]::Combine($INSTALL_ROOT, "bin")
 
 function Write-Step ($msg) {
@@ -51,19 +51,19 @@ Write-Info "Detected Platform: Windows (x86_64)"
 Write-Info "Target: $TARGET"
 
 # Check for existing installation
-$EXISTING_EXE = Get-Command graphyn -ErrorAction SilentlyContinue | Select-Object -ExpandProperty Source
+$EXISTING_EXE = Get-Command openinvar -ErrorAction SilentlyContinue | Select-Object -ExpandProperty Source
 if ($EXISTING_EXE) {
     Write-Step "Updating existing installation..."
     try {
         $OLD_VERSION = (& $EXISTING_EXE --version).Split(" ")[-1]
-        Write-Info "Found Graphyn $OLD_VERSION at $EXISTING_EXE"
+        Write-Info "Found OpenInvar $OLD_VERSION at $EXISTING_EXE"
     } catch {
-        Write-Info "Found existing Graphyn at $EXISTING_EXE"
+        Write-Info "Found existing OpenInvar at $EXISTING_EXE"
     }
     $INSTALL_TARGET = $EXISTING_EXE
 } else {
     Write-Step "Preparing new installation..."
-    $INSTALL_TARGET = [System.IO.Path]::Combine($DEFAULT_BIN_DIR, "graphyn.exe")
+    $INSTALL_TARGET = [System.IO.Path]::Combine($DEFAULT_BIN_DIR, "openinvar.exe")
 }
 
 $BIN_DIR = [System.IO.Path]::GetDirectoryName($INSTALL_TARGET)
@@ -71,7 +71,7 @@ $BIN_DIR = [System.IO.Path]::GetDirectoryName($INSTALL_TARGET)
 # 1. Create temp directory
 $TMP_DIR = [System.IO.Path]::Combine(
     [System.IO.Path]::GetTempPath(),
-    "graphyn-install-" + [System.Guid]::NewGuid().ToString().Substring(0, 8)
+    "openinvar-install-" + [System.Guid]::NewGuid().ToString().Substring(0, 8)
 )
 New-Item -ItemType Directory -Force -Path $TMP_DIR | Out-Null
 
@@ -95,13 +95,13 @@ try {
         New-Item -ItemType Directory -Force -Path $BIN_DIR | Out-Null
     }
 
-    $SOURCE_EXE = [System.IO.Path]::Combine($TMP_DIR, "graphyn.exe")
+    $SOURCE_EXE = [System.IO.Path]::Combine($TMP_DIR, "openinvar.exe")
     
     # Try to move, handle file lock if running
     try {
         Move-Item -Path $SOURCE_EXE -Destination $INSTALL_TARGET -Force
     } catch {
-        Write-Warn "Could not replace graphyn.exe. It might be in use."
+        Write-Warn "Could not replace openinvar.exe. It might be in use."
         Write-Info "Retrying in 2 seconds..."
         Start-Sleep -Seconds 2
         Move-Item -Path $SOURCE_EXE -Destination $INSTALL_TARGET -Force
@@ -109,7 +109,7 @@ try {
 
     # 5. Verify install
     $NEW_VERSION = (& $INSTALL_TARGET --version).Split(" ")[-1]
-    Write-Host "`n✅ Graphyn $NEW_VERSION has been installed!`n" -ForegroundColor Green
+    Write-Host "`n✅ OpenInvar $NEW_VERSION has been installed!`n" -ForegroundColor Green
 
     # 6. PATH setup
     $USER_PATH = [Environment]::GetEnvironmentVariable("PATH", "User")
@@ -127,7 +127,7 @@ try {
         Write-Warn "PATH updated. You may need to restart your terminal for changes to take effect."
     }
     else {
-        Write-Success "Graphyn is ready! Run 'graphyn --help' to get started."
+        Write-Success "OpenInvar is ready! Run 'openinvar --help' to get started."
     }
 
 } catch {

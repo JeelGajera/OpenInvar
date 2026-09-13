@@ -1,0 +1,16 @@
+[package]
+name = "openinvar-store"
+description = "Persistence layer for OpenInvar — RocksDB graph storage and LRU cache"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
+authors.workspace = true
+categories.workspace = true
+keywords.workspace = true
+
+[dependencies]
+rocksdb = { version = "0.22", default-features = false }
+openinvar-core = { path = "../openinvar-core", version = "0.2.0", default-features = false }

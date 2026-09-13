@@ -9,7 +9,7 @@
 # summary either way.
 set -uo pipefail
 
-report="${GRAPHYN_REPORT:-}"
+report="${OPENINVAR_REPORT:-}"
 if [ -z "$report" ] || [ ! -s "$report" ]; then
   echo "No report to post."
   exit 0
@@ -21,7 +21,7 @@ if [ -z "$number" ]; then
   exit 0
 fi
 
-marker="<!-- graphyn-report -->"
+marker="<!-- openinvar-report -->"
 api="repos/${GITHUB_REPOSITORY}/issues"
 
 existing="$(gh api "${api}/${number}/comments" --paginate \
@@ -33,7 +33,7 @@ if [ -n "$existing" ]; then
     echo "Updated comment $existing."
     exit 0
   fi
-  echo "::warning::Could not update the existing Graphyn comment; posting a new one." >&2
+  echo "::warning::Could not update the existing OpenInvar comment; posting a new one." >&2
 fi
 
 if gh api --method POST "${api}/${number}/comments" -F body=@"$report" >/dev/null 2>&1; then
@@ -41,6 +41,6 @@ if gh api --method POST "${api}/${number}/comments" -F body=@"$report" >/dev/nul
 else
   # The most common cause by far, and worth naming rather than leaving the
   # reader to guess from an HTTP status.
-  echo "::warning::Could not post the Graphyn comment. The workflow needs 'permissions: pull-requests: write'. The report is on the job summary." >&2
+  echo "::warning::Could not post the OpenInvar comment. The workflow needs 'permissions: pull-requests: write'. The report is on the job summary." >&2
 fi
 exit 0

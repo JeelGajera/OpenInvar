@@ -22,16 +22,16 @@ jobs:
         include:
           - os: ubuntu-latest
             target: x86_64-unknown-linux-gnu
-            artifact_name: graphyn
-            asset_name: graphyn-x86_64-unknown-linux-gnu.tar.gz
+            artifact_name: openinvar
+            asset_name: openinvar-x86_64-unknown-linux-gnu.tar.gz
           - os: macos-latest
             target: aarch64-apple-darwin
-            artifact_name: graphyn
-            asset_name: graphyn-aarch64-apple-darwin.tar.gz
+            artifact_name: openinvar
+            asset_name: openinvar-aarch64-apple-darwin.tar.gz
           - os: windows-latest
             target: x86_64-pc-windows-msvc
-            artifact_name: graphyn.exe
-            asset_name: graphyn-x86_64-pc-windows-msvc.zip
+            artifact_name: openinvar.exe
+            asset_name: openinvar-x86_64-pc-windows-msvc.zip
 
     steps:
       - uses: actions/checkout@v4
@@ -61,7 +61,7 @@ jobs:
         run: echo "LIBCLANG_PATH=C:\Program Files\LLVM\bin" >> $env:GITHUB_ENV
 
       - name: Build Binary
-        run: cargo build --locked --release -p graphyn-cli --target ${{ matrix.target }}
+        run: cargo build --locked --release -p openinvar-cli --target ${{ matrix.target }}
 
       - name: Package Release (Linux/macOS)
         if: runner.os != 'Windows'

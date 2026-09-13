@@ -492,86 +492,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "0cc23270f6e1808e30a928bdc84dea0b9b4136a8bc82338574f23baf47bbd280"
 
 [[package]]
-name = "graphyn-cli"
-version = "0.2.0"
-dependencies = [
- "clap",
- "graphyn-core",
- "graphyn-lang",
- "graphyn-mcp",
- "graphyn-store",
- "notify",
- "serde",
- "serde_json",
- "tokio",
- "tracing",
- "tracing-subscriber",
- "walkdir",
-]
-
-[[package]]
-name = "graphyn-core"
-version = "0.2.0"
-dependencies = [
- "dashmap",
- "glob",
- "petgraph",
- "rayon",
- "serde",
- "serde_json",
- "thiserror 1.0.69",
- "toml",
- "tree-sitter",
- "tree-sitter-rust",
- "walkdir",
-]
-
-[[package]]
-name = "graphyn-lang"
-version = "0.2.0"
-dependencies = [
- "glob",
- "graphyn-core",
- "rayon",
- "serde_json",
- "toml",
- "tree-sitter",
- "tree-sitter-c",
- "tree-sitter-c-sharp",
- "tree-sitter-cpp",
- "tree-sitter-go",
- "tree-sitter-java",
- "tree-sitter-javascript",
- "tree-sitter-python",
- "tree-sitter-ruby",
- "tree-sitter-rust",
- "tree-sitter-typescript",
- "walkdir",
-]
-
-[[package]]
-name = "graphyn-mcp"
-version = "0.2.0"
-dependencies = [
- "graphyn-core",
- "graphyn-lang",
- "graphyn-store",
- "rmcp",
- "schemars",
- "serde",
- "serde_json",
- "tokio",
-]
-
-[[package]]
-name = "graphyn-store"
-version = "0.2.0"
-dependencies = [
- "graphyn-core",
- "rocksdb",
-]
-
-[[package]]
 name = "hashbrown"
 version = "0.14.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -892,6 +812,86 @@ name = "once_cell_polyfill"
 version = "1.70.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "384b8ab6d37215f3c5301a95a4accb5d64aa607f1fcb26a11b5303878451b4fe"
+
+[[package]]
+name = "openinvar-cli"
+version = "0.2.0"
+dependencies = [
+ "clap",
+ "notify",
+ "openinvar-core",
+ "openinvar-lang",
+ "openinvar-mcp",
+ "openinvar-store",
+ "serde",
+ "serde_json",
+ "tokio",
+ "tracing",
+ "tracing-subscriber",
+ "walkdir",
+]
+
+[[package]]
+name = "openinvar-core"
+version = "0.2.0"
+dependencies = [
+ "dashmap",
+ "glob",
+ "petgraph",
+ "rayon",
+ "serde",
+ "serde_json",
+ "thiserror 1.0.69",
+ "toml",
+ "tree-sitter",
+ "tree-sitter-rust",
+ "walkdir",
+]
+
+[[package]]
+name = "openinvar-lang"
+version = "0.2.0"
+dependencies = [
+ "glob",
+ "openinvar-core",
+ "rayon",
+ "serde_json",
+ "toml",
+ "tree-sitter",
+ "tree-sitter-c",
+ "tree-sitter-c-sharp",
+ "tree-sitter-cpp",
+ "tree-sitter-go",
+ "tree-sitter-java",
+ "tree-sitter-javascript",
+ "tree-sitter-python",
+ "tree-sitter-ruby",
+ "tree-sitter-rust",
+ "tree-sitter-typescript",
+ "walkdir",
+]
+
+[[package]]
+name = "openinvar-mcp"
+version = "0.2.0"
+dependencies = [
+ "openinvar-core",
+ "openinvar-lang",
+ "openinvar-store",
+ "rmcp",
+ "schemars",
+ "serde",
+ "serde_json",
+ "tokio",
+]
+
+[[package]]
+name = "openinvar-store"
+version = "0.2.0"
+dependencies = [
+ "openinvar-core",
+ "rocksdb",
+]
 
 [[package]]
 name = "parking_lot"
