@@ -1,0 +1,50 @@
+name: Feature request
+description: Suggest a capability, a command, or a change in behaviour
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        One thing to know before you write: **OpenInvar is deterministic, and
+        no LLM participates in graph construction or in any gating decision.**
+        That is the property every other claim rests on, so proposals that
+        require a model in the analysis path will be declined however useful
+        they sound. Everything else is open.
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: The problem
+      description: |
+        What are you trying to do that OpenInvar makes hard or impossible?
+        Describe the situation rather than the solution — it often has a
+        better answer than the one that prompted the request.
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: What you have in mind
+      description: |
+        If you have a shape in mind, sketch it — a command line, a config
+        block, an output format.
+      render: text
+    validations:
+      required: false
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: What you tried instead
+      description: Existing commands, rules, or other tools, and why they fell short.
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Before submitting
+      options:
+        - label: I searched existing issues
+          required: true

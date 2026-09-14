@@ -14,6 +14,33 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Contributor and community documentation.** `CONTRIBUTING.md`,
+  `SECURITY.md`, `CODE_OF_CONDUCT.md`, issue templates, a pull request
+  template, and a Dependabot configuration.
+
+  `CONTRIBUTING.md` writes down what previously lived only in reviewers' heads
+  or in workflow comments: every check CI runs and how to run it first, the
+  golden snapshot workflow and why an empty diff is evidence, the dogfooding
+  invariant, the per-language slim build, and the four-verdict model a new rule
+  kind has to reason within. A comment in `ci.yml` had already referred to a
+  CONTRIBUTING that did not exist — the GCC pin that broke contributors'
+  builds lived only in the workflows, which is how it went unnoticed.
+
+  `SECURITY.md` routes reports to GitHub's private advisory flow and states the
+  threat model rather than a generic promise: OpenInvar's surface is reading
+  code it did not write, usually in CI, often from outside the project. In
+  scope are parser crashes on crafted input, path traversal, store escape, the
+  installers, the MCP server, and any input crafted to make a gate report a
+  pass it has not earned. Out of scope are vulnerabilities in the code
+  OpenInvar analyses — it is not a scanner and does not claim to be. It never
+  executes what it reads, and nothing leaves the machine.
+
+  The issue templates include one for proposing a rule kind, built around the
+  questions that decide whether a kind can exist honestly — chiefly which
+  direction its uncertainty runs, since an unresolved edge is a possible
+  violation for `forbid-dependency` and a possible *satisfier* for
+  `requires-dependency`.
+
 - **`requires-dependency` and `no-orphans`** — the remaining claims about
   absence, added together so their uncertainty semantics cannot drift apart.
 

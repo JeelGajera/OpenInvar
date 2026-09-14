@@ -1,0 +1,11 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Report a security vulnerability
+    url: https://github.com/JeelGajera/OpenInvar/security/advisories/new
+    about: Report privately. Please do not open a public issue for a vulnerability.
+  - name: Add a language
+    url: https://github.com/JeelGajera/OpenInvar/blob/master/CONTRIBUTING.md#adding-a-language
+    about: A language is a module and a Cargo feature. The guide walks through it.
+  - name: Known limits
+    url: https://github.com/JeelGajera/OpenInvar#known-limits
+    about: The blind spots that are documented and deliberate, before you file a bug.
