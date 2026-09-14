@@ -12,6 +12,7 @@ pub mod serve;
 pub mod status;
 pub mod tests;
 pub mod watch;
+pub mod worktree;
 
 use std::path::{Path, PathBuf};
 

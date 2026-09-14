@@ -14,6 +14,44 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **`analyze --at <rev>`** — analyse the tree at a revision instead of the
+  working tree.
+
+  ```bash
+  openinvar analyze . --at 4f2a1c9
+  openinvar diff . --base 4f2a1c9 --head worktree
+  ```
+
+  `--snapshot` records whatever is on disk; `--at` fetches a revision and
+  records that, so history can be built without a checkout per commit.
+
+  The revision is checked out into a temporary worktree, not in place:
+  uncommitted work is untouched and `HEAD` does not move. `git worktree` rather
+  than `git archive` because archive applies `export-ignore` from
+  `.gitattributes`, and a repository using it would be analysed with files
+  silently absent — a graph missing symbols that are really there, which is the
+  confidently wrong answer a gate must never give. Cleanup is in a `Drop` guard
+  so an error between checkout and completion cannot leak a directory or an
+  entry in `.git/worktrees`.
+
+  **`--at` does not replace the working graph.** `query`, `check` and `audit`
+  read it when nobody names a revision, so overwriting it would leave every
+  later command answering about a past revision without saying so.
+
+  Determinism holds across the temporary directory: the checkout's path never
+  reaches the result. The graph records relative paths only, and the report's
+  single absolute path is restated as the repository, so two runs over one
+  revision are byte-identical.
+
+  `worktree` is refused rather than accepted as a no-op — it names the working
+  tree, and recording that under a name every reader takes for a commit is not
+  something a later `diff` could detect. `--at` and `--snapshot` conflict, since
+  `--at` already determines the name.
+
+  `revision::resolve_commit` is added beside `resolve` for revisions that must
+  name a commit, so the error does not offer `worktree` to a caller that will
+  then reject it.
+
 - **`requires-dependency` and `no-orphans`** — the remaining claims about
   absence, added together so their uncertainty semantics cannot drift apart.
 

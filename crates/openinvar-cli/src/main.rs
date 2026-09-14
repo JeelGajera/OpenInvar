@@ -52,8 +52,21 @@ enum Commands {
         /// Takes a commit, branch or tag — resolved to its SHA, so the
         /// snapshot still means something after the branch moves — or
         /// `worktree` for the working tree including uncommitted edits.
-        #[arg(long, value_name = "REV")]
+        #[arg(long, value_name = "REV", conflicts_with = "at")]
         snapshot: Option<String>,
+
+        /// Analyze the tree at this revision instead of the working tree.
+        ///
+        /// Checks the revision out into a temporary worktree, so uncommitted
+        /// work is untouched, and records the result under that revision. The
+        /// working graph is left alone: `--at` answers a question about the
+        /// past without changing what `query` and `check` read.
+        ///
+        /// Takes a commit, branch or tag. Records under the resolved SHA, so
+        /// `--at` and `--snapshot` cannot both be given — the revision named
+        /// here is the one the snapshot is stored under.
+        #[arg(long, value_name = "REV")]
+        at: Option<String>,
 
         /// How many revision snapshots to keep, oldest dropped first.
         #[arg(long, value_name = "N", default_value_t = 10)]
@@ -459,16 +472,18 @@ fn main() {
             no_gitignore,
             json,
             snapshot,
+            at,
             keep_snapshots,
-        } => commands::analyze::run(
-            &path,
-            include.as_deref(),
-            exclude.as_deref(),
-            !no_gitignore,
+        } => commands::analyze::run(commands::analyze::Options {
+            path: &path,
+            include_csv: include.as_deref(),
+            exclude_csv: exclude.as_deref(),
+            respect_gitignore: !no_gitignore,
             json,
-            snapshot.as_deref(),
+            snapshot: snapshot.as_deref(),
             keep_snapshots,
-        ),
+            at: at.as_deref(),
+        }),
 
         Commands::Diff {
             path,

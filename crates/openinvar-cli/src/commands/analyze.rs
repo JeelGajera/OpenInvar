@@ -77,25 +77,75 @@ impl Progress {
     }
 }
 
-pub fn run(
-    path: &str,
-    include_csv: Option<&str>,
-    exclude_csv: Option<&str>,
-    respect_gitignore: bool,
-    json: bool,
-    snapshot: Option<&str>,
-    keep_snapshots: usize,
-) -> Result<(), Box<dyn std::error::Error>> {
+/// What `analyze` was asked to do.
+///
+/// A struct rather than a parameter list because `--at` made it the eighth
+/// argument, and eight positional booleans and `Option<&str>`s at a call site
+/// is how the wrong flag gets passed silently.
+pub struct Options<'a> {
+    pub path: &'a str,
+    pub include_csv: Option<&'a str>,
+    pub exclude_csv: Option<&'a str>,
+    pub respect_gitignore: bool,
+    pub json: bool,
+    pub snapshot: Option<&'a str>,
+    pub keep_snapshots: usize,
+    /// Analyse the tree at this revision instead of the working tree.
+    pub at: Option<&'a str>,
+}
+
+pub fn run(opts: Options<'_>) -> Result<(), Box<dyn std::error::Error>> {
+    let Options {
+        path,
+        include_csv,
+        exclude_csv,
+        respect_gitignore,
+        json,
+        snapshot,
+        keep_snapshots,
+        at,
+    } = opts;
+
     let root = super::normalize_path(
         &std::fs::canonicalize(path).map_err(|e| format!("cannot access '{}': {}", path, e))?,
     );
     let progress = Progress { enabled: !json };
 
+    // `--at` analyses a revision's tree, so the files come from a throwaway
+    // checkout rather than from `root`. `root` stays the repository: it is
+    // where the store is written, and it is the root the report names.
+    //
+    // Resolved before the checkout so an unknown revision is reported as an
+    // unknown revision rather than as a worktree failure. `resolve_commit`
+    // rather than `resolve`: `--at` cannot accept `worktree`, and it carries
+    // the reason.
+    let at_revision = at
+        .map(|revision| openinvar_store::revision::resolve_commit(&root, revision))
+        .transpose()?;
+
+    let checkout = match &at_revision {
+        Some(sha) => Some(super::worktree::TempWorktree::add(&root, sha)?),
+        None => None,
+    };
+    // Everything that reads files uses this; everything that writes state uses
+    // `root`. Keeping the two apart is the whole of `--at`.
+    let scan_root = match &checkout {
+        Some(worktree) => super::normalize_path(worktree.path()),
+        None => root.clone(),
+    };
+
     progress.banner("analyze");
-    progress.info(&format!(
-        "Analyzing {}",
-        output::file_path(&root.display().to_string())
-    ));
+    match &at_revision {
+        Some(sha) => progress.info(&format!(
+            "Analyzing {} at {}",
+            output::file_path(&root.display().to_string()),
+            sha
+        )),
+        None => progress.info(&format!(
+            "Analyzing {}",
+            output::file_path(&root.display().to_string())
+        )),
+    }
     progress.blank();
 
     let start = Instant::now();
@@ -108,7 +158,7 @@ pub fn run(
         respect_gitignore,
     };
 
-    let scan = walk_source_files_reporting(&root, &scan_config, is_any_supported_source_file)
+    let scan = walk_source_files_reporting(&scan_root, &scan_config, is_any_supported_source_file)
         .map_err(|e| format!("scan failed: {e}"))?;
     let files = scan.files;
     if files.is_empty() {
@@ -152,7 +202,19 @@ pub fn run(
         ));
     }
 
-    let repo_ir = analyze_files(&root, &files).map_err(|e| format!("analysis failed: {e}"))?;
+    let mut repo_ir =
+        analyze_files(&scan_root, &files).map_err(|e| format!("analysis failed: {e}"))?;
+
+    // `root` is the one absolute path in the report, and under `--at` it would
+    // otherwise be the temporary checkout — a path that differs on every run.
+    // Every path inside `files` is already relative to it, so restating the
+    // repository here is the whole of what determinism needs: two runs over one
+    // revision then produce byte-identical output. `at_json_is_identical_across_runs`
+    // asserts it rather than trusting this comment.
+    if at_revision.is_some() {
+        repo_ir.root = root.display().to_string();
+    }
+    let repo_ir = repo_ir;
 
     let file_count = repo_ir.files.len();
     let error_count: usize = repo_ir.files.iter().map(|f| f.diagnostics.len()).sum();
@@ -181,14 +243,23 @@ pub fn run(
         std::fs::create_dir_all(parent)?;
     }
     let store = RocksGraphStore::open(&db).map_err(|e| format!("failed to open store: {e}"))?;
-    store
-        .save_graph(&graph)
-        .map_err(|e| format!("failed to persist graph: {e}"))?;
 
-    progress.step(
-        "Persisted to",
-        &root.join(".openinvar/").display().to_string(),
-    );
+    // The working graph is what `query`, `check` and `audit` read when nobody
+    // names a revision, so it has to keep meaning "the tree as it is now".
+    // `--at` analysed something else, and overwriting it would leave every
+    // later command answering questions about a past revision without saying
+    // so — a wrong answer delivered confidently, which is the one failure this
+    // project is built to avoid. So `--at` records its revision and stops.
+    if at_revision.is_none() {
+        store
+            .save_graph(&graph)
+            .map_err(|e| format!("failed to persist graph: {e}"))?;
+
+        progress.step(
+            "Persisted to",
+            &root.join(".openinvar/").display().to_string(),
+        );
+    }
 
     // The rebuild is the fix for an upgrade, so say once that the old store is
     // now dead weight. Deleting it is the user's call, not this command's —
@@ -202,11 +273,19 @@ pub fn run(
         ));
     }
 
-    // The working graph is always written; a revision snapshot is additional,
-    // so `analyze --snapshot` leaves the repository queryable exactly as a
-    // plain `analyze` does.
-    if let Some(revision) = snapshot {
-        let resolved = openinvar_store::revision::resolve(&root, revision)?;
+    // Without `--at` the working graph is always written and a revision
+    // snapshot is additional, so `analyze --snapshot` leaves the repository
+    // queryable exactly as a plain `analyze` does. With `--at`, the revision
+    // *is* the output: the name comes from `--at` itself, which is why the two
+    // flags conflict rather than combining into a snapshot under one name
+    // holding the tree of another.
+    let record_under = match &at_revision {
+        Some(sha) => Some(Ok(sha.clone())),
+        None => snapshot.map(|revision| openinvar_store::revision::resolve(&root, revision)),
+    };
+
+    if let Some(resolved) = record_under {
+        let resolved = resolved?;
         let snapshot = GraphSnapshot::from_graph(&graph)
             .map_err(|e| format!("failed to build snapshot: {e}"))?;
         store
