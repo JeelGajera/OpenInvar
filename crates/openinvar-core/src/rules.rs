@@ -80,9 +80,46 @@ pub enum RuleKind {
     Layers { layers: Vec<String> },
     /// Siblings that may not reference each other in any direction.
     Independence { modules: Vec<String> },
+    /// No symbol may reach out to more than this many distinct symbols.
+    MaxFanOut { threshold: usize },
+    /// Symbols in a scope must be named to a pattern.
+    NamingConvention {
+        symbols: String,
+        matches: String,
+        only: Option<SymbolKindName>,
+    },
 }
 
+/// A symbol kind named in a rule, kept as the spelling the file used.
+///
+/// Matched by name rather than converted to [`crate::ir::SymbolKind`] so the
+/// set of kinds a rule may filter on is the set the output prints, and adding
+/// a kind to the IR does not silently change what an existing rule matches.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct SymbolKindName(pub String);
+
 impl RuleKind {
+    /// The severity this kind means when a rule does not name one.
+    ///
+    /// Two categories, not one default.
+    ///
+    /// **Hard invariants** are `error`: a layering boundary, an independence
+    /// set, a forbidden edge, a required name, a field that may not be
+    /// removed. Each states something the repository has decided is not
+    /// allowed, and a violation should block.
+    ///
+    /// **Hygiene** is `warn`: the fan limits. High fan-in and fan-out are
+    /// frequently intentional — a utility module, an IR type, an entry point.
+    /// Blocking CI on one would stop a developer who added a module before
+    /// wiring up its callers, and the rule would be switched off rather than
+    /// tuned. A team wanting zero tolerance writes `severity = "error"`.
+    pub fn default_severity(&self) -> Severity {
+        match self {
+            Self::MaxFanIn { .. } | Self::MaxFanOut { .. } => Severity::Warn,
+            _ => Severity::Error,
+        }
+    }
+
     pub fn as_str(&self) -> &'static str {
         match self {
             Self::ForbidDependency { .. } => "forbid-dependency",
@@ -91,6 +128,8 @@ impl RuleKind {
             Self::MaxFanIn { .. } => "max-fan-in",
             Self::Layers { .. } => "layers",
             Self::Independence { .. } => "independence",
+            Self::MaxFanOut { .. } => "max-fan-out",
+            Self::NamingConvention { .. } => "naming-convention",
         }
     }
 
@@ -166,6 +205,9 @@ struct RawRule {
     threshold: Option<i64>,
     layers: Option<Vec<String>>,
     modules: Option<Vec<String>>,
+    symbols: Option<String>,
+    matches: Option<String>,
+    only: Option<String>,
     #[serde(default)]
     severity: Option<Severity>,
 }
@@ -178,6 +220,27 @@ const KNOWN_KINDS: &[&str] = &[
     "max-fan-in",
     "layers",
     "independence",
+    "max-fan-out",
+    "naming-convention",
+];
+
+/// Symbol kinds a `naming-convention` rule may filter on.
+///
+/// The same spellings [`crate::symbol_id::kind_suffix`] already uses, so a
+/// rules file names a kind the way a symbol id does rather than inventing a
+/// second vocabulary for the same thing. `package` is absent on purpose: an
+/// external package is not something this repository names.
+const KNOWN_SYMBOL_KINDS: &[&str] = &[
+    "class",
+    "interface",
+    "type_alias",
+    "function",
+    "method",
+    "property",
+    "variable",
+    "module",
+    "enum",
+    "enum_variant",
 ];
 
 /// Validate a list of path globs used as an ordered or unordered scope set.
@@ -250,6 +313,25 @@ fn require<'a>(rule: &str, field: &str, value: Option<&'a String>) -> Result<&'a
     })
 }
 
+/// A threshold that can mean something.
+///
+/// Zero would forbid every edge in the repository, which is far more likely to
+/// be a mistake than an intention. Shared by the fan rules so they cannot
+/// disagree about what a valid threshold is.
+fn positive_threshold(rule: &str, raw: Option<i64>) -> Result<usize, RuleError> {
+    let threshold = raw.ok_or_else(|| RuleError::Invalid {
+        rule: rule.to_string(),
+        reason: "'threshold' is required for this kind".to_string(),
+    })?;
+    if threshold < 1 {
+        return Err(RuleError::Invalid {
+            rule: rule.to_string(),
+            reason: format!("'threshold' must be at least 1, got {threshold}"),
+        });
+    }
+    Ok(threshold as usize)
+}
+
 fn build(raw: RawRule, index: usize) -> Result<Rule, RuleError> {
     let name = raw
         .name
@@ -284,21 +366,32 @@ fn build(raw: RawRule, index: usize) -> Result<Rule, RuleError> {
                 symbol: symbol.clone(),
             }
         }
-        "max-fan-in" => {
-            let threshold = raw.threshold.ok_or_else(|| RuleError::Invalid {
-                rule: name.clone(),
-                reason: "'threshold' is required for this kind".to_string(),
-            })?;
-            // Zero would forbid every inbound edge in the repository, which is
-            // far more likely to be a mistake than an intention.
-            if threshold < 1 {
-                return Err(RuleError::Invalid {
-                    rule: name,
-                    reason: format!("'threshold' must be at least 1, got {threshold}"),
-                });
-            }
-            RuleKind::MaxFanIn {
-                threshold: threshold as usize,
+        "max-fan-in" => RuleKind::MaxFanIn {
+            threshold: positive_threshold(&name, raw.threshold)?,
+        },
+        "max-fan-out" => RuleKind::MaxFanOut {
+            threshold: positive_threshold(&name, raw.threshold)?,
+        },
+        "naming-convention" => {
+            let only = match raw.only.as_deref() {
+                None => None,
+                Some(kind) if KNOWN_SYMBOL_KINDS.contains(&kind) => {
+                    Some(SymbolKindName(kind.to_string()))
+                }
+                Some(other) => {
+                    return Err(RuleError::Invalid {
+                        rule: name,
+                        reason: format!(
+                            "unknown symbol kind '{other}' in 'only'. Expected one of: {}",
+                            KNOWN_SYMBOL_KINDS.join(", ")
+                        ),
+                    })
+                }
+            };
+            RuleKind::NamingConvention {
+                symbols: check_glob(&name, "symbols", require(&name, "symbols", raw.symbols.as_ref())?)?,
+                matches: check_glob(&name, "matches", require(&name, "matches", raw.matches.as_ref())?)?,
+                only,
             }
         }
         "layers" => RuleKind::Layers {
@@ -318,10 +411,11 @@ fn build(raw: RawRule, index: usize) -> Result<Rule, RuleError> {
         }
     };
 
+    let severity = raw.severity.unwrap_or_else(|| kind.default_severity());
     Ok(Rule {
         name,
         kind,
-        severity: raw.severity.unwrap_or_default(),
+        severity,
     })
 }
 

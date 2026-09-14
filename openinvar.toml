@@ -44,8 +44,9 @@ severity = "error"
 #
 # Raise it when a hub is genuinely justified; do not raise it to silence one.
 
+# `warn` is the default for the fan rules, so it is not repeated here.
+
 [[rule]]
 name = "no-new-god-symbol"
 kind = "max-fan-in"
 threshold = 180
-severity = "warn"

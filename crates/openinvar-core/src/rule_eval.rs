@@ -445,6 +445,139 @@ fn independence(
     )
 }
 
+
+/// `max-fan-out`: how many distinct things one symbol reaches.
+///
+/// The mirror of fan-in, and it catches the opposite shape: fan-in finds the
+/// symbol everything consumes, fan-out finds the one that consumes everything.
+///
+/// **Counted as distinct targets, where fan-in counts edges.** A file that
+/// imports the same module on three lines reaches one thing, not three, and
+/// inflating that would make the threshold meaningless. The asymmetry is
+/// deliberate and stated rather than left for a reader to discover.
+///
+/// External package nodes are not counted, for the reason fan-in gives: how
+/// many libraries a file uses is a different question from how much of this
+/// repository's own code one symbol reaches into, and counting them would
+/// flag every file with a normal set of imports.
+fn max_fan_out(
+    graph: &InvarGraph,
+    all_edges: &[Edge],
+    threshold: usize,
+) -> (Vec<Violation>, Uncertainty) {
+    let mut resolved: BTreeMap<&str, BTreeSet<&str>> = BTreeMap::new();
+    let mut weak: BTreeMap<&str, BTreeSet<&str>> = BTreeMap::new();
+
+    for edge in all_edges {
+        if is_external_package(&edge.to) {
+            continue;
+        }
+        let counter = if edge.gate_safe { &mut resolved } else { &mut weak };
+        counter
+            .entry(edge.from.as_str())
+            .or_default()
+            .insert(edge.to.as_str());
+    }
+
+    let mut violations = Vec::new();
+    let mut unresolved_edges = 0usize;
+    let mut unresolved_files = BTreeSet::new();
+
+    let candidates: BTreeSet<&str> = resolved.keys().copied().chain(weak.keys().copied()).collect();
+    for id in candidates {
+        let strong = resolved.get(id).map(|t| t.len()).unwrap_or(0);
+        // Only targets this symbol does not already reach on resolved evidence
+        // could push it over; the rest are already counted.
+        let uncertain = weak
+            .get(id)
+            .map(|targets| match resolved.get(id) {
+                Some(known) => targets.difference(known).count(),
+                None => targets.len(),
+            })
+            .unwrap_or(0);
+
+        if strong > threshold {
+            let (file, line) = graph
+                .symbols
+                .get(id)
+                .map(|s| (s.file.clone(), s.line_start))
+                .unwrap_or_else(|| (id.to_string(), 0));
+            violations.push(Violation {
+                file,
+                line,
+                symbol: id.to_string(),
+                detail: format!("reaches {strong} distinct symbols, limit is {threshold}"),
+            });
+        } else if strong + uncertain > threshold {
+            unresolved_edges += uncertain;
+            if let Some(symbol) = graph.symbols.get(id) {
+                unresolved_files.insert(symbol.file.clone());
+            }
+        }
+    }
+
+    violations.sort();
+    (
+        violations,
+        Uncertainty {
+            unresolved_edges,
+            files: unresolved_files,
+        },
+    )
+}
+
+/// `naming-convention`: symbols in a scope must match a pattern.
+///
+/// The only rule in the vocabulary that can never be inconclusive. Every other
+/// kind reasons about edges, and an edge that did not resolve could always
+/// have been the one that mattered. A name comes from the parse: even a Tier 2
+/// file, which resolves no imports at all, reports the names it declares. So
+/// this rule always reaches a definite answer, and returning an empty
+/// [`Uncertainty`] is a statement rather than an omission.
+fn naming_convention(
+    graph: &InvarGraph,
+    symbols: &str,
+    matches_pattern: &str,
+    only: Option<&str>,
+) -> Vec<Violation> {
+    let scope = compile(symbols);
+    let wanted = compile(matches_pattern);
+
+    let mut violations = Vec::new();
+    for entry in graph.symbols.iter() {
+        let symbol = entry.value();
+        if !matches(&scope, &symbol.file) {
+            continue;
+        }
+        let kind = crate::symbol_id::kind_suffix(&symbol.kind);
+        if let Some(only) = only {
+            if kind != only {
+                continue;
+            }
+        }
+        // The synthetic per-file module symbol is named after its file rather
+        // than by anyone, so holding it to a naming rule would report a
+        // violation nobody can fix.
+        if symbol.kind == SymbolKind::Module && symbol.name == symbol.file {
+            continue;
+        }
+        if !matches(&wanted, &symbol.name) {
+            violations.push(Violation {
+                file: symbol.file.clone(),
+                line: symbol.line_start,
+                symbol: symbol.id.clone(),
+                detail: format!(
+                    "{kind} '{}' does not match '{matches_pattern}'",
+                    symbol.name
+                ),
+            });
+        }
+    }
+
+    violations.sort();
+    violations
+}
+
 /// `max-fan-in`: how many things point at one symbol.
 ///
 /// Fan-in is counted from resolved edges only, so a reported breach is real.
@@ -682,6 +815,20 @@ fn evaluate_one(
             let (v, u) = max_fan_in(graph, all_edges, *threshold);
             (v, Some(u))
         }
+        RuleKind::MaxFanOut { threshold } => {
+            let (v, u) = max_fan_out(graph, all_edges, *threshold);
+            (v, Some(u))
+        }
+        RuleKind::NamingConvention {
+            symbols,
+            matches: pattern,
+            only,
+        } => (
+            naming_convention(graph, symbols, pattern, only.as_ref().map(|k| k.0.as_str())),
+            // Deliberately None: names come from the parse, so this rule can
+            // always answer definitely.
+            None,
+        ),
         RuleKind::NoFieldRemoval { symbol } => match delta {
             Some(delta) => (no_field_removal(graph, delta, symbol), None),
             None => {

@@ -14,6 +14,49 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **`max-fan-out` and `naming-convention`.**
+
+  `max-fan-out` is the mirror of `max-fan-in` and catches the opposite shape:
+  fan-in finds the symbol everything consumes, fan-out finds the one that
+  consumes everything. It counts **distinct targets** where fan-in counts
+  edges — a file importing the same module on three lines reaches one thing,
+  not three, and inflating that would make the threshold meaningless. The
+  asymmetry is deliberate and documented rather than left to be discovered.
+
+  `naming-convention` holds symbols in a scope to a pattern, optionally
+  narrowed to one symbol kind:
+
+  ```toml
+  [[rule]]
+  name = "handlers-are-suffixed"
+  kind = "naming-convention"
+  symbols = "src/http/**"
+  matches = "*Handler"
+  only    = "class"
+  ```
+
+  It is the only kind in the vocabulary that can never be undecided. Every
+  other rule reasons about edges, and an edge that did not resolve could always
+  have been the one that mattered; a name comes from the parse, so even a file
+  whose imports resolve to nothing reports the names it declares.
+
+### Changed
+
+- **`severity` now defaults by kind rather than to `error` everywhere.**
+
+  A stated boundary still defaults to `error` — `layers`, `independence`, the
+  `forbid-*` pair, `no-field-removal`, `naming-convention` — because a rule
+  written without a severity is one someone means to enforce.
+
+  The fan limits now default to `warn`. High fan-in and fan-out are frequently
+  intentional: a utility module, an IR type, an entry point. Blocking CI on one
+  would stop a developer who added a module before wiring up its callers, and
+  the rule would be switched off rather than tuned. A team wanting zero
+  tolerance writes `severity = "error"` explicitly, which still wins.
+
+  This changes the behaviour of an existing `max-fan-in` rule written without a
+  severity: it now warns where it previously blocked.
+
 - **Two rule kinds for stating an architecture rather than enumerating it.**
 
   `layers` takes an ordered stack, outermost first. A layer may depend downward

@@ -248,10 +248,23 @@ every module's unresolved edges count.
 | `forbid-reference` | `from`, `to` | *Any* reference does — the superset, so "you may call into this but not import it" is expressible |
 | `no-field-removal` | `symbol` | A named symbol loses a field. Needs a change, so pass `--base`/`--head` |
 | `max-fan-in` | `threshold` | A symbol exceeds that many inbound references. Third-party packages are not counted |
+| `max-fan-out` | `threshold` | A symbol reaches out to more than that many **distinct** symbols |
+| `naming-convention` | `symbols`, `matches`, `only` | A symbol in scope has a name the pattern does not match |
 
-`severity` defaults to `error`: a rule written without one is a rule someone
-means to enforce, and defaulting to advisory would make every unannotated rule
-silent.
+`severity` defaults by kind. A stated boundary — `layers`, `independence`, the
+`forbid-*` pair, `no-field-removal`, `naming-convention` — defaults to `error`,
+because a rule written without one is a rule someone means to enforce. The fan
+limits default to `warn`: a high fan-in or fan-out is frequently intentional (a
+utility module, an IR type, an entry point), and blocking CI on one stops a
+developer who added a module before wiring up its callers. Write
+`severity = "error"` to make those block too.
+
+`max-fan-out` counts **distinct targets**, where `max-fan-in` counts edges. A
+file that imports the same module on three lines reaches one thing, not three.
+
+`naming-convention` is the only kind that can never be undecided: names come
+from the parse rather than from resolution, so even a file whose imports
+resolve to nothing reports the names it declares.
 
 Everything that can be wrong is wrong at parse time — an unknown kind, a glob
 that does not compile, a missing field, a threshold of zero, two rules under one
