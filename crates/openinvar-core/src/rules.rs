@@ -84,6 +84,10 @@ pub enum RuleKind {
     MaxFanOut { threshold: usize },
     /// No dependency cycle may exist within a scope.
     NoCycles { scope: String, level: CycleLevel },
+    /// Every symbol in `from` must reference something in `to`.
+    RequiresDependency { from: String, to: String },
+    /// Nothing in scope may be unreferenced.
+    NoOrphans { scope: String, roots: Vec<String> },
     /// Symbols in a scope must be reached by a test.
     RequiresTest {
         symbols: String,
@@ -150,7 +154,12 @@ impl RuleKind {
     /// tuned. A team wanting zero tolerance writes `severity = "error"`.
     pub fn default_severity(&self) -> Severity {
         match self {
-            Self::MaxFanIn { .. } | Self::MaxFanOut { .. } => Severity::Warn,
+            // Hygiene. High fan, and unreferenced code, are frequently
+            // intentional — a utility module, an IR type, an entry point, a
+            // feature landing before its callers.
+            Self::MaxFanIn { .. } | Self::MaxFanOut { .. } | Self::NoOrphans { .. } => {
+                Severity::Warn
+            }
             _ => Severity::Error,
         }
     }
@@ -166,6 +175,8 @@ impl RuleKind {
             Self::MaxFanOut { .. } => "max-fan-out",
             Self::NoCycles { .. } => "no-cycles",
             Self::RequiresTest { .. } => "requires-test",
+            Self::RequiresDependency { .. } => "requires-dependency",
+            Self::NoOrphans { .. } => "no-orphans",
             Self::NamingConvention { .. } => "naming-convention",
         }
     }
@@ -254,6 +265,7 @@ struct RawRule {
     scope: Option<String>,
     level: Option<String>,
     new_only: Option<bool>,
+    roots: Option<Vec<String>>,
     #[serde(default)]
     severity: Option<Severity>,
 }
@@ -270,6 +282,8 @@ const KNOWN_KINDS: &[&str] = &[
     "naming-convention",
     "no-cycles",
     "requires-test",
+    "requires-dependency",
+    "no-orphans",
 ];
 
 /// Symbol kinds a `naming-convention` rule may filter on.
@@ -437,6 +451,27 @@ fn build(raw: RawRule, index: usize) -> Result<Rule, RuleError> {
         "max-fan-in" => RuleKind::MaxFanIn {
             threshold: positive_threshold(&name, raw.threshold)?,
         },
+        "requires-dependency" => RuleKind::RequiresDependency {
+            from: check_glob(&name, "from", require(&name, "from", raw.from.as_ref())?)?,
+            to: check_glob(&name, "to", require(&name, "to", raw.to.as_ref())?)?,
+        },
+        "no-orphans" => {
+            let scope = check_glob(&name, "scope", require(&name, "scope", raw.scope.as_ref())?)?;
+            // Roots are optional but almost always wanted: an entry point is
+            // unreferenced by definition, and a rule that reports every `main`
+            // in the repository is one nobody keeps on.
+            let roots = match raw.roots.as_ref() {
+                Some(values) => {
+                    let mut checked = Vec::with_capacity(values.len());
+                    for value in values {
+                        checked.push(check_glob(&name, "roots", value)?);
+                    }
+                    checked
+                }
+                None => Vec::new(),
+            };
+            RuleKind::NoOrphans { scope, roots }
+        }
         "requires-test" => RuleKind::RequiresTest {
             symbols: check_glob(&name, "symbols", require(&name, "symbols", raw.symbols.as_ref())?)?,
             only: symbol_kind_filter(&name, raw.only.as_deref())?,
