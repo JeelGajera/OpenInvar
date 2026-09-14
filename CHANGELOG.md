@@ -12,6 +12,49 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **Two rule kinds for stating an architecture rather than enumerating it.**
+
+  `layers` takes an ordered stack, outermost first. A layer may depend downward
+  and on itself; reaching up is a violation. One rule replaces the pairs it
+  would otherwise take — a five-layer stack is ten `forbid-dependency` rules
+  written by hand, and this repository's own configuration now states its whole
+  crate direction in one:
+
+  ```toml
+  [[rule]]
+  name = "crate-layering"
+  kind = "layers"
+  layers = [
+    "crates/openinvar-cli/**",
+    "crates/openinvar-mcp/**",
+    "crates/openinvar-store/**",
+    "crates/openinvar-lang/**",
+    "crates/openinvar-core/**",
+  ]
+  ```
+
+  `independence` takes a set of siblings that may not reference each other in
+  either direction — the monorepo rule, where feature packages should only meet
+  through shared code.
+
+  Both are evaluated natively rather than desugared into pairwise
+  `forbid-dependency` calls. One declared rule stays one reported row, a
+  violation can name the layers and their ordinals rather than two globs, and
+  uncertainty is handled correctly:
+
+  **The outermost layer is never uncertain.** It may depend on everything, so
+  an edge that could not be resolved out of it cannot be an upward violation —
+  there is nothing above it to violate. A pairwise desugaring only sees "a
+  scope had a weak edge" and would report the rule undecided on evidence that
+  could never have mattered. Every other layer's unresolved edges do count.
+  `independence` has no permitted direction, so every module's do, counted once
+  per edge rather than once per module pair.
+
+  A stack of fewer than two entries, a repeated entry, and a glob that does not
+  compile are all rejected when the file is read.
+
 ### Fixed
 
 - **No repository could commit a rules file, so `check` had never gated

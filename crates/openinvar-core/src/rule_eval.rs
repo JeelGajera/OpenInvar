@@ -284,6 +284,167 @@ fn forbid_edges(
     )
 }
 
+/// `layers`: an ordered stack, outermost first.
+///
+/// Evaluated natively rather than desugared into one `forbid_edges` call per
+/// upward pair, for three reasons.
+///
+/// One declared rule stays one reported row. Desugaring a five-layer stack
+/// produces ten synthetic rules, so three broken pairs would read as three
+/// failures of a rule the author wrote once.
+///
+/// A violation can name the layers. `crates/core` (layer 3) importing
+/// `crates/cli` (layer 0) is a sentence; glob A touched glob B is not, and the
+/// ordinal is the part that tells a reader which way the arrow was supposed to
+/// point.
+///
+/// **And uncertainty is asymmetric.** The top layer may depend on everything,
+/// so an unresolved edge leaving it cannot be an upward violation — there is
+/// nothing above it to violate. A desugared evaluator counts that edge and
+/// reports the rule inconclusive on evidence that could never have mattered.
+/// Here, an edge is only uncertain when it leaves a layer that *has* layers
+/// above it.
+fn layers(
+    graph: &InvarGraph,
+    all_edges: &[Edge],
+    layers: &[String],
+) -> (Vec<Violation>, Uncertainty) {
+    let patterns: Vec<glob::Pattern> = layers.iter().map(|l| compile(l)).collect();
+
+    // Which layer a path belongs to, by index. First match wins, so an earlier
+    // (higher) layer claims a path that two globs would both accept.
+    let layer_of = |path: &str| -> Option<usize> {
+        patterns.iter().position(|pattern| matches(pattern, path))
+    };
+
+    let mut violations = Vec::new();
+    let mut unresolved_edges = 0usize;
+    let mut unresolved_files = BTreeSet::new();
+
+    for edge in all_edges {
+        if !edge.is_dependency {
+            continue;
+        }
+        let Some(source_path) = scope_path(graph, &edge.from) else {
+            continue;
+        };
+        let Some(source_layer) = layer_of(&source_path) else {
+            continue;
+        };
+
+        // The asymmetry. A layer with nothing above it cannot depend upward,
+        // so its weak edges carry no uncertainty for this rule.
+        if source_layer == 0 {
+            continue;
+        }
+
+        if !edge.gate_safe {
+            unresolved_edges += 1;
+            unresolved_files.insert(edge.file.clone());
+            continue;
+        }
+
+        let Some(target_path) = scope_path(graph, &edge.to) else {
+            continue;
+        };
+        let Some(target_layer) = layer_of(&target_path) else {
+            continue;
+        };
+
+        // Downward and same-layer are both allowed: a layer is a boundary
+        // against reaching up, not against internal cohesion.
+        if target_layer < source_layer {
+            violations.push(Violation {
+                file: edge.file.clone(),
+                line: edge.line,
+                symbol: edge.from.clone(),
+                detail: format!(
+                    "{source_path} (layer {source_layer}: '{}') depends upward on \
+                     {target_path} (layer {target_layer}: '{}') via {}",
+                    layers[source_layer], layers[target_layer], edge.kind_name
+                ),
+            });
+        }
+    }
+
+    violations.sort();
+    (
+        violations,
+        Uncertainty {
+            unresolved_edges,
+            files: unresolved_files,
+        },
+    )
+}
+
+/// `independence`: siblings that must not reference each other, either way.
+///
+/// Unlike `layers` there is no permitted direction, so every module's weak
+/// edges are genuinely uncertain — an unresolved edge leaving any of them
+/// could land in any of the others.
+///
+/// Uncertainty is counted once per edge rather than once per module pair. The
+/// same file appearing k times for k modules would say the evidence is k times
+/// weaker than it is.
+fn independence(
+    graph: &InvarGraph,
+    all_edges: &[Edge],
+    modules: &[String],
+) -> (Vec<Violation>, Uncertainty) {
+    let patterns: Vec<glob::Pattern> = modules.iter().map(|m| compile(m)).collect();
+    let module_of = |path: &str| -> Option<usize> {
+        patterns.iter().position(|pattern| matches(pattern, path))
+    };
+
+    let mut violations = Vec::new();
+    let mut unresolved_edges = 0usize;
+    let mut unresolved_files = BTreeSet::new();
+
+    for edge in all_edges {
+        let Some(source_path) = scope_path(graph, &edge.from) else {
+            continue;
+        };
+        let Some(source_module) = module_of(&source_path) else {
+            continue;
+        };
+
+        if !edge.gate_safe {
+            unresolved_edges += 1;
+            unresolved_files.insert(edge.file.clone());
+            continue;
+        }
+
+        let Some(target_path) = scope_path(graph, &edge.to) else {
+            continue;
+        };
+        let Some(target_module) = module_of(&target_path) else {
+            continue;
+        };
+
+        if source_module != target_module {
+            violations.push(Violation {
+                file: edge.file.clone(),
+                line: edge.line,
+                symbol: edge.from.clone(),
+                detail: format!(
+                    "{source_path} ('{}') references {target_path} ('{}') via {}; \
+                     these are declared independent",
+                    modules[source_module], modules[target_module], edge.kind_name
+                ),
+            });
+        }
+    }
+
+    violations.sort();
+    (
+        violations,
+        Uncertainty {
+            unresolved_edges,
+            files: unresolved_files,
+        },
+    )
+}
+
 /// `max-fan-in`: how many things point at one symbol.
 ///
 /// Fan-in is counted from resolved edges only, so a reported breach is real.
@@ -507,6 +668,14 @@ fn evaluate_one(
         }
         RuleKind::ForbidReference { from, to } => {
             let (v, u) = forbid_edges(graph, all_edges, from, to, false);
+            (v, Some(u))
+        }
+        RuleKind::Layers { layers: stack } => {
+            let (v, u) = layers(graph, all_edges, stack);
+            (v, Some(u))
+        }
+        RuleKind::Independence { modules } => {
+            let (v, u) = independence(graph, all_edges, modules);
             (v, Some(u))
         }
         RuleKind::MaxFanIn { threshold } => {

@@ -239,3 +239,80 @@ kind = "max-fan-in"
         "{err:?}"
     );
 }
+
+// ── layers and independence ──────────────────────────────────
+
+#[test]
+fn a_layer_stack_needs_at_least_two_layers() {
+    // One layer has nothing to be above. A rule that cannot be violated by
+    // construction is one somebody believes is protecting them.
+    let err = rules::parse(
+        r#"
+[[rule]]
+name = "pointless"
+kind = "layers"
+layers = ["src/**"]
+"#,
+    )
+    .expect_err("a single layer cannot mean anything");
+    assert!(err.to_string().contains("at least 2"), "{err}");
+}
+
+#[test]
+fn a_layer_listed_twice_is_rejected() {
+    // Either a copy-paste slip or a belief that one scope sits at two depths.
+    // Neither should evaluate.
+    let err = rules::parse(
+        r#"
+[[rule]]
+name = "duplicated"
+kind = "layers"
+layers = ["src/a/**", "src/b/**", "src/a/**"]
+"#,
+    )
+    .expect_err("a repeated layer cannot be ordered against itself");
+    assert!(err.to_string().contains("twice"), "{err}");
+}
+
+#[test]
+fn an_independence_set_needs_at_least_two_modules() {
+    let err = rules::parse(
+        r#"
+[[rule]]
+name = "alone"
+kind = "independence"
+modules = ["src/billing/**"]
+"#,
+    )
+    .expect_err("one module has nobody to stay independent from");
+    assert!(err.to_string().contains("at least 2"), "{err}");
+}
+
+#[test]
+fn a_layer_glob_that_does_not_compile_is_rejected_at_parse_time() {
+    let err = rules::parse(
+        r#"
+[[rule]]
+name = "broken-glob"
+kind = "layers"
+layers = ["src/**", "src/[unclosed"]
+"#,
+    )
+    .expect_err("a malformed glob must fail when the file is read");
+    assert!(err.to_string().contains("glob"), "{err}");
+}
+
+#[test]
+fn layers_and_independence_require_their_own_field() {
+    for (kind, field) in [("layers", "layers"), ("independence", "modules")] {
+        let err = rules::parse(&format!(
+            r#"
+[[rule]]
+name = "missing"
+kind = "{kind}"
+"#
+        ))
+        .expect_err("the list is required");
+        assert!(err.to_string().contains(field), "{err}");
+    }
+}

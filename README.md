@@ -211,10 +211,39 @@ name = "god-node"
 kind = "max-fan-in"
 threshold = 60
 severity = "warn"
+
+[[rule]]
+name = "architecture"
+kind = "layers"
+layers = ["src/api/**", "src/service/**", "src/core/**"]   # outermost first
+
+[[rule]]
+name = "features-do-not-talk"
+kind = "independence"
+modules = ["src/billing/**", "src/search/**", "src/inbox/**"]
 ```
+
+`layers` states a dependency direction once instead of as every forbidden
+pair — a five-layer stack is ten `forbid-dependency` rules written by hand. A
+layer may depend downward and on itself; only reaching up is a violation, and
+the message names both layers and their positions:
+
+```
+crates/openinvar-lang/src/dispatch.rs (layer 3: 'crates/openinvar-lang/**')
+depends upward on crates/openinvar-store/src/sqlite.rs
+(layer 2: 'crates/openinvar-store/**') via imports
+```
+
+The outermost layer may depend on everything, so an edge OpenInvar could not
+resolve out of *that* layer is not counted as uncertainty — there is nothing
+above it to violate. Every other layer's unresolved edges are, because they
+could be pointing anywhere. `independence` has no permitted direction, so
+every module's unresolved edges count.
 
 | Kind | Fields | Fires when |
 |---|---|---|
+| `layers` | `layers` | A layer depends on one above it in the stack |
+| `independence` | `modules` | Two modules declared independent reference each other, either direction |
 | `forbid-dependency` | `from`, `to` | An import or re-export runs from one path glob to another |
 | `forbid-reference` | `from`, `to` | *Any* reference does — the superset, so "you may call into this but not import it" is expressible |
 | `no-field-removal` | `symbol` | A named symbol loses a field. Needs a change, so pass `--base`/`--head` |

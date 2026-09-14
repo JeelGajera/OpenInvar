@@ -9,22 +9,23 @@
 
 # ── crate layering ───────────────────────────────────────────
 #
-# The dependency direction is core <- lang <- store <- mcp <- cli. These two
-# rules pin the ends of it: nothing may reach back up into the binary, and the
-# language adapters have no business knowing how anything is persisted.
+# The whole stack, outermost first. A crate may depend downward and never
+# upward, which states the real dependency direction in one rule instead of
+# the ten forbid-dependency pairs it would otherwise take.
+#
+# lang and store both sit above core and neither uses the other, so their
+# order here is what forbids lang from reaching into persistence.
 
 [[rule]]
-name = "core-does-not-depend-on-cli"
-kind = "forbid-dependency"
-from = "crates/openinvar-core/**"
-to   = "crates/openinvar-cli/**"
-severity = "error"
-
-[[rule]]
-name = "lang-does-not-depend-on-store"
-kind = "forbid-dependency"
-from = "crates/openinvar-lang/**"
-to   = "crates/openinvar-store/**"
+name = "crate-layering"
+kind = "layers"
+layers = [
+  "crates/openinvar-cli/**",     # the binary — may reach everything
+  "crates/openinvar-mcp/**",
+  "crates/openinvar-store/**",
+  "crates/openinvar-lang/**",
+  "crates/openinvar-core/**",    # the engine — depends on nothing here
+]
 severity = "error"
 
 # ── coupling ─────────────────────────────────────────────────
