@@ -1,0 +1,28 @@
+version: 2
+updates:
+  # Cargo. Grouped into one pull request per week: the tree-sitter grammars
+  # move together and a separate PR per grammar would bury everything else.
+  - package-ecosystem: cargo
+    directory: "/"
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+    groups:
+      tree-sitter:
+        patterns:
+          - "tree-sitter*"
+      minor-and-patch:
+        update-types:
+          - minor
+          - patch
+
+  # The workflows pin actions by major version, so this is what notices a new
+  # one. CI, the release job and the publish job all run pinned actions.
+  - package-ecosystem: github-actions
+    directory: "/"
+    schedule:
+      interval: weekly
+    groups:
+      actions:
+        patterns:
+          - "*"

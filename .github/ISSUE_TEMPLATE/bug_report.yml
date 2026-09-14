@@ -1,0 +1,94 @@
+name: Bug report
+description: OpenInvar reported something wrong, missed something, or crashed
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting. Most bugs in this project are **resolution** bugs —
+        a specific language construct whose edges OpenInvar gets wrong — so the
+        code that triggers it is usually the whole report.
+
+        If OpenInvar produced **different output on two runs of identical
+        input**, say so prominently. Determinism is the property everything
+        else rests on, and that class of bug is treated as urgent.
+
+        For a security vulnerability, do not file here — see
+        [SECURITY.md](https://github.com/JeelGajera/OpenInvar/blob/master/SECURITY.md).
+
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened
+      description: What OpenInvar reported, and what you expected instead.
+      placeholder: |
+        `openinvar query usages Foo` returns nothing, but Foo is imported in
+        three files.
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Code that reproduces it
+      description: |
+        The smallest snippet or repository that shows the behaviour. A few
+        lines with the relevant imports usually beats a description.
+      render: text
+    validations:
+      required: true
+
+  - type: textarea
+    id: command
+    attributes:
+      label: Command and output
+      description: The exact command you ran and what it printed.
+      render: shell
+    validations:
+      required: true
+
+  - type: dropdown
+    id: language
+    attributes:
+      label: Language
+      description: Which language's analysis is affected?
+      options:
+        - TypeScript / JavaScript
+        - Python
+        - Rust
+        - Go
+        - C / C++
+        - Java
+        - Ruby
+        - C#
+        - Several / polyglot
+        - Not language-specific
+    validations:
+      required: true
+
+  - type: input
+    id: version
+    attributes:
+      label: Version
+      description: Output of `openinvar --version`. If built from source, the commit.
+      placeholder: "openinvar 0.2.0"
+    validations:
+      required: true
+
+  - type: input
+    id: platform
+    attributes:
+      label: Platform
+      placeholder: "macOS 15 arm64 / Ubuntu 24.04 x86_64 / Windows 11"
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Before submitting
+      options:
+        - label: I checked [Known limits](https://github.com/JeelGajera/OpenInvar#known-limits) and this is not one of them
+          required: true
+        - label: I searched existing issues
+          required: true

@@ -860,6 +860,33 @@ stays true.
 
 Release history is in [CHANGELOG.md](CHANGELOG.md).
 
+## Contributing
+
+Contributions are welcome — [CONTRIBUTING.md](CONTRIBUTING.md) covers the build,
+the checks CI runs, and what a mergeable change looks like. Two things shape
+everything else in this repository, so they are worth knowing before you start:
+
+- **Determinism is non-negotiable.** No LLM participates in graph construction
+  or in any gating decision, and anything that reaches output needs a stable
+  ordering key.
+- **Limits are documented, not smoothed over.** A blind spot written down is a
+  feature; one a user discovers is a bug.
+
+The two most common contributions each have a short guide:
+[adding a language](CONTRIBUTING.md#adding-a-language) — a module and a Cargo
+feature, not a new crate — and
+[adding a rule kind](CONTRIBUTING.md#adding-a-rule-kind), where most of the work
+is being honest about what the graph cannot see.
+
+Participation is covered by the [Code of Conduct](CODE_OF_CONDUCT.md).
+
+## Security
+
+Please report vulnerabilities privately rather than in a public issue.
+[SECURITY.md](SECURITY.md) has the process, and sets out what is in scope —
+OpenInvar's security surface is reading code it did not write, frequently in CI,
+frequently from outside the project. It never executes what it analyses.
+
 ## License
 
 Apache-2.0 — see [LICENSE](LICENSE)

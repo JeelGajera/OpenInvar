@@ -1,0 +1,78 @@
+name: New rule kind
+description: Propose a constraint `openinvar check` should be able to enforce
+labels: ["enhancement", "rules"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        The vocabulary today: `forbid-dependency`, `forbid-reference`,
+        `no-field-removal`, `max-fan-in`, `max-fan-out`, `layers`,
+        `independence`, `naming-convention`, `no-cycles`, `requires-test`,
+        `requires-dependency`, `no-orphans`.
+
+        The questions below are the ones that decide whether a rule kind can
+        exist honestly. They are not paperwork — a rule that cannot answer them
+        reports passes it has not earned, which is worse than not shipping it.
+        [CONTRIBUTING.md](https://github.com/JeelGajera/OpenInvar/blob/master/CONTRIBUTING.md#adding-a-rule-kind)
+        explains the model.
+
+  - type: textarea
+    id: constraint
+    attributes:
+      label: The constraint
+      description: What should be true of the codebase, in one sentence?
+      placeholder: "Nothing under src/domain/** may reference an HTTP type."
+    validations:
+      required: true
+
+  - type: textarea
+    id: config
+    attributes:
+      label: How it would be written
+      description: A sketch of the `openinvar.toml` block.
+      render: toml
+      placeholder: |
+        [[rule]]
+        name = "domain-is-transport-agnostic"
+        kind = "..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: uncertainty
+    attributes:
+      label: Which way does uncertainty run?
+      description: |
+        If an edge in scope could not be resolved, could it have been a
+        **violation** of this rule, or the thing that **satisfies** it? Both
+        happen: for `forbid-dependency` an unresolved edge might be a breach,
+        while for `requires-dependency` the same edge might be what makes the
+        rule pass. Are there positions where an unresolved edge cannot matter
+        at all, the way the outermost layer has nothing above it to violate?
+    validations:
+      required: true
+
+  - type: textarea
+    id: existing
+    attributes:
+      label: Why the existing kinds cannot express it
+      description: |
+        Several constraints are already reachable by combining rules — say what
+        you tried. "It would take ten `forbid-dependency` rules" is a good
+        answer; that argument is what produced `layers`.
+    validations:
+      required: true
+
+  - type: dropdown
+    id: severity
+    attributes:
+      label: Should it default to error or warn?
+      description: |
+        Stated boundaries default to `error`. Hygiene rules that fire on
+        healthy repositories default to `warn` — a rule violated on day one
+        gets switched off, and a switched-off rule protects nothing.
+      options:
+        - error — a stated boundary, breaking it is a defect
+        - warn — hygiene, often intentional
+    validations:
+      required: true
