@@ -14,6 +14,45 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **`assertion-removal`** — a fourth audit detector, for a test that kept its
+  coverage but stopped checking anything.
+
+  `test-tampering` catches coverage disappearing. This catches the subtler
+  move: the test still runs, still references the symbol, and the `assert_eq!`
+  has become a call with its result dropped. The suite passes and the coverage
+  graph is unchanged, so from the graph alone the two revisions were identical.
+
+  The detector was specified early and **held back**, with the reason recorded
+  in `held_back()`: assertion calls are not in the graph, and counting them
+  would mean parsing source text outside it, which is a second source of truth.
+  That was right about the constraint and pointed at the fix — the problem was
+  counting them *somewhere else*. Assertions are now counted during the same
+  tree-sitter parse the symbols come from and travel with them, so there is
+  still exactly one source of truth.
+
+  Only unambiguous forms count: Rust's `assert*` macros, Python's `assert` and
+  the `unittest` `assertX` family, `expect`/`assert` in TypeScript and
+  JavaScript, testify plus `t.Error`/`t.Fatal` in Go, and `assert` in C and
+  C++. Not `unwrap()`, which is ordinary code as often as it is a check — a
+  count that moved when one was refactored away would accuse someone over
+  ordinary work.
+
+  Three conditions must all hold before anything is reported: the test
+  survived, it still covers the symbol, and the covered symbol changed in this
+  diff. Losing coverage is `test-tampering`'s finding, and reporting both for
+  one event would say the same thing twice.
+
+  **A count is only meaningful where both revisions counted the language.**
+  Zero assertions in a language this build cannot read means unknown, not none.
+  Auditing against a snapshot recorded before counts existed reports none
+  counted, so without that gate an upgrade would report every test in a
+  repository as emptied at once — the loudest possible false accusation, on the
+  first run after an upgrade.
+
+- **Snapshot format version 4**, carrying assertion counts and, per file,
+  whether its language was counted. Versions 1 to 3 read back as having counted
+  nothing, which is what makes the upgrade decline rather than accuse.
+
 - **`analyze --at <rev>`** — analyse the tree at a revision instead of the
   working tree.
 

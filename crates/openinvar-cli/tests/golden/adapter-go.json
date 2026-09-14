@@ -1,6 +1,8 @@
 {
   "files": [
     {
+      "assertions": {},
+      "assertions_counted": true,
       "diagnostics": [],
       "file": "alias_import_bug/mappers/deep/view_model_mapper.go",
       "language": "Go",
@@ -103,6 +105,8 @@
       ]
     },
     {
+      "assertions": {},
+      "assertions_counted": true,
       "diagnostics": [],
       "file": "alias_import_bug/models/user_payload.go",
       "language": "Go",
@@ -142,6 +146,8 @@
       ]
     },
     {
+      "assertions": {},
+      "assertions_counted": true,
       "diagnostics": [],
       "file": "call_edges/app/run.go",
       "language": "Go",
@@ -286,6 +292,8 @@
       ]
     },
     {
+      "assertions": {},
+      "assertions_counted": true,
       "diagnostics": [],
       "file": "call_edges/models/user.go",
       "language": "Go",
@@ -401,6 +409,8 @@
       ]
     },
     {
+      "assertions": {},
+      "assertions_counted": true,
       "diagnostics": [],
       "file": "language_features/handlers/user.go",
       "language": "Go",
@@ -580,6 +590,8 @@
       ]
     },
     {
+      "assertions": {},
+      "assertions_counted": true,
       "diagnostics": [],
       "file": "language_features/models/order.go",
       "language": "Go",
@@ -619,6 +631,8 @@
       ]
     },
     {
+      "assertions": {},
+      "assertions_counted": true,
       "diagnostics": [],
       "file": "language_features/models/user.go",
       "language": "Go",
@@ -670,6 +684,8 @@
       ]
     },
     {
+      "assertions": {},
+      "assertions_counted": true,
       "diagnostics": [],
       "file": "language_features/store/helpers.go",
       "language": "Go",
@@ -732,6 +748,8 @@
       ]
     },
     {
+      "assertions": {},
+      "assertions_counted": true,
       "diagnostics": [],
       "file": "language_features/store/store.go",
       "language": "Go",

@@ -34,11 +34,15 @@ const SCHEMA_VERSION: i32 = 1;
 
 /// Bumped to 3 for the per-edge resolution byte.
 ///
+/// A version 1, 2 or 3 snapshot carries no assertion counts, and is read back
+/// as having counted none — so an audit against an old base declines to
+/// conclude rather than reporting every test as emptied.
+///
 /// A version 1 or 2 snapshot carries no resolution, and is read back as
 /// `Structural` — the weaker value — so a graph written before this existed is
 /// never treated as gate-safe on the strength of a field it does not have.
 /// Re-analysing rewrites it at the current version.
-const SNAPSHOT_VERSION: u8 = 3;
+const SNAPSHOT_VERSION: u8 = 4;
 
 #[derive(Debug)]
 pub enum StoreError {
@@ -97,6 +101,15 @@ pub struct GraphSnapshot {
     pub relationships: Vec<Relationship>,
     pub alias_chains: Vec<(String, Vec<AliasEntry>)>,
     pub file_reexports: Vec<(String, Vec<ReExportEntry>)>,
+    /// Recognised assertions per symbol, sorted by symbol id.
+    pub assertions: Vec<(String, u32)>,
+    /// Per file, whether this build counted assertions in its language.
+    ///
+    /// Stored alongside the counts because a count of nothing is ambiguous
+    /// without it, and a snapshot written before version 4 carries neither —
+    /// which is read back as "nothing was counted", so a detector declines to
+    /// conclude rather than reporting every test as emptied.
+    pub assertions_counted: Vec<(String, bool)>,
 }
 
 pub struct GraphStore {
@@ -447,11 +460,29 @@ impl GraphSnapshot {
             .collect();
         file_reexports.sort_by(|a, b| a.0.cmp(&b.0));
 
+        // Sorted explicitly: both come from a DashMap, whose iteration order
+        // varies per process, and these bytes are compared for equality.
+        let mut assertions: Vec<(String, u32)> = graph
+            .assertions
+            .iter()
+            .map(|entry| (entry.key().clone(), *entry.value()))
+            .collect();
+        assertions.sort_by(|a, b| a.0.cmp(&b.0));
+
+        let mut assertions_counted: Vec<(String, bool)> = graph
+            .assertions_counted
+            .iter()
+            .map(|entry| (entry.key().clone(), *entry.value()))
+            .collect();
+        assertions_counted.sort_by(|a, b| a.0.cmp(&b.0));
+
         Ok(Self {
             symbols,
             relationships,
             alias_chains,
             file_reexports,
+            assertions,
+            assertions_counted,
         })
     }
 
@@ -472,6 +503,14 @@ impl GraphSnapshot {
 
         for (file, re_exports) in self.file_reexports {
             graph.file_reexports.insert(file, re_exports);
+        }
+
+        for (symbol, count) in self.assertions {
+            graph.assertions.insert(symbol, count);
+        }
+
+        for (file, counted) in self.assertions_counted {
+            graph.assertions_counted.insert(file, counted);
         }
 
         Ok(graph)
@@ -529,6 +568,20 @@ impl GraphSnapshot {
                 write_string(&mut out, &entry.exported_name)?;
                 write_string(&mut out, &entry.source_module)?;
             }
+        }
+
+        // Version 4. Appended rather than interleaved, so the bytes an earlier
+        // version wrote are still the bytes this one writes for the same graph.
+        write_u32(&mut out, self.assertions.len() as u32);
+        for (symbol, count) in &self.assertions {
+            write_string(&mut out, symbol)?;
+            write_u32(&mut out, *count);
+        }
+
+        write_u32(&mut out, self.assertions_counted.len() as u32);
+        for (file, counted) in &self.assertions_counted {
+            write_string(&mut out, file)?;
+            write_u8(&mut out, u8::from(*counted));
         }
 
         Ok(out)
@@ -629,6 +682,24 @@ impl GraphSnapshot {
             }
         }
 
+        let mut assertions = Vec::new();
+        let mut assertions_counted = Vec::new();
+        if version >= 4 {
+            let count = cursor.read_u32()? as usize;
+            assertions.reserve(count);
+            for _ in 0..count {
+                let symbol = cursor.read_string()?;
+                assertions.push((symbol, cursor.read_u32()?));
+            }
+
+            let counted = cursor.read_u32()? as usize;
+            assertions_counted.reserve(counted);
+            for _ in 0..counted {
+                let file = cursor.read_string()?;
+                assertions_counted.push((file, cursor.read_u8()? != 0));
+            }
+        }
+
         if !cursor.is_at_end() {
             return Err(StoreError::Serialization(
                 "trailing bytes found in snapshot".to_string(),
@@ -640,6 +711,8 @@ impl GraphSnapshot {
             relationships,
             alias_chains,
             file_reexports,
+            assertions,
+            assertions_counted,
         })
     }
 }

@@ -1,6 +1,8 @@
 {
   "files": [
     {
+      "assertions": {},
+      "assertions_counted": true,
       "diagnostics": [],
       "file": "js_frontend/app.ts",
       "language": "TypeScript",
@@ -30,6 +32,8 @@
       ]
     },
     {
+      "assertions": {},
+      "assertions_counted": true,
       "diagnostics": [],
       "file": "python_service/service.py",
       "language": "Python",
@@ -61,6 +65,8 @@
       ]
     },
     {
+      "assertions": {},
+      "assertions_counted": true,
       "diagnostics": [],
       "file": "rust_core/lib.rs",
       "language": "Rust",
@@ -90,6 +96,8 @@
       ]
     },
     {
+      "assertions": {},
+      "assertions_counted": true,
       "diagnostics": [],
       "file": "go_api/handler.go",
       "language": "Go",

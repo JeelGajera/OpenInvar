@@ -26,6 +26,7 @@ use crate::rules::Severity;
 pub fn all() -> Vec<&'static dyn Detector> {
     vec![
         &TestTampering as &'static dyn Detector,
+        &AssertionRemoval as &'static dyn Detector,
         &ContractErosion as &'static dyn Detector,
         &DeadOnArrival as &'static dyn Detector,
     ]
@@ -43,14 +44,6 @@ pub struct HeldBack {
 
 pub fn held_back() -> &'static [HeldBack] {
     &[
-        HeldBack {
-            name: "assertion-removal",
-            reason: "assertion calls are not in the graph. Rust's assert macros are \
-                     token trees that are never expanded, and framework calls like \
-                     expect() resolve to nothing, so a net assertion count cannot be \
-                     computed from the graph at all. Counting them would mean parsing \
-                     source text outside the graph, which is a second source of truth.",
-        },
         HeldBack {
             name: "scope-creep",
             reason: "there is no declared task scope to compare a blast radius against. \
@@ -218,6 +211,131 @@ impl Detector for TestTampering {
         }
         findings
     }
+}
+
+// ── assertion removal ────────────────────────────────────────
+
+/// A test kept its coverage but lost assertions, in the same diff that changed
+/// what it covers.
+///
+/// # The shape this is looking for
+///
+/// [`TestTampering`] catches coverage *disappearing*. The subtler move is the
+/// test that still runs, still references the symbol, and no longer checks
+/// anything: the `assert_eq!` becomes a call with its result dropped, and both
+/// the suite and the coverage graph stay green. From the graph alone those two
+/// revisions are identical, which is exactly why this needed assertion counts
+/// to exist at all.
+///
+/// # Why it is not simply "assertions went down"
+///
+/// Deleting a redundant assertion is ordinary work, and a detector that fired
+/// on it would be switched off in a week. Three conditions narrow it to the
+/// suspicious case, and all three must hold:
+///
+/// - the test survived the change — a deleted test is [`TestTampering`]'s
+///   business, and reporting both for one event says the same thing twice;
+/// - it still covers the symbol, so this is not coverage loss wearing another
+///   hat;
+/// - the covered symbol changed in *this* diff. Assertions dropping where
+///   behaviour changed, while the test keeps claiming to cover it, is the
+///   combination that is hard to do by accident.
+///
+/// # What it refuses to conclude
+///
+/// A count is only meaningful where this build counts the language, and only
+/// where both revisions counted it. A base snapshot written before the format
+/// carried counts reports nothing counted, so every test would look emptied —
+/// [`AuditContext::assertions_comparable`] is what stops that, and
+/// `an_uncounted_language_is_never_a_finding` pins it.
+pub struct AssertionRemoval;
+
+impl Detector for AssertionRemoval {
+    fn name(&self) -> &'static str {
+        "assertion-removal"
+    }
+    fn severity(&self) -> Severity {
+        Severity::Error
+    }
+    fn confidence(&self) -> Confidence {
+        Confidence::High
+    }
+    fn describes(&self) -> &'static str {
+        "a test lost assertions while still covering a symbol that changed"
+    }
+
+    fn detect(&self, ctx: &AuditContext<'_>) -> Vec<Finding> {
+        let changed = changed_ids(ctx.delta);
+        let before_coverage = coverage(ctx.before);
+        let after_coverage = coverage(ctx.after);
+        let after_ids = ids_in(ctx.after);
+
+        let mut findings = Vec::new();
+        for (test, covered) in &before_coverage {
+            // Still covering it: coverage that vanished is test-tampering's
+            // finding, not this one.
+            if !after_coverage.contains(&(test.clone(), covered.clone())) {
+                continue;
+            }
+            if !after_ids.contains(test) || !after_ids.contains(covered) {
+                continue;
+            }
+            if !changed.contains(covered) {
+                continue;
+            }
+
+            let file = file_of(ctx.after, test);
+            if !ctx.assertions_comparable(&file_of(ctx.before, test), &file) {
+                continue;
+            }
+
+            let before_count = assertions_of(ctx.before, test);
+            let after_count = assertions_of(ctx.after, test);
+            if after_count >= before_count {
+                continue;
+            }
+
+            findings.push(Finding {
+                id: FindingId::new(self.name(), &[test.as_str(), covered.as_str()]),
+                detector: self.name(),
+                severity: self.severity(),
+                confidence: self.confidence(),
+                summary: format!(
+                    "{} still covers '{}' but lost {} assertion(s) in the diff that changed it",
+                    file,
+                    name_of(ctx.after, covered),
+                    before_count - after_count
+                ),
+                file: file.clone(),
+                line: line_of(ctx.after, test),
+                evidence: vec![
+                    Evidence {
+                        file,
+                        line: line_of(ctx.after, test),
+                        detail: format!(
+                            "'{}' went from {before_count} assertion(s) to {after_count}",
+                            name_of(ctx.after, test)
+                        ),
+                    },
+                    Evidence {
+                        file: file_of(ctx.after, covered),
+                        line: line_of(ctx.after, covered),
+                        detail: format!(
+                            "'{}' changed in this diff and is still reported as covered",
+                            name_of(ctx.after, covered)
+                        ),
+                    },
+                ],
+            });
+        }
+        findings
+    }
+}
+
+/// Assertions recorded for a symbol. Absent is zero **only** where the caller
+/// has already established the file was counted.
+fn assertions_of(graph: &InvarGraph, id: &str) -> u32 {
+    graph.assertions.get(id).map(|v| *v).unwrap_or(0)
 }
 
 // ── contract erosion ─────────────────────────────────────────

@@ -148,10 +148,19 @@ fn detectors_that_were_not_run_are_named_with_their_reasons() {
     let root = staged("coverage", |_| {});
     let (out, _) = openinvar(&root, &["audit", ".", "--base", "HEAD", "--head", "worktree"]);
 
-    for detector in ["assertion-removal", "scope-creep", "special-casing"] {
+    for detector in ["scope-creep", "special-casing"] {
         assert!(out.contains(detector), "{detector} not named:\n{out}");
     }
-    assert!(out.contains("not in the graph"), "the reason is missing:\n{out}");
+    assert!(out.contains("no denominator"), "the reason is missing:\n{out}");
+
+    // `assertion-removal` was on this list until assertions were recorded
+    // during the parse. It now runs, so it must appear as a check that was
+    // made rather than one that was skipped — the whole point of naming held
+    // back detectors is that the two are never confused.
+    assert!(
+        out.contains("assertion-removal"),
+        "assertion-removal is not named at all:\n{out}"
+    );
 }
 
 #[test]

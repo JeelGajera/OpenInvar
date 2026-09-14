@@ -182,6 +182,26 @@ impl AuditContext<'_> {
     pub fn in_scope(&self, file: &str) -> bool {
         self.tier_one_files.contains(file)
     }
+
+    /// Whether assertion counts may be compared between the two revisions.
+    ///
+    /// The second gate, and it exists for the same reason as [`Self::in_scope`].
+    /// An assertion count of zero is two completely different statements
+    /// depending on whether the language was counted: *this test checks
+    /// nothing*, or *this build cannot see what this test checks*. Only the
+    /// first supports an accusation.
+    ///
+    /// Both revisions must have counted the file. A base snapshot written
+    /// before the format carried counts reports none counted, so without this
+    /// an upgrade would make every test in the repository look emptied at once
+    /// — the loudest possible false accusation, on the first run after an
+    /// upgrade, which is precisely when trust is thinnest.
+    pub fn assertions_comparable(&self, before_file: &str, after_file: &str) -> bool {
+        let counted = |graph: &InvarGraph, file: &str| {
+            graph.assertions_counted.get(file).map(|v| *v).unwrap_or(false)
+        };
+        counted(self.before, before_file) && counted(self.after, after_file)
+    }
 }
 
 /// One deterministic check.

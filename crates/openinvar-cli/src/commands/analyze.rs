@@ -453,6 +453,17 @@ pub fn build_graph(repo_ir: &RepoIR) -> (InvarGraph, AnalyzeStats) {
         graph
             .file_reexports
             .insert(file_ir.file.clone(), file_ir.re_exports.clone());
+
+        // Assertion counts, plus whether this file's language was counted at
+        // all. Both are needed: the counts alone cannot distinguish a test with
+        // no assertions left from a file this build cannot read assertions in.
+        for (symbol, count) in &file_ir.assertions {
+            graph.assertions.insert(symbol.clone(), *count);
+        }
+        graph
+            .assertions_counted
+            .insert(file_ir.file.clone(), file_ir.assertions_counted);
+
         resolver.ingest_relationships(&graph, &file_ir.relationships);
     }
 

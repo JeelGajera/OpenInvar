@@ -55,6 +55,8 @@ fn graph_of(files: Vec<(&str, Vec<Symbol>, Vec<Relationship>)>) -> InvarGraph {
                 relationships: vec![],
                 diagnostics: vec![],
                 re_exports: vec![],
+                assertions: Default::default(),
+                assertions_counted: false,
             },
         );
     }

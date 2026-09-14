@@ -1,6 +1,8 @@
 {
   "files": [
     {
+      "assertions": {},
+      "assertions_counted": true,
       "diagnostics": [],
       "file": "alias_import_bug_c/include/user_payload.h",
       "language": "C",
@@ -30,6 +32,8 @@
       ]
     },
     {
+      "assertions": {},
+      "assertions_counted": true,
       "diagnostics": [],
       "file": "alias_import_bug_c/src/view_model_mapper.c",
       "language": "C",
@@ -101,6 +105,8 @@
       ]
     },
     {
+      "assertions": {},
+      "assertions_counted": true,
       "diagnostics": [],
       "file": "alias_import_bug_cpp/include/user_payload.hpp",
       "language": "Cpp",
@@ -130,6 +136,8 @@
       ]
     },
     {
+      "assertions": {},
+      "assertions_counted": true,
       "diagnostics": [],
       "file": "alias_import_bug_cpp/src/view_model_mapper.cpp",
       "language": "Cpp",
@@ -201,6 +209,8 @@
       ]
     },
     {
+      "assertions": {},
+      "assertions_counted": true,
       "diagnostics": [],
       "file": "call_edges/include/geometry.h",
       "language": "C",
@@ -230,6 +240,8 @@
       ]
     },
     {
+      "assertions": {},
+      "assertions_counted": true,
       "diagnostics": [],
       "file": "call_edges/include/shapes.hpp",
       "language": "Cpp",
@@ -269,6 +281,8 @@
       ]
     },
     {
+      "assertions": {},
+      "assertions_counted": true,
       "diagnostics": [
         {
           "category": "Resolution",
@@ -318,6 +332,8 @@
       ]
     },
     {
+      "assertions": {},
+      "assertions_counted": true,
       "diagnostics": [],
       "file": "call_edges/src/geometry.c",
       "language": "C",
@@ -383,6 +399,8 @@
       ]
     },
     {
+      "assertions": {},
+      "assertions_counted": true,
       "diagnostics": [],
       "file": "call_edges/src/render.c",
       "language": "C",
@@ -480,6 +498,8 @@
       ]
     },
     {
+      "assertions": {},
+      "assertions_counted": true,
       "diagnostics": [],
       "file": "language_features/include/shapes.hpp",
       "language": "Cpp",
@@ -531,6 +551,8 @@
       ]
     },
     {
+      "assertions": {},
+      "assertions_counted": true,
       "diagnostics": [],
       "file": "language_features/include/user_payload.h",
       "language": "C",
@@ -570,6 +592,8 @@
       ]
     },
     {
+      "assertions": {},
+      "assertions_counted": true,
       "diagnostics": [],
       "file": "language_features/src/mapper.c",
       "language": "C",
@@ -674,6 +698,8 @@
       ]
     },
     {
+      "assertions": {},
+      "assertions_counted": true,
       "diagnostics": [],
       "file": "language_features/src/render.cpp",
       "language": "Cpp",
@@ -743,6 +769,8 @@
       ]
     },
     {
+      "assertions": {},
+      "assertions_counted": true,
       "diagnostics": [],
       "file": "prototype_linking/api.h",
       "language": "C",
@@ -762,6 +790,8 @@
       ]
     },
     {
+      "assertions": {},
+      "assertions_counted": true,
       "diagnostics": [],
       "file": "prototype_linking/caller.c",
       "language": "C",
@@ -835,6 +865,8 @@
       ]
     },
     {
+      "assertions": {},
+      "assertions_counted": true,
       "diagnostics": [],
       "file": "prototype_linking/detached.c",
       "language": "C",
@@ -864,6 +896,8 @@
       ]
     },
     {
+      "assertions": {},
+      "assertions_counted": true,
       "diagnostics": [],
       "file": "prototype_linking/fallback.c",
       "language": "C",
@@ -905,6 +939,8 @@
       ]
     },
     {
+      "assertions": {},
+      "assertions_counted": true,
       "diagnostics": [],
       "file": "prototype_linking/handler.c",
       "language": "C",

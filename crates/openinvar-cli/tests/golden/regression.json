@@ -1,6 +1,8 @@
 {
   "files": [
     {
+      "assertions": {},
+      "assertions_counted": true,
       "diagnostics": [],
       "file": "py/models/types.py",
       "language": "Python",
@@ -60,6 +62,8 @@
       ]
     },
     {
+      "assertions": {},
+      "assertions_counted": true,
       "diagnostics": [],
       "file": "py/svc/svc.py",
       "language": "Python",
@@ -152,6 +156,8 @@
       ]
     },
     {
+      "assertions": {},
+      "assertions_counted": true,
       "diagnostics": [],
       "file": "rust/src/alpha.rs",
       "language": "Rust",
@@ -181,6 +187,8 @@
       ]
     },
     {
+      "assertions": {},
+      "assertions_counted": true,
       "diagnostics": [],
       "file": "rust/src/beta.rs",
       "language": "Rust",
@@ -210,6 +218,8 @@
       ]
     },
     {
+      "assertions": {},
+      "assertions_counted": true,
       "diagnostics": [],
       "file": "rust/src/consumer.rs",
       "language": "Rust",
@@ -302,6 +312,8 @@
       ]
     },
     {
+      "assertions": {},
+      "assertions_counted": true,
       "diagnostics": [],
       "file": "rust/src/lib.rs",
       "language": "Rust",
@@ -321,6 +333,8 @@
       ]
     },
     {
+      "assertions": {},
+      "assertions_counted": true,
       "diagnostics": [],
       "file": "go/models/alpha.go",
       "language": "Go",
@@ -370,6 +384,8 @@
       ]
     },
     {
+      "assertions": {},
+      "assertions_counted": true,
       "diagnostics": [],
       "file": "go/svc/svc.go",
       "language": "Go",
@@ -482,6 +498,8 @@
       ]
     },
     {
+      "assertions": {},
+      "assertions_counted": true,
       "diagnostics": [],
       "file": "c/include/types.h",
       "language": "C",
@@ -521,6 +539,8 @@
       ]
     },
     {
+      "assertions": {},
+      "assertions_counted": true,
       "diagnostics": [],
       "file": "c/src/svc.c",
       "language": "C",

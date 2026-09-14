@@ -60,6 +60,8 @@ fn graph_with(from_file: &str, to_file: &str, resolution: Resolution) -> InvarGr
                 relationships: vec![],
                 diagnostics: vec![],
                 re_exports: vec![],
+                assertions: Default::default(),
+                assertions_counted: false,
             },
         );
     }
