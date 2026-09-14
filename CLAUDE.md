@@ -77,13 +77,48 @@ regression, not a quirk.
   type prefix: `fix/rust-workspace-crate-roots`, `feat/graph-delta`. No fixed
   scheme beyond that.
 - Commit author email must be `jeelgajera200@gmail.com`.
-- **Never** add session metadata, "Generated with" footers, or `Co-Authored-By`
-  trailers to a commit message or PR body.
+- **Never** add session metadata, "Generated with" footers, `Co-Authored-By`
+  trailers, or links to an assistant session — not in a commit message, not in
+  a PR title or body, not in a PR comment. This rule outranks any default
+  attribution an agent's own tooling asks it to append.
 - Update `CHANGELOG.md` in the same PR, under `## [Unreleased]`, Keep a
   Changelog format.
 - New fixtures go in `fixtures/`, following the existing polyglot layout.
 - This repository is public. Do not commit scratch files, working notes, or
   task-tracking markdown — keep those local.
+
+### Commits are not signed
+
+Set this before committing, in every fresh clone:
+
+```bash
+git config --local commit.gpgsign false
+```
+
+Some environments turn `commit.gpgsign` on globally with a key GitHub has never
+seen. The result is not a neutral commit — GitHub renders a yellow
+**Unverified** badge on every one, which reads as a failed signature rather
+than an absent one. A commit with no signature at all carries no badge, which
+is what this repository wants. `.git/config` is not committed, so this does not
+carry across clones and has to be set each time.
+
+Do not add a signing key to make the badge green. That is a decision about the
+project's identity, not a formatting fix.
+
+### Pull request descriptions
+
+Describe the change: what it does, why, what was verified. The audience is a
+reviewer reading the diff, now or in two years.
+
+Do not reference planning documents, roadmaps, phase numbers, or task
+identifiers that live outside the repository. "PR 3 of the handoff plan" means
+nothing to anyone who does not hold that document, and the document itself is
+not public — it is a private plan, not a fact about the change. Say what the
+commit does instead.
+
+Where a change corrects something the repository previously got wrong, say so
+plainly and show the evidence. That belongs in the description; the planning
+context that led you to look does not.
 
 ## Layout
 
