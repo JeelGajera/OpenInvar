@@ -14,6 +14,47 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **`no-cycles`** — the most-requested architecture rule there is, and the one
+  a sceptical reader checks for before believing a tool is serious.
+
+  ```toml
+  [[rule]]
+  name  = "no-import-cycles"
+  kind  = "no-cycles"
+  scope = "src/**"      # optional; the whole graph by default
+  level = "file"        # file (default) or module
+  ```
+
+  Cycles report as an ordered walk — `a.ts -> b.ts -> c.ts -> a.ts` — rather
+  than as a set, because a cycle whose shape nobody can read is a cycle nobody
+  fixes.
+
+  **Two passes, because one would be dishonest.** Running Tarjan over resolved
+  edges and calling a clean result "no cycles" is wrong: an edge that did not
+  resolve could be the one that *closes* a cycle the resolved edges leave open.
+  So proving a scope acyclic means having resolved every edge inside it. Where
+  any in-scope node has an unresolved outbound edge, the verdict is
+  inconclusive rather than a pass. A cycle already found still reports as a
+  violation — weak evidence elsewhere does not make it less of a cycle.
+
+  `level = "symbol"` is **refused**, with a reason rather than silently. Mutual
+  recursion between functions is correct, ordinary code — recursive-descent
+  parsers, visitors, state machines — so a symbol level would fire on every
+  tokenizer in existence and be switched off within a week. `level = "module"`
+  exists for Go, where files inside one package reference each other freely and
+  the compiler already rejects circular *package* imports.
+
+  **Known blind spot, documented rather than discovered later.** On Rust the
+  rule reports the language's own module structure. A crate root declares
+  `pub mod x;` while `x.rs` refers back with `use crate::…`, and where that
+  path cannot be resolved through the module's exports the edge attaches to the
+  crate root — closing a loop that is ordinary Rust. Run against this
+  repository it reports five file-level cycles, every one a `lib.rs` ↔
+  submodule pair; `level = "module"` collapses most but still reports parent ↔
+  child module directories. The rule is for TypeScript, JavaScript, Python and
+  C/C++, where a cycle means something is broken. This repository does not gate
+  on it, for that reason.
+
 - **`max-fan-out` and `naming-convention`.**
 
   `max-fan-out` is the mirror of `max-fan-in` and catches the opposite shape:
