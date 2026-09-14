@@ -14,6 +14,43 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **`requires-test`** — the rule no comparable tool can express. `tests` edges
+  are derived across every Tier 1 language here; semgrep, dependency-cruiser,
+  ArchUnit and import-linter have no equivalent in any language.
+
+  ```toml
+  [[rule]]
+  name     = "new-api-is-covered"
+  kind     = "requires-test"
+  symbols  = "src/api/**"
+  only     = "function"   # optional
+  new_only = true         # judge only what this change added
+  ```
+
+  **Direct edges only.** That a test reaches `login`, and `login` references
+  `format_token`, is no proof the test ever executes `format_token` — it may
+  sit behind an early return, and reporting the symbol covered would be
+  claiming certainty from an assumption. It is also the difference between a
+  rule and a loophole: an agent that adds a function and needs this green could
+  satisfy a transitive version by wiring it into any legacy endpoint that
+  already has an integration test, with no unit test and no assertion.
+
+  **An apparent gap is uncertainty, not an accusation.** Test detection is by
+  file convention and Tier 2 files produce no `tests` edges at all, so where the
+  graph carries structural regions, "nothing covers this" and "nothing this
+  build can see covers this" are the same observation. The rule answers
+  definitely only on a fully resolved scope.
+
+  `new_only = true` is what makes it adoptable: *every symbol you added is
+  covered* is enforceable on a repository that could never pass *every symbol
+  is covered*. Without a change to compare against, that form is skipped rather
+  than passed.
+
+  Tests are excluded from their own scope — nobody writes a test for a test. A
+  test is recognised by originating a `tests` edge rather than by its filename,
+  since `is_test_file` lives in the language crate that the engine cannot
+  depend on and the graph already carries the answer.
+
 - **`no-cycles`** — the most-requested architecture rule there is, and the one
   a sceptical reader checks for before believing a tool is serious.
 
