@@ -447,6 +447,130 @@ fn independence(
 
 
 
+
+/// `requires-test`: symbols in a scope must be reached by a test.
+///
+/// The rule no comparable tool can express. `tests` edges are derived across
+/// every Tier 1 language here; semgrep, dependency-cruiser, ArchUnit and
+/// import-linter have no equivalent in any language.
+///
+/// **Direct edges only.** That `test_auth` calls `login`, and `login`
+/// statically references `format_token`, is no proof the test ever executes
+/// `format_token` — it may sit behind an early return. Reporting the symbol
+/// covered would be claiming certainty from an assumption, which is precisely
+/// what the inconclusive verdict exists to avoid.
+///
+/// It is also the difference between a rule and a loophole. An agent that adds
+/// `sanitize_input` and needs this rule green can satisfy a transitive version
+/// by wiring the new function into any legacy endpoint that already has an
+/// integration test — no unit test, no assertion, rule green. Counting only
+/// direct edges closes that.
+///
+/// Uncertainty comes from somewhere different than every other rule. Test
+/// detection is by file convention and Tier 2 files produce no `tests` edges
+/// at all, so an uncovered symbol might be covered by a test this build cannot
+/// see. Where the graph carries any structural edge, an apparent gap in
+/// coverage is reported as uncertainty rather than as a violation.
+fn requires_test(
+    graph: &InvarGraph,
+    all_edges: &[Edge],
+    delta: Option<&GraphDelta>,
+    symbols: &str,
+    only: Option<&str>,
+    new_only: bool,
+) -> (Vec<Violation>, Uncertainty) {
+    let scope = compile(symbols);
+
+    // Which symbols any test reaches directly, and which symbols are tests.
+    //
+    // A test is recognised by originating a `tests` edge rather than by its
+    // filename: `is_test_file` lives in the language crate, which the engine
+    // cannot depend on, and the graph already carries the answer. Test
+    // symbols are excluded from the scope — holding a test to a coverage
+    // requirement would demand a test for the test.
+    let mut covered: BTreeSet<&str> = BTreeSet::new();
+    let mut tests: BTreeSet<&str> = BTreeSet::new();
+    let mut structural_edges = 0usize;
+    let mut structural_files = BTreeSet::new();
+    for edge in all_edges {
+        if edge.kind_name == "tests" {
+            tests.insert(edge.from.as_str());
+            if edge.gate_safe {
+                covered.insert(edge.to.as_str());
+            }
+        }
+        if !edge.gate_safe {
+            structural_edges += 1;
+            structural_files.insert(edge.file.clone());
+        }
+    }
+
+    // `new_only` narrows to what this change added. Without it the rule is
+    // unadoptable on an existing codebase: "every public symbol is covered" is
+    // a coverage project, "every symbol you added is covered" is a gate that
+    // can go green today.
+    let added: Option<BTreeSet<&str>> = if new_only {
+        delta.map(|d| d.added_symbols.iter().map(|s| s.id.as_str()).collect())
+    } else {
+        None
+    };
+
+    let mut uncovered = Vec::new();
+    for entry in graph.symbols.iter() {
+        let symbol = entry.value();
+        if !matches(&scope, &symbol.file) {
+            continue;
+        }
+        let kind = crate::symbol_id::kind_suffix(&symbol.kind);
+        if let Some(only) = only {
+            if kind != only {
+                continue;
+            }
+        }
+        // The synthetic per-file module symbol is not something anyone writes
+        // a test for.
+        if symbol.kind == SymbolKind::Module && symbol.name == symbol.file {
+            continue;
+        }
+        if let Some(added) = &added {
+            if !added.contains(symbol.id.as_str()) {
+                continue;
+            }
+        }
+        if covered.contains(symbol.id.as_str()) || tests.contains(symbol.id.as_str()) {
+            continue;
+        }
+        uncovered.push(Violation {
+            file: symbol.file.clone(),
+            line: symbol.line_start,
+            symbol: symbol.id.clone(),
+            detail: format!("{kind} '{}' is not reached by any test", symbol.name),
+        });
+    }
+    uncovered.sort();
+
+    // Absence is the hard claim. A test in a Tier 2 file produces no edge at
+    // all, so where the graph has structural regions an apparent gap cannot be
+    // told apart from one this build simply cannot see.
+    if structural_edges > 0 && !uncovered.is_empty() {
+        return (
+            Vec::new(),
+            Uncertainty {
+                unresolved_edges: structural_edges,
+                files: structural_files,
+            },
+        );
+    }
+
+    (
+        uncovered,
+        Uncertainty {
+            unresolved_edges: 0,
+            files: BTreeSet::new(),
+        },
+    )
+}
+
 /// The node a cycle is counted between, for one scope path.
 fn cycle_node(path: &str, level: CycleLevel) -> String {
     match level {
@@ -984,6 +1108,27 @@ fn evaluate_one(
         }
         RuleKind::MaxFanIn { threshold } => {
             let (v, u) = max_fan_in(graph, all_edges, *threshold);
+            (v, Some(u))
+        }
+        RuleKind::RequiresTest {
+            symbols,
+            only,
+            new_only,
+        } => {
+            if *new_only && delta.is_none() {
+                outcome.verdict = Verdict::Skipped;
+                outcome.skipped_because =
+                    Some("new_only needs two graphs to compare; none was supplied".to_string());
+                return outcome;
+            }
+            let (v, u) = requires_test(
+                graph,
+                all_edges,
+                delta,
+                symbols,
+                only.as_ref().map(|k| k.0.as_str()),
+                *new_only,
+            );
             (v, Some(u))
         }
         RuleKind::NoCycles { scope, level } => {

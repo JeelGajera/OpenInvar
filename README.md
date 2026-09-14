@@ -227,7 +227,27 @@ name = "no-import-cycles"
 kind = "no-cycles"
 scope = "src/**"      # optional; the whole graph by default
 level = "file"        # file (default) or module
+
+[[rule]]
+name = "new-api-is-covered"
+kind = "requires-test"
+symbols  = "src/api/**"
+new_only = true       # judge only what this change added
 ```
+
+`requires-test` is the rule no comparable tool can express: `tests` edges are
+derived across every Tier 1 language here, and semgrep, dependency-cruiser,
+ArchUnit and import-linter have no equivalent in any language.
+
+Coverage counts **direct** edges only. That a test reaches `login`, and `login`
+references `format_token`, is no proof the test ever executes `format_token` —
+it may sit behind an early return. It is also the difference between a rule and
+a loophole: wire a new function into any legacy endpoint that already has a
+test, and a transitive version goes green without one assertion being written.
+
+`new_only = true` is what makes it adoptable. *Every symbol you added is
+covered* is enforceable on a repository that could never pass *every symbol is
+covered*, which is a coverage project rather than a gate.
 
 `layers` states a dependency direction once instead of as every forbidden
 pair — a five-layer stack is ten `forbid-dependency` rules written by hand. A
@@ -255,6 +275,7 @@ every module's unresolved edges count.
 | `no-field-removal` | `symbol` | A named symbol loses a field. Needs a change, so pass `--base`/`--head` |
 | `max-fan-in` | `threshold` | A symbol exceeds that many inbound references. Third-party packages are not counted |
 | `no-cycles` | `scope`, `level` | A dependency cycle exists within the scope |
+| `requires-test` | `symbols`, `only`, `new_only` | A symbol in scope is reached by no test |
 | `max-fan-out` | `threshold` | A symbol reaches out to more than that many **distinct** symbols |
 | `naming-convention` | `symbols`, `matches`, `only` | A symbol in scope has a name the pattern does not match |
 

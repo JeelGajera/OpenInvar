@@ -84,6 +84,14 @@ pub enum RuleKind {
     MaxFanOut { threshold: usize },
     /// No dependency cycle may exist within a scope.
     NoCycles { scope: String, level: CycleLevel },
+    /// Symbols in a scope must be reached by a test.
+    RequiresTest {
+        symbols: String,
+        only: Option<SymbolKindName>,
+        /// Judge only symbols this change added, rather than every symbol in
+        /// scope.
+        new_only: bool,
+    },
     /// Symbols in a scope must be named to a pattern.
     NamingConvention {
         symbols: String,
@@ -157,6 +165,7 @@ impl RuleKind {
             Self::Independence { .. } => "independence",
             Self::MaxFanOut { .. } => "max-fan-out",
             Self::NoCycles { .. } => "no-cycles",
+            Self::RequiresTest { .. } => "requires-test",
             Self::NamingConvention { .. } => "naming-convention",
         }
     }
@@ -167,7 +176,13 @@ impl RuleKind {
     /// a single graph. Callers use this to skip rules they have no delta for
     /// rather than reporting them as passing.
     pub fn needs_delta(&self) -> bool {
-        matches!(self, Self::NoFieldRemoval { .. })
+        match self {
+            Self::NoFieldRemoval { .. } => true,
+            // Only the `new_only` form needs a change to compare against; the
+            // absolute form is a property of one graph.
+            Self::RequiresTest { new_only, .. } => *new_only,
+            _ => false,
+        }
     }
 }
 
@@ -238,6 +253,7 @@ struct RawRule {
     only: Option<String>,
     scope: Option<String>,
     level: Option<String>,
+    new_only: Option<bool>,
     #[serde(default)]
     severity: Option<Severity>,
 }
@@ -253,6 +269,7 @@ const KNOWN_KINDS: &[&str] = &[
     "max-fan-out",
     "naming-convention",
     "no-cycles",
+    "requires-test",
 ];
 
 /// Symbol kinds a `naming-convention` rule may filter on.
@@ -349,6 +366,26 @@ fn require<'a>(rule: &str, field: &str, value: Option<&'a String>) -> Result<&'a
 /// Zero would forbid every edge in the repository, which is far more likely to
 /// be a mistake than an intention. Shared by the fan rules so they cannot
 /// disagree about what a valid threshold is.
+/// The optional `only` field, shared by every rule that filters on kind.
+fn symbol_kind_filter(
+    rule: &str,
+    raw: Option<&str>,
+) -> Result<Option<SymbolKindName>, RuleError> {
+    match raw {
+        None => Ok(None),
+        Some(kind) if KNOWN_SYMBOL_KINDS.contains(&kind) => {
+            Ok(Some(SymbolKindName(kind.to_string())))
+        }
+        Some(other) => Err(RuleError::Invalid {
+            rule: rule.to_string(),
+            reason: format!(
+                "unknown symbol kind '{other}' in 'only'. Expected one of: {}",
+                KNOWN_SYMBOL_KINDS.join(", ")
+            ),
+        }),
+    }
+}
+
 fn positive_threshold(rule: &str, raw: Option<i64>) -> Result<usize, RuleError> {
     let threshold = raw.ok_or_else(|| RuleError::Invalid {
         rule: rule.to_string(),
@@ -400,6 +437,11 @@ fn build(raw: RawRule, index: usize) -> Result<Rule, RuleError> {
         "max-fan-in" => RuleKind::MaxFanIn {
             threshold: positive_threshold(&name, raw.threshold)?,
         },
+        "requires-test" => RuleKind::RequiresTest {
+            symbols: check_glob(&name, "symbols", require(&name, "symbols", raw.symbols.as_ref())?)?,
+            only: symbol_kind_filter(&name, raw.only.as_deref())?,
+            new_only: raw.new_only.unwrap_or(false),
+        },
         "no-cycles" => {
             let level = match raw.level.as_deref() {
                 None => CycleLevel::File,
@@ -437,21 +479,7 @@ fn build(raw: RawRule, index: usize) -> Result<Rule, RuleError> {
             threshold: positive_threshold(&name, raw.threshold)?,
         },
         "naming-convention" => {
-            let only = match raw.only.as_deref() {
-                None => None,
-                Some(kind) if KNOWN_SYMBOL_KINDS.contains(&kind) => {
-                    Some(SymbolKindName(kind.to_string()))
-                }
-                Some(other) => {
-                    return Err(RuleError::Invalid {
-                        rule: name,
-                        reason: format!(
-                            "unknown symbol kind '{other}' in 'only'. Expected one of: {}",
-                            KNOWN_SYMBOL_KINDS.join(", ")
-                        ),
-                    })
-                }
-            };
+            let only = symbol_kind_filter(&name, raw.only.as_deref())?;
             RuleKind::NamingConvention {
                 symbols: check_glob(&name, "symbols", require(&name, "symbols", raw.symbols.as_ref())?)?,
                 matches: check_glob(&name, "matches", require(&name, "matches", raw.matches.as_ref())?)?,
