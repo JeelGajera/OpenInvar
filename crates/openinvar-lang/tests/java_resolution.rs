@@ -11,8 +11,6 @@
 
 #![cfg(feature = "java")]
 
-use std::path::PathBuf;
-
 use openinvar_core::ir::{FileIR, RelationshipKind};
 
 /// Write `files` into a scratch directory and analyse them.
@@ -348,11 +346,4 @@ fn resolution_is_the_same_on_every_run() {
         let again = analyze(&format!("determinism-{run}"), sources);
         assert_eq!(render(&again), expected, "run {run} disagreed");
     }
-}
-
-/// Paths are only used to place the scratch files; nothing here depends on the
-/// directory layout matching the package, which Java does not require either.
-#[allow(dead_code)]
-fn unused() -> PathBuf {
-    PathBuf::new()
 }
