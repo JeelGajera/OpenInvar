@@ -32,7 +32,7 @@ use std::collections::{BTreeMap, BTreeSet};
 use crate::delta::GraphDelta;
 use crate::graph::InvarGraph;
 use crate::ir::{RelationshipKind, Symbol, SymbolKind};
-use crate::rules::{Rule, RuleKind, Rules, Severity};
+use crate::rules::{CycleLevel, Rule, RuleKind, Rules, Severity};
 use crate::symbol_id::{is_external_package, parse_external_package_id};
 
 /// What a rule concluded.
@@ -446,6 +446,177 @@ fn independence(
 }
 
 
+
+/// The node a cycle is counted between, for one scope path.
+fn cycle_node(path: &str, level: CycleLevel) -> String {
+    match level {
+        CycleLevel::File => path.to_string(),
+        // The directory. For Go that is the package, which is the level its
+        // own compiler enforces.
+        CycleLevel::Module => match path.rfind('/') {
+            Some(cut) => path[..cut].to_string(),
+            None => ".".to_string(),
+        },
+    }
+}
+
+/// `no-cycles`: no dependency cycle within a scope.
+///
+/// Two passes, because one would be dishonest.
+///
+/// The first runs Tarjan over **resolved** dependency edges only. Any strongly
+/// connected component with more than one node is a cycle that exists on
+/// evidence a gate may act on, and is reported as a violation.
+///
+/// The second is the part a naive implementation skips. An edge that did not
+/// resolve could *close* a cycle the resolved edges leave open — so proving a
+/// scope acyclic requires having resolved every edge inside it. Where any
+/// in-scope node has an unresolved outbound edge, "no cycles" is unproven, and
+/// the rule reports inconclusive naming those nodes rather than a pass.
+///
+/// A cycle already found still reports as a violation: weak evidence elsewhere
+/// does not make a cycle found on resolved evidence any less of a cycle.
+fn no_cycles(
+    graph: &InvarGraph,
+    all_edges: &[Edge],
+    scope: &str,
+    level: CycleLevel,
+) -> (Vec<Violation>, Uncertainty) {
+    use petgraph::graph::DiGraph;
+
+    let pattern = compile(scope);
+
+    // Node ids are collected into a BTreeSet and indexed in sorted order, so
+    // the petgraph node numbering — and therefore Tarjan's component order —
+    // is the same on every run over the same repository.
+    let mut nodes: BTreeSet<String> = BTreeSet::new();
+    let mut resolved_pairs: BTreeSet<(String, String)> = BTreeSet::new();
+    let mut uncertain_nodes: BTreeSet<String> = BTreeSet::new();
+    let mut unresolved_edges = 0usize;
+    let mut unresolved_files = BTreeSet::new();
+
+    for edge in all_edges {
+        if !edge.is_dependency {
+            continue;
+        }
+        let Some(from_path) = scope_path(graph, &edge.from) else {
+            continue;
+        };
+        if !matches(&pattern, &from_path) {
+            continue;
+        }
+        let from_node = cycle_node(&from_path, level);
+        nodes.insert(from_node.clone());
+
+        if !edge.gate_safe {
+            // Could be the edge that closes a cycle nobody can see.
+            unresolved_edges += 1;
+            unresolved_files.insert(edge.file.clone());
+            uncertain_nodes.insert(from_node);
+            continue;
+        }
+
+        let Some(to_path) = scope_path(graph, &edge.to) else {
+            continue;
+        };
+        if !matches(&pattern, &to_path) {
+            continue;
+        }
+        let to_node = cycle_node(&to_path, level);
+        nodes.insert(to_node.clone());
+
+        // A node depending on itself is not a cycle at these levels: a file
+        // referencing its own symbols, or a package whose files reference each
+        // other, is ordinary.
+        if from_node != to_node {
+            resolved_pairs.insert((from_node, to_node));
+        }
+    }
+
+    let indexed: Vec<&String> = nodes.iter().collect();
+    let index_of: BTreeMap<&str, usize> = indexed
+        .iter()
+        .enumerate()
+        .map(|(i, name)| (name.as_str(), i))
+        .collect();
+
+    let mut digraph: DiGraph<usize, ()> = DiGraph::new();
+    let handles: Vec<_> = (0..indexed.len()).map(|i| digraph.add_node(i)).collect();
+    for (from, to) in &resolved_pairs {
+        let (Some(&a), Some(&b)) = (index_of.get(from.as_str()), index_of.get(to.as_str())) else {
+            continue;
+        };
+        digraph.add_edge(handles[a], handles[b], ());
+    }
+
+    let mut violations = Vec::new();
+    for component in petgraph::algo::tarjan_scc(&digraph) {
+        if component.len() < 2 {
+            continue;
+        }
+        let mut members: Vec<&str> = component
+            .iter()
+            .map(|handle| indexed[digraph[*handle]].as_str())
+            .collect();
+        members.sort();
+
+        // Reported as an ordered walk rather than a set: a cycle whose shape
+        // nobody can read is a cycle nobody fixes.
+        let path = cycle_path(&members, &resolved_pairs);
+        let entry = members[0];
+        violations.push(Violation {
+            file: entry.to_string(),
+            line: 0,
+            symbol: entry.to_string(),
+            detail: format!("dependency cycle: {path}"),
+        });
+    }
+
+    violations.sort();
+    (
+        violations,
+        Uncertainty {
+            unresolved_edges,
+            files: unresolved_files,
+        },
+    )
+}
+
+/// Walk one cycle inside a strongly connected component, for the message.
+///
+/// Starts at the lexicographically first member so the same component always
+/// renders the same way, and follows edges that stay inside the component
+/// until it returns to the start.
+fn cycle_path(members: &[&str], edges: &BTreeSet<(String, String)>) -> String {
+    let inside: BTreeSet<&str> = members.iter().copied().collect();
+    let start = members[0];
+
+    let mut walk = vec![start];
+    let mut seen: BTreeSet<&str> = BTreeSet::new();
+    seen.insert(start);
+    let mut current = start;
+
+    loop {
+        let next = edges
+            .iter()
+            .find(|(from, to)| from == current && inside.contains(to.as_str()) && to != start
+                && !seen.contains(to.as_str()))
+            .map(|(_, to)| to.as_str());
+
+        match next {
+            Some(node) => {
+                walk.push(node);
+                seen.insert(node);
+                current = node;
+            }
+            None => break,
+        }
+    }
+
+    walk.push(start);
+    walk.join(" -> ")
+}
+
 /// `max-fan-out`: how many distinct things one symbol reaches.
 ///
 /// The mirror of fan-in, and it catches the opposite shape: fan-in finds the
@@ -813,6 +984,10 @@ fn evaluate_one(
         }
         RuleKind::MaxFanIn { threshold } => {
             let (v, u) = max_fan_in(graph, all_edges, *threshold);
+            (v, Some(u))
+        }
+        RuleKind::NoCycles { scope, level } => {
+            let (v, u) = no_cycles(graph, all_edges, scope, *level);
             (v, Some(u))
         }
         RuleKind::MaxFanOut { threshold } => {

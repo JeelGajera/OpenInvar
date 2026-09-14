@@ -82,6 +82,8 @@ pub enum RuleKind {
     Independence { modules: Vec<String> },
     /// No symbol may reach out to more than this many distinct symbols.
     MaxFanOut { threshold: usize },
+    /// No dependency cycle may exist within a scope.
+    NoCycles { scope: String, level: CycleLevel },
     /// Symbols in a scope must be named to a pattern.
     NamingConvention {
         symbols: String,
@@ -97,6 +99,31 @@ pub enum RuleKind {
 /// a kind to the IR does not silently change what an existing rule matches.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct SymbolKindName(pub String);
+
+/// What a cycle is counted between.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+pub enum CycleLevel {
+    /// Files. What people mean by "circular dependency": the cycles that make
+    /// ESM bindings resolve `undefined`, raise Python `ImportError`, and tangle
+    /// C++ headers.
+    #[default]
+    File,
+    /// Directories, which for Go is packages.
+    ///
+    /// Files inside one Go package reference each other freely and the
+    /// compiler already rejects circular *package* imports, so file-level
+    /// cycles there are noise. This is the level a Go repository wants.
+    Module,
+}
+
+impl CycleLevel {
+    pub fn as_str(self) -> &'static str {
+        match self {
+            Self::File => "file",
+            Self::Module => "module",
+        }
+    }
+}
 
 impl RuleKind {
     /// The severity this kind means when a rule does not name one.
@@ -129,6 +156,7 @@ impl RuleKind {
             Self::Layers { .. } => "layers",
             Self::Independence { .. } => "independence",
             Self::MaxFanOut { .. } => "max-fan-out",
+            Self::NoCycles { .. } => "no-cycles",
             Self::NamingConvention { .. } => "naming-convention",
         }
     }
@@ -208,6 +236,8 @@ struct RawRule {
     symbols: Option<String>,
     matches: Option<String>,
     only: Option<String>,
+    scope: Option<String>,
+    level: Option<String>,
     #[serde(default)]
     severity: Option<Severity>,
 }
@@ -222,6 +252,7 @@ const KNOWN_KINDS: &[&str] = &[
     "independence",
     "max-fan-out",
     "naming-convention",
+    "no-cycles",
 ];
 
 /// Symbol kinds a `naming-convention` rule may filter on.
@@ -369,6 +400,39 @@ fn build(raw: RawRule, index: usize) -> Result<Rule, RuleError> {
         "max-fan-in" => RuleKind::MaxFanIn {
             threshold: positive_threshold(&name, raw.threshold)?,
         },
+        "no-cycles" => {
+            let level = match raw.level.as_deref() {
+                None => CycleLevel::File,
+                Some("file") => CycleLevel::File,
+                Some("module") => CycleLevel::Module,
+                // `symbol` is rejected rather than supported. Mutual recursion
+                // between functions is correct, ordinary code — recursive
+                // descent parsers, visitors, state machines — so a symbol
+                // level would fire on every tokenizer in existence and be
+                // switched off within a week.
+                Some("symbol") => {
+                    return Err(RuleError::Invalid {
+                        rule: name,
+                        reason: "'symbol' is not a cycle level: mutual recursion between \
+                                 functions is ordinary correct code. Use 'file' or 'module'."
+                            .to_string(),
+                    })
+                }
+                Some(other) => {
+                    return Err(RuleError::Invalid {
+                        rule: name,
+                        reason: format!("unknown level '{other}'. Expected 'file' or 'module'"),
+                    })
+                }
+            };
+            // Scope is optional and defaults to the whole graph: a repository
+            // asking for no cycles usually means anywhere.
+            let scope = match raw.scope.as_deref() {
+                Some(glob) => check_glob(&name, "scope", glob)?,
+                None => "**".to_string(),
+            };
+            RuleKind::NoCycles { scope, level }
+        }
         "max-fan-out" => RuleKind::MaxFanOut {
             threshold: positive_threshold(&name, raw.threshold)?,
         },

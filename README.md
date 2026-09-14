@@ -221,6 +221,12 @@ layers = ["src/api/**", "src/service/**", "src/core/**"]   # outermost first
 name = "features-do-not-talk"
 kind = "independence"
 modules = ["src/billing/**", "src/search/**", "src/inbox/**"]
+
+[[rule]]
+name = "no-import-cycles"
+kind = "no-cycles"
+scope = "src/**"      # optional; the whole graph by default
+level = "file"        # file (default) or module
 ```
 
 `layers` states a dependency direction once instead of as every forbidden
@@ -248,6 +254,7 @@ every module's unresolved edges count.
 | `forbid-reference` | `from`, `to` | *Any* reference does — the superset, so "you may call into this but not import it" is expressible |
 | `no-field-removal` | `symbol` | A named symbol loses a field. Needs a change, so pass `--base`/`--head` |
 | `max-fan-in` | `threshold` | A symbol exceeds that many inbound references. Third-party packages are not counted |
+| `no-cycles` | `scope`, `level` | A dependency cycle exists within the scope |
 | `max-fan-out` | `threshold` | A symbol reaches out to more than that many **distinct** symbols |
 | `naming-convention` | `symbols`, `matches`, `only` | A symbol in scope has a name the pattern does not match |
 
@@ -571,6 +578,23 @@ Being explicit about these is more useful than a feature list:
   adapters attribute to the file's module symbol rather than the function using
   it. Useful for a narrow neighbourhood; thin for a widely-imported type. Token
   figures are byte-based estimates, not a tokenizer's count.
+
+- **`no-cycles` reports a language's own module structure as a cycle in Rust,
+  and in Go at file level.** It is built for the cycles that break something:
+  ESM bindings that resolve `undefined`, Python `ImportError`, tangled C++
+  headers. Rust is different in two ways that both show up here. A crate root
+  declares `pub mod x;` while `x.rs` refers back with `use crate::…`, which is
+  a cycle by the graph's reckoning and ordinary code by Rust's. And where
+  `crate::ir::Thing` cannot be resolved through the module's exports, the edge
+  attaches to the crate root instead — the documented fallback below — which
+  closes the loop again.
+
+  Run on this repository, the rule reports five file-level cycles, every one of
+  them a `lib.rs` ↔ submodule pair. `level = "module"` collapses most of that
+  but still reports parent ↔ child module directories. So: use it on
+  TypeScript, JavaScript, Python and C/C++, where a cycle means something is
+  broken. On Rust and Go, scope it narrowly or treat it as advisory. This
+  repository does not gate on it, for that reason.
 
 - **Imports resolve within one language.** A Python module importing a
   TypeScript file through a build step is not linked.
