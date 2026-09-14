@@ -14,6 +14,41 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **`requires-dependency` and `no-orphans`** — the remaining claims about
+  absence, added together so their uncertainty semantics cannot drift apart.
+
+  ```toml
+  [[rule]]
+  name = "handlers-log"
+  kind = "requires-dependency"
+  from = "src/http/handlers/**"
+  to   = "src/audit/**"
+
+  [[rule]]
+  name  = "no-dead-modules"
+  kind  = "no-orphans"
+  scope = "src/**"
+  roots = ["src/main.ts", "src/index.ts"]
+  ```
+
+  `requires-dependency` inverts `forbid-dependency`, and the inversion is the
+  whole subtlety. There, an unresolved edge might be a violation; here it might
+  be the edge that *satisfies* the rule. A scoped symbol with no resolved edge
+  to the target but some unresolved outbound edge is undecided, not in breach.
+
+  `no-orphans` is the weakest claim in the vocabulary and defaults to `warn`.
+  Orphanhood is pure absence, so any edge that did not resolve could be the
+  reference that makes a symbol reachable — on a repository with structural
+  regions it is undecided nearly always, and promoting it to a gate would claim
+  a certainty the graph cannot supply. `roots` exists because an entry point is
+  unreferenced by definition, and a rule that reports every `main` is one
+  nobody keeps switched on.
+
+  This completes the rule vocabulary: `layers`, `independence`, `no-cycles`,
+  `max-fan-in`, `max-fan-out`, `naming-convention`, `requires-test`,
+  `requires-dependency`, `no-orphans`, `forbid-dependency`, `forbid-reference`
+  and `no-field-removal`.
+
 - **`requires-test`** — the rule no comparable tool can express. `tests` edges
   are derived across every Tier 1 language here; semgrep, dependency-cruiser,
   ArchUnit and import-linter have no equivalent in any language.

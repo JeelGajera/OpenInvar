@@ -249,6 +249,17 @@ test, and a transitive version goes green without one assertion being written.
 covered* is enforceable on a repository that could never pass *every symbol is
 covered*, which is a coverage project rather than a gate.
 
+`requires-dependency` inverts `forbid-dependency`, and the inversion matters:
+there an unresolved edge might be a *violation*, here it might be the edge that
+*satisfies* the rule. Only a symbol with no qualifying edge and nothing
+unresolved is reported.
+
+`no-orphans` is the weakest rule here and defaults to `warn`. Orphanhood is
+pure absence, so any edge that did not resolve could be the reference that
+makes a symbol reachable — on a repository with structural regions it is
+undecided nearly always. `roots` exists because an entry point is unreferenced
+by definition, and a rule that reports every `main` is one nobody keeps on.
+
 `layers` states a dependency direction once instead of as every forbidden
 pair — a five-layer stack is ten `forbid-dependency` rules written by hand. A
 layer may depend downward and on itself; only reaching up is a violation, and
@@ -276,6 +287,8 @@ every module's unresolved edges count.
 | `max-fan-in` | `threshold` | A symbol exceeds that many inbound references. Third-party packages are not counted |
 | `no-cycles` | `scope`, `level` | A dependency cycle exists within the scope |
 | `requires-test` | `symbols`, `only`, `new_only` | A symbol in scope is reached by no test |
+| `requires-dependency` | `from`, `to` | A symbol in `from` references nothing in `to` |
+| `no-orphans` | `scope`, `roots` | A symbol in scope is referenced by nothing |
 | `max-fan-out` | `threshold` | A symbol reaches out to more than that many **distinct** symbols |
 | `naming-convention` | `symbols`, `matches`, `only` | A symbol in scope has a name the pattern does not match |
 

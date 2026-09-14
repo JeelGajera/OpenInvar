@@ -448,6 +448,166 @@ fn independence(
 
 
 
+
+/// `requires-dependency`: every symbol in `from` must reference `to`.
+///
+/// Inverted from `forbid-dependency`, and the inversion is the whole subtlety.
+/// There, an unresolved edge might be a violation. Here it might be the
+/// *satisfying* edge — so a scoped symbol with no resolved edge to the target
+/// but some unresolved outbound edge is uncertain, not in breach. Only a
+/// symbol with no qualifying edge and nothing unresolved is a violation.
+fn requires_dependency(
+    graph: &InvarGraph,
+    all_edges: &[Edge],
+    from: &str,
+    to: &str,
+) -> (Vec<Violation>, Uncertainty) {
+    let from_pattern = compile(from);
+    let to_pattern = compile(to);
+
+    let mut satisfied: BTreeSet<&str> = BTreeSet::new();
+    let mut unproven: BTreeSet<&str> = BTreeSet::new();
+    let mut unresolved_edges = 0usize;
+    let mut unresolved_files = BTreeSet::new();
+
+    for edge in all_edges {
+        let Some(source_path) = scope_path(graph, &edge.from) else {
+            continue;
+        };
+        if !matches(&from_pattern, &source_path) {
+            continue;
+        }
+        if !edge.gate_safe {
+            unresolved_edges += 1;
+            unresolved_files.insert(edge.file.clone());
+            unproven.insert(edge.from.as_str());
+            continue;
+        }
+        let Some(target_path) = scope_path(graph, &edge.to) else {
+            continue;
+        };
+        if matches(&to_pattern, &target_path) {
+            satisfied.insert(edge.from.as_str());
+        }
+    }
+
+    let mut violations = Vec::new();
+    for entry in graph.symbols.iter() {
+        let symbol = entry.value();
+        if !matches(&from_pattern, &symbol.file) {
+            continue;
+        }
+        // The synthetic per-file module symbol stands for the file, not for
+        // anything a person wrote, so requiring it to depend on something
+        // would report a violation nobody can act on.
+        if symbol.kind == SymbolKind::Module && symbol.name == symbol.file {
+            continue;
+        }
+        if satisfied.contains(symbol.id.as_str()) || unproven.contains(symbol.id.as_str()) {
+            continue;
+        }
+        violations.push(Violation {
+            file: symbol.file.clone(),
+            line: symbol.line_start,
+            symbol: symbol.id.clone(),
+            detail: format!(
+                "'{}' references nothing matching '{to}', which this scope requires",
+                symbol.name
+            ),
+        });
+    }
+
+    violations.sort();
+    (
+        violations,
+        Uncertainty {
+            unresolved_edges,
+            files: unresolved_files,
+        },
+    )
+}
+
+/// `no-orphans`: nothing in scope may be unreferenced.
+///
+/// **The weakest claim in the vocabulary, and it ships at `warn` for that
+/// reason.** Orphanhood is pure absence: any edge that did not resolve could
+/// be the reference that makes a symbol reachable. On a repository with any
+/// structural region this is inconclusive nearly always, and promoting it to a
+/// gate would be claiming a certainty the graph cannot supply.
+///
+/// `roots` exists because an entry point is unreferenced by definition. A rule
+/// that reports every `main` in a repository is one nobody keeps switched on.
+fn no_orphans(
+    graph: &InvarGraph,
+    all_edges: &[Edge],
+    scope: &str,
+    roots: &[String],
+) -> (Vec<Violation>, Uncertainty) {
+    let pattern = compile(scope);
+    let root_patterns: Vec<glob::Pattern> = roots.iter().map(|r| compile(r)).collect();
+
+    let mut referenced: BTreeSet<&str> = BTreeSet::new();
+    let mut structural_edges = 0usize;
+    let mut structural_files = BTreeSet::new();
+    for edge in all_edges {
+        if edge.gate_safe {
+            referenced.insert(edge.to.as_str());
+        } else {
+            structural_edges += 1;
+            structural_files.insert(edge.file.clone());
+        }
+    }
+
+    let mut orphans = Vec::new();
+    for entry in graph.symbols.iter() {
+        let symbol = entry.value();
+        if !matches(&pattern, &symbol.file) {
+            continue;
+        }
+        if root_patterns.iter().any(|root| matches(root, &symbol.file)) {
+            continue;
+        }
+        if symbol.kind == SymbolKind::Module && symbol.name == symbol.file {
+            continue;
+        }
+        if referenced.contains(symbol.id.as_str()) {
+            continue;
+        }
+        orphans.push(Violation {
+            file: symbol.file.clone(),
+            line: symbol.line_start,
+            symbol: symbol.id.clone(),
+            detail: format!(
+                "{} '{}' is referenced by nothing",
+                crate::symbol_id::kind_suffix(&symbol.kind),
+                symbol.name
+            ),
+        });
+    }
+    orphans.sort();
+
+    // Absence again. One unresolved edge anywhere could be the reference that
+    // makes any of these reachable, so an apparent orphan cannot be told apart
+    // from one this build simply cannot see referenced.
+    if structural_edges > 0 && !orphans.is_empty() {
+        return (
+            Vec::new(),
+            Uncertainty {
+                unresolved_edges: structural_edges,
+                files: structural_files,
+            },
+        );
+    }
+
+    (
+        orphans,
+        Uncertainty {
+            unresolved_edges: 0,
+            files: BTreeSet::new(),
+        },
+    )
+}
+
 /// `requires-test`: symbols in a scope must be reached by a test.
 ///
 /// The rule no comparable tool can express. `tests` edges are derived across
@@ -1108,6 +1268,14 @@ fn evaluate_one(
         }
         RuleKind::MaxFanIn { threshold } => {
             let (v, u) = max_fan_in(graph, all_edges, *threshold);
+            (v, Some(u))
+        }
+        RuleKind::RequiresDependency { from, to } => {
+            let (v, u) = requires_dependency(graph, all_edges, from, to);
+            (v, Some(u))
+        }
+        RuleKind::NoOrphans { scope, roots } => {
+            let (v, u) = no_orphans(graph, all_edges, scope, roots);
             (v, Some(u))
         }
         RuleKind::RequiresTest {
