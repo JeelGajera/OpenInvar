@@ -47,10 +47,11 @@ severity = "warn"
 }
 
 #[test]
-fn severity_defaults_to_error() {
-    // A rule written without a severity is one someone means to enforce.
-    // Defaulting to warn would make every unannotated rule advisory, which is
-    // the opposite of what writing it down expresses.
+fn severity_defaults_to_error_for_a_hard_invariant() {
+    // A boundary written without a severity is one someone means to enforce.
+    // Defaulting the whole vocabulary to warn would make every unannotated
+    // rule advisory, which is the opposite of what writing it down expresses.
+    // The fan rules are the deliberate exception; see below.
     let parsed = rules::parse(
         r#"
 [[rule]]
@@ -314,5 +315,109 @@ kind = "{kind}"
         ))
         .expect_err("the list is required");
         assert!(err.to_string().contains(field), "{err}");
+    }
+}
+
+// ── kind-aware severity defaults ─────────────────────────────
+
+#[test]
+fn the_fan_rules_default_to_warn_rather_than_error() {
+    // High fan-in and fan-out are frequently intentional: a utility module, an
+    // IR type, an entry point. Defaulting these to error would block a
+    // developer who added a module before wiring up its callers, and the rule
+    // would be switched off rather than tuned.
+    for kind in ["max-fan-in", "max-fan-out"] {
+        let parsed = rules::parse(&format!(
+            r#"
+[[rule]]
+name = "hygiene"
+kind = "{kind}"
+threshold = 40
+"#
+        ))
+        .expect("parses");
+        assert_eq!(
+            parsed.rules[0].severity,
+            Severity::Warn,
+            "{kind} is hygiene, not an invariant"
+        );
+    }
+}
+
+#[test]
+fn every_boundary_kind_defaults_to_error() {
+    let cases = [
+        r#"kind = "forbid-dependency"
+from = "a/**"
+to = "b/**""#,
+        r#"kind = "forbid-reference"
+from = "a/**"
+to = "b/**""#,
+        r#"kind = "no-field-removal"
+symbol = "X""#,
+        r#"kind = "layers"
+layers = ["a/**", "b/**"]"#,
+        r#"kind = "independence"
+modules = ["a/**", "b/**"]"#,
+        r#"kind = "naming-convention"
+symbols = "a/**"
+matches = "*Handler""#,
+    ];
+    for body in cases {
+        let parsed = rules::parse(&format!("[[rule]]\nname = \"r\"\n{body}\n")).expect("parses");
+        assert_eq!(
+            parsed.rules[0].severity,
+            Severity::Error,
+            "a stated boundary must block by default: {body}"
+        );
+    }
+}
+
+#[test]
+fn an_explicit_severity_still_wins_over_the_kind_default() {
+    let parsed = rules::parse(
+        r#"
+[[rule]]
+name = "zero-tolerance"
+kind = "max-fan-in"
+threshold = 40
+severity = "error"
+"#,
+    )
+    .expect("parses");
+    assert_eq!(parsed.rules[0].severity, Severity::Error);
+}
+
+#[test]
+fn an_unknown_symbol_kind_in_only_is_rejected() {
+    let err = rules::parse(
+        r#"
+[[rule]]
+name = "naming"
+kind = "naming-convention"
+symbols = "src/**"
+matches = "*Handler"
+only = "struct"
+"#,
+    )
+    .expect_err("'struct' is not one of this graph's symbol kinds");
+    let text = err.to_string();
+    assert!(text.contains("struct"), "{text}");
+    assert!(text.contains("class"), "the error must list what is valid: {text}");
+}
+
+#[test]
+fn a_zero_threshold_is_rejected_for_both_fan_rules() {
+    for kind in ["max-fan-in", "max-fan-out"] {
+        let err = rules::parse(&format!(
+            r#"
+[[rule]]
+name = "r"
+kind = "{kind}"
+threshold = 0
+"#
+        ))
+        .expect_err("zero forbids every edge, which is never the intent");
+        assert!(err.to_string().contains("at least 1"), "{err}");
     }
 }
