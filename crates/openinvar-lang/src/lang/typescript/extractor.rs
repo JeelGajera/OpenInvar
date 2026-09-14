@@ -154,6 +154,12 @@ pub fn extract_file_ir(parsed: &ParsedFile) -> FileIR {
             .then(a.to.cmp(&b.to))
     });
 
+    // Counted from the tree this adapter already parsed, so the graph
+    // and the count cannot disagree. Computed before the literal because
+    // the literal moves `symbols`.
+    let assertions =
+        crate::assertions::count_by_symbol(&parsed.tree, &parsed.source, &parsed.language.clone(), &symbols);
+
     FileIR {
         file: parsed.file.clone(),
         language: parsed.language.clone(),
@@ -161,6 +167,8 @@ pub fn extract_file_ir(parsed: &ParsedFile) -> FileIR {
         relationships,
         diagnostics: parsed.diagnostics.clone(),
         re_exports,
+        assertions,
+        assertions_counted: crate::assertions::counts_assertions(&parsed.language.clone()),
     }
 }
 

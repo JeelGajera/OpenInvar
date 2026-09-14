@@ -25,6 +25,24 @@ pub struct InvarGraph {
     pub symbols: DashMap<SymbolId, Symbol>,
     pub alias_chains: DashMap<SymbolId, Vec<AliasEntry>>,
     pub file_reexports: DashMap<String, Vec<ReExportEntry>>,
+    /// Recognised assertions per symbol, for the symbols that have any.
+    ///
+    /// A side map rather than a field on [`Symbol`], following `alias_chains`
+    /// and `file_reexports`: the same per-symbol data that not every symbol
+    /// carries, kept where adding it does not touch every construction site.
+    ///
+    /// Only non-zero counts are held. **Absent means zero only in a counted
+    /// language** — see `assertions_counted` for the languages this build can
+    /// see, because "no assertions left" and "cannot see the assertions" are
+    /// opposite conclusions and only the first is a finding.
+    pub assertions: DashMap<SymbolId, u32>,
+    /// Files whose language this build counts assertions in.
+    ///
+    /// Carried alongside the counts because the counts alone cannot say
+    /// whether an absent entry is a zero or an unknown. Supplied by the caller
+    /// for the same reason tier is: it is a property of the language adapter,
+    /// which this crate deliberately does not depend on.
+    pub assertions_counted: DashMap<String, bool>,
 }
 
 impl Default for InvarGraph {
@@ -43,6 +61,8 @@ impl InvarGraph {
             symbols: DashMap::new(),
             alias_chains: DashMap::new(),
             file_reexports: DashMap::new(),
+            assertions: DashMap::new(),
+            assertions_counted: DashMap::new(),
         }
     }
 

@@ -59,6 +59,8 @@ fn graph_of(files: Vec<File<'_>>) -> InvarGraph {
                 relationships: vec![],
                 diagnostics: vec![],
                 re_exports: vec![],
+                assertions: Default::default(),
+                assertions_counted: false,
             },
         );
     }
@@ -326,14 +328,26 @@ fn every_shipped_detector_names_itself_and_what_it_looks_for() {
 fn a_detector_held_back_records_why() {
     // An absent detector is indistinguishable from one that found nothing.
     let held = detectors::held_back();
-    assert_eq!(held.len(), 3);
+    assert_eq!(held.len(), 2);
     for entry in held {
         assert!(!entry.reason.is_empty(), "{} was held back silently", entry.name);
     }
     let names: Vec<&str> = held.iter().map(|h| h.name).collect();
-    assert!(names.contains(&"assertion-removal"));
     assert!(names.contains(&"scope-creep"));
     assert!(names.contains(&"special-casing"));
+
+    // `assertion-removal` was held back because assertion calls were not in the
+    // graph. They are now, recorded during the same parse the symbols come
+    // from, so it ships. A name may appear on one list or the other, never
+    // both: that is the whole point of publishing what did not run.
+    assert!(
+        !names.contains(&"assertion-removal"),
+        "assertion-removal ships now and must not also be listed as held back"
+    );
+    assert!(
+        detectors::all().iter().any(|d| d.name() == "assertion-removal"),
+        "assertion-removal was removed from the held back list without being shipped"
+    );
 }
 
 #[test]

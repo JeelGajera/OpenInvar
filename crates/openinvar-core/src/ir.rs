@@ -213,6 +213,27 @@ pub struct FileIR {
     pub relationships: Vec<Relationship>,
     pub diagnostics: Vec<Diagnostic>,
     pub re_exports: Vec<ReExportEntry>,
+    /// Recognised assertions per symbol id, for the symbols that have any.
+    ///
+    /// Taken from the same parse the symbols come from, so there is no second
+    /// source of truth to disagree with the graph. Only non-zero counts are
+    /// recorded, and **an absent entry means zero only in a language this build
+    /// counts** — `openinvar_lang::assertions::counts_assertions` is the
+    /// predicate, because "no assertions left" and "cannot see the assertions"
+    /// support opposite conclusions.
+    ///
+    /// `BTreeMap` rather than `HashMap`: this is serialized, and iteration
+    /// order reaches the bytes on stdout.
+    #[serde(default)]
+    pub assertions: std::collections::BTreeMap<String, u32>,
+    /// Whether the adapter that produced this file counted its assertions.
+    ///
+    /// Carried by the adapter rather than derived here, for the same reason
+    /// tier is: which languages can be counted is a property of the language
+    /// crate, which this one deliberately does not depend on. Without it an
+    /// empty `assertions` map is ambiguous — no assertions, or none visible.
+    #[serde(default)]
+    pub assertions_counted: bool,
 }
 
 /// The complete IR output from a full repo or incremental update.

@@ -1,6 +1,8 @@
 {
   "files": [
     {
+      "assertions": {},
+      "assertions_counted": true,
       "diagnostics": [],
       "file": "astro_component/src/components/Card.ts",
       "language": "TypeScript",
@@ -30,6 +32,8 @@
       ]
     },
     {
+      "assertions": {},
+      "assertions_counted": true,
       "diagnostics": [],
       "file": "astro_component/src/layouts/Layout.astro",
       "language": "TypeScript",
@@ -82,6 +86,8 @@
       ]
     },
     {
+      "assertions": {},
+      "assertions_counted": true,
       "diagnostics": [
         {
           "category": "Resolution",
@@ -164,6 +170,8 @@
       ]
     },
     {
+      "assertions": {},
+      "assertions_counted": true,
       "diagnostics": [],
       "file": "astro_component/src/types/index.ts",
       "language": "TypeScript",
@@ -203,6 +211,8 @@
       ]
     },
     {
+      "assertions": {},
+      "assertions_counted": true,
       "diagnostics": [],
       "file": "astro_component/src/types/layout.ts",
       "language": "TypeScript",
@@ -242,6 +252,8 @@
       ]
     },
     {
+      "assertions": {},
+      "assertions_counted": true,
       "diagnostics": [],
       "file": "barrel_chain/src/app.ts",
       "language": "TypeScript",
@@ -316,6 +328,8 @@
       ]
     },
     {
+      "assertions": {},
+      "assertions_counted": true,
       "diagnostics": [],
       "file": "barrel_chain/src/components/blockquote.ts",
       "language": "TypeScript",
@@ -345,6 +359,8 @@
       ]
     },
     {
+      "assertions": {},
+      "assertions_counted": true,
       "diagnostics": [],
       "file": "barrel_chain/src/components/code.ts",
       "language": "TypeScript",
@@ -374,6 +390,8 @@
       ]
     },
     {
+      "assertions": {},
+      "assertions_counted": true,
       "diagnostics": [],
       "file": "barrel_chain/src/components/index.ts",
       "language": "TypeScript",
@@ -425,6 +443,8 @@
       ]
     },
     {
+      "assertions": {},
+      "assertions_counted": true,
       "diagnostics": [],
       "file": "builtin_types/src/app.ts",
       "language": "TypeScript",
@@ -538,6 +558,8 @@
       ]
     },
     {
+      "assertions": {},
+      "assertions_counted": true,
       "diagnostics": [],
       "file": "call_edges/src/consumer.ts",
       "language": "TypeScript",
@@ -632,6 +654,8 @@
       ]
     },
     {
+      "assertions": {},
+      "assertions_counted": true,
       "diagnostics": [],
       "file": "call_edges/src/services.ts",
       "language": "TypeScript",
@@ -691,6 +715,8 @@
       ]
     },
     {
+      "assertions": {},
+      "assertions_counted": true,
       "diagnostics": [],
       "file": "collision/src/models/a.ts",
       "language": "TypeScript",
@@ -730,6 +756,8 @@
       ]
     },
     {
+      "assertions": {},
+      "assertions_counted": true,
       "diagnostics": [],
       "file": "collision/src/models/b.ts",
       "language": "TypeScript",
@@ -769,6 +797,8 @@
       ]
     },
     {
+      "assertions": {},
+      "assertions_counted": true,
       "diagnostics": [
         {
           "category": "Resolution",
@@ -820,6 +850,8 @@
       ]
     },
     {
+      "assertions": {},
+      "assertions_counted": true,
       "diagnostics": [
         {
           "category": "Resolution",
@@ -871,6 +903,8 @@
       ]
     },
     {
+      "assertions": {},
+      "assertions_counted": true,
       "diagnostics": [
         {
           "category": "Resolution",
@@ -927,6 +961,8 @@
       ]
     },
     {
+      "assertions": {},
+      "assertions_counted": true,
       "diagnostics": [
         {
           "category": "Resolution",
@@ -978,6 +1014,8 @@
       ]
     },
     {
+      "assertions": {},
+      "assertions_counted": true,
       "diagnostics": [],
       "file": "deep_barrel/src/app.ts",
       "language": "TypeScript",
@@ -1030,6 +1068,8 @@
       ]
     },
     {
+      "assertions": {},
+      "assertions_counted": true,
       "diagnostics": [],
       "file": "deep_barrel/src/lib/index.ts",
       "language": "TypeScript",
@@ -1066,6 +1106,8 @@
       ]
     },
     {
+      "assertions": {},
+      "assertions_counted": true,
       "diagnostics": [],
       "file": "deep_barrel/src/lib/renderers/blockquote.ts",
       "language": "TypeScript",
@@ -1095,6 +1137,8 @@
       ]
     },
     {
+      "assertions": {},
+      "assertions_counted": true,
       "diagnostics": [],
       "file": "deep_barrel/src/lib/renderers/index.ts",
       "language": "TypeScript",
@@ -1131,6 +1175,8 @@
       ]
     },
     {
+      "assertions": {},
+      "assertions_counted": true,
       "diagnostics": [],
       "file": "deep_dependency/src/a/b/mapper.ts",
       "language": "TypeScript",
@@ -1187,6 +1233,8 @@
       ]
     },
     {
+      "assertions": {},
+      "assertions_counted": true,
       "diagnostics": [],
       "file": "deep_dependency/src/models/account.ts",
       "language": "TypeScript",
@@ -1226,6 +1274,8 @@
       ]
     },
     {
+      "assertions": {},
+      "assertions_counted": true,
       "diagnostics": [],
       "file": "di_injection/src/email.service.ts",
       "language": "TypeScript",
@@ -1275,6 +1325,8 @@
       ]
     },
     {
+      "assertions": {},
+      "assertions_counted": true,
       "diagnostics": [],
       "file": "di_injection/src/payment.service.ts",
       "language": "TypeScript",
@@ -1413,6 +1465,8 @@
       ]
     },
     {
+      "assertions": {},
+      "assertions_counted": true,
       "diagnostics": [],
       "file": "di_injection/src/user.repository.ts",
       "language": "TypeScript",
@@ -1492,6 +1546,8 @@
       ]
     },
     {
+      "assertions": {},
+      "assertions_counted": true,
       "diagnostics": [],
       "file": "dist_excluded/src/app.ts",
       "language": "TypeScript",
@@ -1521,6 +1577,8 @@
       ]
     },
     {
+      "assertions": {},
+      "assertions_counted": true,
       "diagnostics": [],
       "file": "esm_extensions/src/config.mjs",
       "language": "JavaScript",
@@ -1550,6 +1608,8 @@
       ]
     },
     {
+      "assertions": {},
+      "assertions_counted": true,
       "diagnostics": [],
       "file": "esm_extensions/src/handler.cts",
       "language": "TypeScript",
@@ -1579,6 +1639,8 @@
       ]
     },
     {
+      "assertions": {},
+      "assertions_counted": true,
       "diagnostics": [],
       "file": "esm_extensions/src/server.mts",
       "language": "TypeScript",
@@ -1631,6 +1693,8 @@
       ]
     },
     {
+      "assertions": {},
+      "assertions_counted": true,
       "diagnostics": [],
       "file": "external_imports/src/app.ts",
       "language": "TypeScript",
@@ -1737,6 +1801,8 @@
       ]
     },
     {
+      "assertions": {},
+      "assertions_counted": true,
       "diagnostics": [],
       "file": "external_imports/src/utils.ts",
       "language": "TypeScript",
@@ -1766,6 +1832,8 @@
       ]
     },
     {
+      "assertions": {},
+      "assertions_counted": true,
       "diagnostics": [],
       "file": "ignore_filters/src/included.ts",
       "language": "TypeScript",
@@ -1795,6 +1863,8 @@
       ]
     },
     {
+      "assertions": {},
+      "assertions_counted": true,
       "diagnostics": [],
       "file": "ignore_filters/src/included_dir/keep.ts",
       "language": "TypeScript",
@@ -1824,6 +1894,8 @@
       ]
     },
     {
+      "assertions": {},
+      "assertions_counted": true,
       "diagnostics": [],
       "file": "multiline_import/src/model.ts",
       "language": "TypeScript",
@@ -1873,6 +1945,8 @@
       ]
     },
     {
+      "assertions": {},
+      "assertions_counted": true,
       "diagnostics": [],
       "file": "multiline_import/src/use.ts",
       "language": "TypeScript",
@@ -1931,6 +2005,8 @@
       ]
     },
     {
+      "assertions": {},
+      "assertions_counted": true,
       "diagnostics": [],
       "file": "nestjs_di/src/app.module.ts",
       "language": "TypeScript",
@@ -2016,6 +2092,8 @@
       ]
     },
     {
+      "assertions": {},
+      "assertions_counted": true,
       "diagnostics": [],
       "file": "nestjs_di/src/user.repository.ts",
       "language": "TypeScript",
@@ -2055,6 +2133,8 @@
       ]
     },
     {
+      "assertions": {},
+      "assertions_counted": true,
       "diagnostics": [],
       "file": "nestjs_di/src/user.service.ts",
       "language": "TypeScript",
@@ -2155,6 +2235,8 @@
       ]
     },
     {
+      "assertions": {},
+      "assertions_counted": true,
       "diagnostics": [],
       "file": "property_access/src/types.ts",
       "language": "TypeScript",
@@ -2204,6 +2286,8 @@
       ]
     },
     {
+      "assertions": {},
+      "assertions_counted": true,
       "diagnostics": [],
       "file": "property_access/src/usage.ts",
       "language": "TypeScript",
@@ -2262,6 +2346,8 @@
       ]
     },
     {
+      "assertions": {},
+      "assertions_counted": true,
       "diagnostics": [],
       "file": "re_exports/src/index.ts",
       "language": "TypeScript",
@@ -2320,6 +2406,8 @@
       ]
     },
     {
+      "assertions": {},
+      "assertions_counted": true,
       "diagnostics": [],
       "file": "re_exports/src/user_payload.ts",
       "language": "TypeScript",
@@ -2359,6 +2447,8 @@
       ]
     },
     {
+      "assertions": {},
+      "assertions_counted": true,
       "diagnostics": [],
       "file": "svelte_component/src/App.svelte",
       "language": "TypeScript",
@@ -2411,6 +2501,8 @@
       ]
     },
     {
+      "assertions": {},
+      "assertions_counted": true,
       "diagnostics": [],
       "file": "svelte_component/src/stores/UserStore.ts",
       "language": "TypeScript",
@@ -2460,6 +2552,8 @@
       ]
     },
     {
+      "assertions": {},
+      "assertions_counted": true,
       "diagnostics": [
         {
           "category": "Resolution",
@@ -2545,6 +2639,8 @@
       ]
     },
     {
+      "assertions": {},
+      "assertions_counted": true,
       "diagnostics": [],
       "file": "tsconfig_paths/src/config.ts",
       "language": "TypeScript",
@@ -2584,6 +2680,8 @@
       ]
     },
     {
+      "assertions": {},
+      "assertions_counted": true,
       "diagnostics": [],
       "file": "tsconfig_paths/src/utils/helpers.ts",
       "language": "TypeScript",
@@ -2613,6 +2711,8 @@
       ]
     },
     {
+      "assertions": {},
+      "assertions_counted": true,
       "diagnostics": [],
       "file": "tsx_jsx/src/component.tsx",
       "language": "TypeScript",
@@ -2687,6 +2787,8 @@
       ]
     },
     {
+      "assertions": {},
+      "assertions_counted": true,
       "diagnostics": [],
       "file": "tsx_jsx/src/view.jsx",
       "language": "JavaScript",
@@ -2716,6 +2818,8 @@
       ]
     },
     {
+      "assertions": {},
+      "assertions_counted": true,
       "diagnostics": [
         {
           "category": "Resolution",
@@ -2787,6 +2891,8 @@
       ]
     },
     {
+      "assertions": {},
+      "assertions_counted": true,
       "diagnostics": [],
       "file": "vue_component/src/components/UserCard.vue",
       "language": "TypeScript",
@@ -2839,6 +2945,8 @@
       ]
     },
     {
+      "assertions": {},
+      "assertions_counted": true,
       "diagnostics": [],
       "file": "vue_component/src/services/user-service.ts",
       "language": "TypeScript",
@@ -2901,6 +3009,8 @@
       ]
     },
     {
+      "assertions": {},
+      "assertions_counted": true,
       "diagnostics": [],
       "file": "vue_component/src/types/user.ts",
       "language": "TypeScript",

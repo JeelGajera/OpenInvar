@@ -1,6 +1,8 @@
 {
   "files": [
     {
+      "assertions": {},
+      "assertions_counted": true,
       "diagnostics": [],
       "file": "alias_import_bug/src/lib.rs",
       "language": "Rust",
@@ -20,6 +22,8 @@
       ]
     },
     {
+      "assertions": {},
+      "assertions_counted": true,
       "diagnostics": [],
       "file": "alias_import_bug/src/mappers/view_model_mapper.rs",
       "language": "Rust",
@@ -90,6 +94,8 @@
       ]
     },
     {
+      "assertions": {},
+      "assertions_counted": true,
       "diagnostics": [],
       "file": "alias_import_bug/src/models/mod.rs",
       "language": "Rust",
@@ -109,6 +115,8 @@
       ]
     },
     {
+      "assertions": {},
+      "assertions_counted": true,
       "diagnostics": [],
       "file": "alias_import_bug/src/models/user_payload.rs",
       "language": "Rust",
@@ -138,6 +146,8 @@
       ]
     },
     {
+      "assertions": {},
+      "assertions_counted": true,
       "diagnostics": [],
       "file": "call_edges/src/consumer.rs",
       "language": "Rust",
@@ -282,6 +292,8 @@
       ]
     },
     {
+      "assertions": {},
+      "assertions_counted": true,
       "diagnostics": [],
       "file": "call_edges/src/lib.rs",
       "language": "Rust",
@@ -301,6 +313,8 @@
       ]
     },
     {
+      "assertions": {},
+      "assertions_counted": true,
       "diagnostics": [],
       "file": "call_edges/src/services.rs",
       "language": "Rust",
@@ -424,6 +438,8 @@
       ]
     },
     {
+      "assertions": {},
+      "assertions_counted": true,
       "diagnostics": [],
       "file": "language_features/src/lib.rs",
       "language": "Rust",
@@ -443,6 +459,8 @@
       ]
     },
     {
+      "assertions": {},
+      "assertions_counted": true,
       "diagnostics": [],
       "file": "language_features/src/models/mod.rs",
       "language": "Rust",
@@ -474,6 +492,8 @@
       ]
     },
     {
+      "assertions": {},
+      "assertions_counted": true,
       "diagnostics": [],
       "file": "language_features/src/models/order.rs",
       "language": "Rust",
@@ -503,6 +523,8 @@
       ]
     },
     {
+      "assertions": {},
+      "assertions_counted": true,
       "diagnostics": [],
       "file": "language_features/src/models/user.rs",
       "language": "Rust",
@@ -651,6 +673,8 @@
       ]
     },
     {
+      "assertions": {},
+      "assertions_counted": true,
       "diagnostics": [],
       "file": "language_features/src/services/mod.rs",
       "language": "Rust",
@@ -670,6 +694,8 @@
       ]
     },
     {
+      "assertions": {},
+      "assertions_counted": true,
       "diagnostics": [],
       "file": "language_features/src/services/reporting.rs",
       "language": "Rust",
@@ -796,6 +822,8 @@
       ]
     },
     {
+      "assertions": {},
+      "assertions_counted": true,
       "diagnostics": [],
       "file": "workspace/crates/app/src/lib.rs",
       "language": "Rust",
@@ -815,6 +843,8 @@
       ]
     },
     {
+      "assertions": {},
+      "assertions_counted": true,
       "diagnostics": [],
       "file": "workspace/crates/app/src/main.rs",
       "language": "Rust",
@@ -856,6 +886,8 @@
       ]
     },
     {
+      "assertions": {},
+      "assertions_counted": true,
       "diagnostics": [],
       "file": "workspace/crates/app/src/service.rs",
       "language": "Rust",
@@ -996,6 +1028,8 @@
       ]
     },
     {
+      "assertions": {},
+      "assertions_counted": true,
       "diagnostics": [],
       "file": "workspace/crates/core-lib/src/lib.rs",
       "language": "Rust",
@@ -1015,6 +1049,8 @@
       ]
     },
     {
+      "assertions": {},
+      "assertions_counted": true,
       "diagnostics": [],
       "file": "workspace/crates/core-lib/src/models/mod.rs",
       "language": "Rust",
@@ -1046,6 +1082,8 @@
       ]
     },
     {
+      "assertions": {},
+      "assertions_counted": true,
       "diagnostics": [],
       "file": "workspace/crates/core-lib/src/models/payload.rs",
       "language": "Rust",
@@ -1075,6 +1113,8 @@
       ]
     },
     {
+      "assertions": {},
+      "assertions_counted": true,
       "diagnostics": [],
       "file": "workspace/crates/legacy/src/api.rs",
       "language": "Rust",
@@ -1131,6 +1171,8 @@
       ]
     },
     {
+      "assertions": {},
+      "assertions_counted": true,
       "diagnostics": [],
       "file": "workspace/crates/legacy/src/lib.rs",
       "language": "Rust",
@@ -1150,6 +1192,8 @@
       ]
     },
     {
+      "assertions": {},
+      "assertions_counted": true,
       "diagnostics": [],
       "file": "workspace/crates/legacy/src/store.rs",
       "language": "Rust",
@@ -1179,6 +1223,8 @@
       ]
     },
     {
+      "assertions": {},
+      "assertions_counted": true,
       "diagnostics": [],
       "file": "workspace/crates/renamed-lib/src/lib.rs",
       "language": "Rust",

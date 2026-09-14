@@ -250,6 +250,11 @@ fn analyze_file(
         relationships,
         diagnostics: Vec::new(),
         re_exports: Vec::new(),
+        // Structural analysis resolves nothing and counts nothing. The
+        // empty map is read as "unknown" because counts_assertions() is
+        // false for every Tier 2 language.
+        assertions: Default::default(),
+        assertions_counted: false,
     })
 }
 
@@ -273,6 +278,11 @@ fn empty_with_diagnostic(
             line: None,
         }],
         re_exports: Vec::new(),
+        // Structural analysis resolves nothing and counts nothing. The
+        // empty map is read as "unknown" because counts_assertions() is
+        // false for every Tier 2 language.
+        assertions: Default::default(),
+        assertions_counted: false,
     }
 }
 

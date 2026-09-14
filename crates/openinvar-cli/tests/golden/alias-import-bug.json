@@ -1,6 +1,8 @@
 {
   "files": [
     {
+      "assertions": {},
+      "assertions_counted": true,
       "diagnostics": [],
       "file": "src/mappers/deep/view_model_mapper.ts",
       "language": "TypeScript",
@@ -86,6 +88,8 @@
       ]
     },
     {
+      "assertions": {},
+      "assertions_counted": true,
       "diagnostics": [],
       "file": "src/models/user_payload.ts",
       "language": "TypeScript",

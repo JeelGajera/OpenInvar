@@ -1,6 +1,8 @@
 {
   "files": [
     {
+      "assertions": {},
+      "assertions_counted": true,
       "diagnostics": [],
       "file": "alias_import_bug/mappers/deep/view_model_mapper.py",
       "language": "Python",
@@ -71,6 +73,8 @@
       ]
     },
     {
+      "assertions": {},
+      "assertions_counted": true,
       "diagnostics": [],
       "file": "alias_import_bug/models/user_payload.py",
       "language": "Python",
@@ -140,6 +144,8 @@
       ]
     },
     {
+      "assertions": {},
+      "assertions_counted": true,
       "diagnostics": [],
       "file": "call_edges/app/__init__.py",
       "language": "Python",
@@ -159,6 +165,8 @@
       ]
     },
     {
+      "assertions": {},
+      "assertions_counted": true,
       "diagnostics": [],
       "file": "call_edges/app/consumer.py",
       "language": "Python",
@@ -259,6 +267,8 @@
       ]
     },
     {
+      "assertions": {},
+      "assertions_counted": true,
       "diagnostics": [],
       "file": "call_edges/app/services.py",
       "language": "Python",
@@ -318,6 +328,8 @@
       ]
     },
     {
+      "assertions": {},
+      "assertions_counted": true,
       "diagnostics": [],
       "file": "language_features/api/routes.py",
       "language": "Python",
@@ -456,6 +468,8 @@
       ]
     },
     {
+      "assertions": {},
+      "assertions_counted": true,
       "diagnostics": [],
       "file": "language_features/legacy/star.py",
       "language": "Python",
@@ -497,6 +511,8 @@
       ]
     },
     {
+      "assertions": {},
+      "assertions_counted": true,
       "diagnostics": [],
       "file": "language_features/models/__init__.py",
       "language": "Python",
@@ -548,6 +564,8 @@
       ]
     },
     {
+      "assertions": {},
+      "assertions_counted": true,
       "diagnostics": [],
       "file": "language_features/models/order.py",
       "language": "Python",
@@ -600,6 +618,8 @@
       ]
     },
     {
+      "assertions": {},
+      "assertions_counted": true,
       "diagnostics": [],
       "file": "language_features/models/user.py",
       "language": "Python",

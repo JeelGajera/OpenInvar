@@ -68,6 +68,8 @@ fn build(files: &[(&str, Vec<Symbol>)], edges: &[Relationship]) -> InvarGraph {
                 relationships: vec![],
                 diagnostics: vec![],
                 re_exports: vec![],
+                assertions: Default::default(),
+                assertions_counted: false,
             },
         );
     }

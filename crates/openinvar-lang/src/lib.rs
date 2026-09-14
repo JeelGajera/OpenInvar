@@ -7,6 +7,7 @@
 //! The entry point is [`analyze_files`], which routes files to the module that
 //! owns their language and merges the results into one `RepoIR`.
 
+pub mod assertions;
 pub mod dispatch;
 pub mod lang;
 pub mod spec;

@@ -1,6 +1,8 @@
 {
   "files": [
     {
+      "assertions": {},
+      "assertions_counted": true,
       "diagnostics": [],
       "file": "src/helper.test.ts",
       "language": "TypeScript",
@@ -53,6 +55,8 @@
       ]
     },
     {
+      "assertions": {},
+      "assertions_counted": true,
       "diagnostics": [],
       "file": "src/payload.test.ts",
       "language": "TypeScript",
@@ -159,6 +163,8 @@
       ]
     },
     {
+      "assertions": {},
+      "assertions_counted": true,
       "diagnostics": [],
       "file": "src/payload.ts",
       "language": "TypeScript",
@@ -232,6 +238,8 @@
       ]
     },
     {
+      "assertions": {},
+      "assertions_counted": true,
       "diagnostics": [],
       "file": "service.py",
       "language": "Python",
@@ -293,6 +301,8 @@
       ]
     },
     {
+      "assertions": {},
+      "assertions_counted": true,
       "diagnostics": [],
       "file": "test_service.py",
       "language": "Python",
@@ -356,6 +366,8 @@
       ]
     },
     {
+      "assertions": {},
+      "assertions_counted": true,
       "diagnostics": [],
       "file": "rustlib/src/lib.rs",
       "language": "Rust",
@@ -395,6 +407,10 @@
       ]
     },
     {
+      "assertions": {
+        "rustlib/tests/calc_test.rs::adds::function": 1
+      },
+      "assertions_counted": true,
       "diagnostics": [],
       "file": "rustlib/tests/calc_test.rs",
       "language": "Rust",
@@ -447,6 +463,8 @@
       ]
     },
     {
+      "assertions": {},
+      "assertions_counted": true,
       "diagnostics": [],
       "file": "api/handler.go",
       "language": "Go",
@@ -486,6 +504,8 @@
       ]
     },
     {
+      "assertions": {},
+      "assertions_counted": true,
       "diagnostics": [],
       "file": "api/handler_test.go",
       "language": "Go",

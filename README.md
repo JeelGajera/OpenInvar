@@ -180,8 +180,26 @@ work. Deterministic — no model is involved, here or anywhere else.
 | Detector | Signal | Severity |
 |---|---|---|
 | `test-tampering` | A test stopped covering a symbol that changed in the same diff | error |
+| `assertion-removal` | A test kept covering a symbol that changed, but lost assertions | error |
 | `contract-erosion` | A symbol was removed while a surviving caller still referred to it | error |
 | `dead-on-arrival` | A new symbol only tests refer to | warn |
+
+`test-tampering` catches coverage disappearing. `assertion-removal` catches the
+subtler move: the test still runs, still references the symbol, and no longer
+checks anything — the `assert_eq!` became a call with its result dropped, and
+both the suite and the coverage graph stayed green.
+
+Assertions are counted during the same parse the symbols come from, so there is
+no second source of truth to disagree with the graph. Only unambiguous forms
+count — Rust's `assert*` macros, Python's `assert` and the `unittest`
+`assertX` family, `expect`/`assert` in TypeScript and JavaScript, testify plus
+`t.Error`/`t.Fatal` in Go, and `assert` in C and C++. Not `unwrap()`, which is
+ordinary code as often as it is a check.
+
+A count only means something where the language is counted, and where **both**
+revisions counted it. Elsewhere the number is unknown rather than zero, and the
+detector declines to conclude — which is also what happens against a snapshot
+recorded before assertion counts existed.
 
 An audit finding is an accusation, so the output is built to be checked rather
 than believed. Every finding carries its evidence and the id you would write

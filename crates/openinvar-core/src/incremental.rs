@@ -15,6 +15,21 @@ pub fn replace_file_ir(graph: &mut InvarGraph, file_ir: &FileIR) -> IncrementalU
         .file_reexports
         .insert(file_ir.file.clone(), file_ir.re_exports.clone());
 
+    // Assertion counts follow the symbols they belong to. Without this the
+    // incremental path — which is what `watch` runs — would keep counts for
+    // symbols that no longer exist and never gain counts for the ones that
+    // replaced them, so a detector reading them would compare a stale number
+    // against a live one.
+    for id in &removed_symbol_ids {
+        graph.assertions.remove(id);
+    }
+    for (symbol, count) in &file_ir.assertions {
+        graph.assertions.insert(symbol.clone(), *count);
+    }
+    graph
+        .assertions_counted
+        .insert(file_ir.file.clone(), file_ir.assertions_counted);
+
     let mut added_symbol_ids = Vec::new();
     for symbol in &file_ir.symbols {
         graph.add_symbol(symbol.clone());

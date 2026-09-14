@@ -52,6 +52,8 @@ fn graph_of(pairs: &[(&str, &str)], resolution: Resolution) -> InvarGraph {
                 relationships: vec![],
                 diagnostics: vec![],
                 re_exports: vec![],
+                assertions: Default::default(),
+                assertions_counted: false,
             },
         );
     }
@@ -148,6 +150,8 @@ fn a_cycle_found_on_resolved_edges_still_reports_even_beside_weak_ones() {
             relationships: vec![],
             diagnostics: vec![],
             re_exports: vec![],
+            assertions: Default::default(),
+            assertions_counted: false,
         },
     );
     graph.add_relationship(&Relationship {
