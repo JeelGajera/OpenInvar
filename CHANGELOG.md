@@ -12,6 +12,71 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- **No repository could commit a rules file, so `check` had never gated
+  anything anywhere.** Rules were specified to live at
+  `.openinvar/rules.toml` — inside the directory every repository gitignores,
+  because the graph database is there too. The file holding a repository's
+  versioned constraints could not be versioned. This repository's own workflow
+  said as much in a comment: *"This repository has no .openinvar/rules.toml
+  yet, so there is nothing to violate."* That was true of every user as well.
+
+  Rules now live in `openinvar.toml` at the repository root:
+
+  ```
+  openinvar.toml      # rules and audit suppressions — committed
+  .openinvar/
+    graph.db          # generated — gitignored
+  ```
+
+  Audit suppressions move into a `[suppress]` table of the same file, for the
+  same reason: suppressing a finding is meant to be a documented act, and the
+  record of what a repository had chosen to ignore previously lived where
+  nobody could see it.
+
+  ```toml
+  [suppress]
+  "test-tampering-1a2b3c4d" = "the test was rewritten when the API changed"
+  ```
+
+  Both old locations are still read for one release, with a deprecation notice
+  naming the new one. Dropping them silently on upgrade would be a gate that
+  stopped enforcing without saying so.
+
+- **The shipped git and agent hooks would have gone quiet on an upgraded
+  repository.** Each gated on `[ -f "$root/.openinvar/rules.toml" ] || exit 0`,
+  so a repository that moved its rules to the root would have had its
+  pre-commit and stop hooks exit 0 and enforce nothing. These hooks fail open
+  by design, which makes this the failure nobody notices. They now look in both
+  places through one `openinvar_rules_file` helper.
+
+- **A mistyped section in a rules file parsed as an empty one.** `[[rules]]`
+  instead of `[[rule]]` produced zero rules and a clean run; `[supress]` with
+  one `p` silenced nothing. The parser now rejects unknown top-level keys,
+  which is what the module's own doc comment already promised: *"Everything
+  fails at parse time or not at all."*
+
+### Added
+
+- **`openinvar report --require-rules`**, matching the flag `check` already
+  had. The GitHub Action runs `report`, so without it the action had no way to
+  insist a rules file exists — and a report that comes back clean having
+  enforced nothing is the one outcome a gate must never produce quietly. The
+  action exposes it as a `require-rules` input.
+
+- **This repository now gates its own CI on its own rules.** `openinvar.toml`
+  pins the two ends of the crate dependency direction — nothing may reach back
+  up into the binary, and the language adapters may not know how anything is
+  persisted — plus an advisory fan-in threshold. The workflow runs with
+  `require-rules` and `fail-on-violation` both on.
+
+  The fan-in threshold is set at 180, above this repository's real maximum. The
+  three highest are `RelationshipKind` (169), `InvarGraph` (105) and
+  `node_text` (104), each a hub because it is supposed to be one. A threshold
+  below those would fire on all three from the first run, and a rule violated
+  on day one is a rule somebody raises until it means nothing.
+
 ### Changed
 
 - **One released binary per platform, carrying every language.** `default` is

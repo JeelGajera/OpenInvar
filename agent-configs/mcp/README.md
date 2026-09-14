@@ -107,7 +107,7 @@ OPENINVAR_ROOT = "."
 | `get_dependencies` | What does this symbol depend on? | `symbol`, `file`, `depth`, `kinds`, `min_resolution` |
 | `get_symbol_usages` | Where is this used, including aliases? | `symbol`, `file`, `kinds`, `min_resolution` |
 | `graph_diff` | What did this change break? | `base`, `head` |
-| `check_rules` | Does this change violate `.openinvar/rules.toml`? | `base`, `head` |
+| `check_rules` | Does this change violate `openinvar.toml`? | `base`, `head` |
 | `refresh_graph_index` | Re-analyze after changes | `path`, `include`, `exclude`, `respect_gitignore` |
 
 Six is a deliberate ceiling. A large tool surface degrades an agent's ability

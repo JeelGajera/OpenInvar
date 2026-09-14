@@ -44,7 +44,7 @@ but a gate nobody has enabled correctly is a gate that catches nothing.
 A rule saying the payload type may not lose fields:
 
 ```toml
-# .openinvar/rules.toml
+# openinvar.toml
 [[rule]]
 name = "payload-is-stable"
 kind = "no-field-removal"
@@ -64,7 +64,7 @@ $ git commit -m "drop unused email field"
 
   ✗ 1 rule(s) violated.
 
-openinvar: commit blocked by a rule in .openinvar/rules.toml
+openinvar: commit blocked by a rule in openinvar.toml
          Override once with: git commit --no-verify
 ```
 

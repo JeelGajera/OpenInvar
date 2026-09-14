@@ -119,7 +119,7 @@ The two that gate:
 | Command | Purpose |
 |---|---|
 | `openinvar audit [--base <rev>] [--head <rev>]` | Detect changes made to pass a check rather than to work |
-| `openinvar check [--diff-only]` | Enforce `.openinvar/rules.toml`; exit 1 on violation |
+| `openinvar check [--diff-only] [--require-rules]` | Enforce `openinvar.toml`; exit 1 on violation |
 
 Everything they are built on:
 
@@ -159,11 +159,15 @@ because an absent check otherwise reads as a passing one — and only files a
 Tier 1 adapter resolved are in scope, since a name matched inside one file
 cannot support an accusation.
 
-Record a deliberate exception in `.openinvar/audit-ignore`:
+Record a deliberate exception in the `[suppress]` table of `openinvar.toml`:
 
+```toml
+[suppress]
+"test-tampering-1a2b3c4d" = "the test was rewritten when the API changed"
 ```
-test-tampering-1a2b3c4d  # the test was rewritten when the API changed
-```
+
+In the committed file on purpose. Suppressing a finding is an act somebody
+should be able to review in a diff.
 
 Suppressed findings are still shown, and a suppression that matches nothing is
 reported as stale. Exit 0 when nothing was found at the requested severity, 1
@@ -171,9 +175,23 @@ when something was, 2 when the audit could not run.
 
 ## Check
 
-A repository states its own constraints in `.openinvar/rules.toml`, and
+A repository states its own constraints in `openinvar.toml`, and
 `openinvar check` enforces them — across every language in the repository, which
 is what no single-language architecture linter can do.
+
+```
+openinvar.toml      # rules and audit suppressions — commit this
+.openinvar/
+  graph.db          # generated — .gitignore this
+```
+
+The rules file sits at the root and is **meant to be committed**: a constraint
+nobody can read is not a constraint. Only the generated graph belongs in
+`.openinvar/`, so `.gitignore` needs one line:
+
+```gitignore
+.openinvar/
+```
 
 ```toml
 [[rule]]
@@ -288,7 +306,7 @@ $ git commit -m "drop unused email field"
         src/models/user_payload.ts:5
           field 'email' removed from 'UserPayload'
 
-openinvar: commit blocked by a rule in .openinvar/rules.toml
+openinvar: commit blocked by a rule in openinvar.toml
          Override once with: git commit --no-verify
 ```
 
@@ -319,7 +337,7 @@ jobs:
 ```
 
 It analyzes the base and head commits, compares them, evaluates
-`.openinvar/rules.toml`, and posts one comment — updating it on each push rather
+`openinvar.toml`, and posts one comment — updating it on each push rather
 than adding another.
 
 ```markdown
@@ -347,7 +365,7 @@ only in the exit status, and never fail the job.
 |---|---|---|
 | `version` | `latest` | A release tag, or `source` to build from the checkout |
 | `base-ref` | PR base | What to compare against |
-| `rules` | `.openinvar/rules.toml` | |
+| `rules` | `openinvar.toml` | |
 | `comment` | `true` | |
 | `fail-on-violation` | `true` | Undecided rules never fail the job |
 

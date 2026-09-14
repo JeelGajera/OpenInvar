@@ -47,7 +47,7 @@ if [ -z "$bin" ]; then
 fi
 
 root=$(openinvar_root)
-[ -f "$root/.openinvar/rules.toml" ] || exit 0
+openinvar_rules_file >/dev/null || exit 0
 
 if ! openinvar_has_graph; then
   echo "openinvar: no graph at .openinvar/graph.db — rules were not checked." >&2
@@ -72,7 +72,7 @@ if [ $audit_status -eq 1 ]; then
   echo "$audit_output" >&2
   echo >&2
   echo "openinvar: commit blocked by an audit finding" >&2
-  echo "         Record a deliberate exception in .openinvar/audit-ignore, with a reason." >&2
+  echo "         Record a deliberate exception in the [suppress] table of openinvar.toml, with a reason." >&2
   echo "         Override once with: git commit --no-verify" >&2
   exit 1
 fi
@@ -82,7 +82,7 @@ case $status in
   1)
     echo "$output" >&2
     echo >&2
-    echo "openinvar: commit blocked by a rule in .openinvar/rules.toml" >&2
+    echo "openinvar: commit blocked by a rule in openinvar.toml" >&2
     echo "         Override once with: git commit --no-verify" >&2
     exit 1
     ;;

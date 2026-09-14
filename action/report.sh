@@ -74,6 +74,9 @@ openinvar analyze . --snapshot "$head_sha" >/dev/null
 report_path="${RUNNER_TEMP:-/tmp}/openinvar-report.md"
 rules_arg=()
 [ -n "${OPENINVAR_RULES:-}" ] && rules_arg=(--rules "${OPENINVAR_RULES}")
+# A missing rules file is a clean report having enforced nothing, which is the
+# one outcome a gate must never produce silently.
+[ "${OPENINVAR_REQUIRE_RULES:-false}" = "true" ] && rules_arg+=(--require-rules)
 
 set +e
 openinvar report . --base "$base_sha" --head "$head_sha" "${rules_arg[@]}" > "$report_path"

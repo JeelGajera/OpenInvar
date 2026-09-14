@@ -145,7 +145,7 @@ enum Commands {
         json: bool,
     },
 
-    /// Enforce the rules in .openinvar/rules.toml
+    /// Enforce the rules in openinvar.toml
     ///
     /// Exit status is part of the contract: 0 when nothing was violated,
     /// 1 when a rule was broken on resolved evidence, 2 when the check
@@ -156,7 +156,7 @@ enum Commands {
         #[arg(default_value = ".")]
         path: String,
 
-        /// Rules file to read. Defaults to <path>/.openinvar/rules.toml
+        /// Rules file to read. Defaults to <path>/openinvar.toml
         #[arg(long, value_name = "FILE")]
         rules: Option<String>,
 
@@ -210,9 +210,18 @@ enum Commands {
         #[arg(long, default_value = "worktree")]
         head: String,
 
-        /// Rules file to read. Defaults to <path>/.openinvar/rules.toml
+        /// Rules file to read. Defaults to <path>/openinvar.toml
         #[arg(long, value_name = "FILE")]
         rules: Option<String>,
+
+        /// Treat a missing rules file as a failure.
+        ///
+        /// Off by default so the report is useful in a repository that has
+        /// written no rules; on in CI, where a rules file that has gone
+        /// missing would otherwise produce a clean report having enforced
+        /// nothing.
+        #[arg(long)]
+        require_rules: bool,
     },
 
     /// Which tests exercise a symbol, or a change
@@ -511,7 +520,8 @@ fn main() {
             base,
             head,
             rules,
-        } => match commands::report::run(&path, &base, &head, rules.as_deref()) {
+            require_rules,
+        } => match commands::report::run(&path, &base, &head, rules.as_deref(), require_rules) {
             Ok(code) => std::process::exit(code),
             Err(e) => {
                 output::error(&e.to_string());

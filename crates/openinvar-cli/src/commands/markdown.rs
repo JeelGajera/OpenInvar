@@ -60,7 +60,7 @@ pub fn report(
         // Said explicitly. A comment silent about rules reads as a comment
         // whose rules passed.
         None => out.push_str(
-            "\n### Rules\n\nNo `.openinvar/rules.toml` in this repository, so no rule was \
+            "\n### Rules\n\nNo `openinvar.toml` in this repository, so no rule was \
              enforced. This is not a passing rule check — it is the absence of one.\n",
         ),
     }
@@ -489,7 +489,7 @@ mod tests {
         let out = report("a", "b", Some(&delta), Some(&found), None);
 
         assert!(
-            out.contains("No `.openinvar/rules.toml`"),
+            out.contains("No `openinvar.toml`"),
             "the comment must say no rule was enforced:\n{out}"
         );
         assert!(
