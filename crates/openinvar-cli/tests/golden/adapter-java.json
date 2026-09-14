@@ -1,0 +1,513 @@
+{
+  "files": [
+    {
+      "assertions": {},
+      "assertions_counted": false,
+      "diagnostics": [],
+      "file": "basic/src/main/java/com/example/Elsewhere.java",
+      "language": "Java",
+      "re_exports": [],
+      "relationships": [
+        {
+          "alias": null,
+          "context": "instantiation",
+          "file": "basic/src/main/java/com/example/Elsewhere.java",
+          "from": "basic/src/main/java/com/example/Elsewhere.java::Elsewhere::run::method",
+          "kind": "Instantiates",
+          "line": 8,
+          "properties_accessed": [],
+          "resolution": "resolved",
+          "to": "basic/src/main/java/com/example/UserService.java::UserService::class"
+        },
+        {
+          "alias": null,
+          "context": "call",
+          "file": "basic/src/main/java/com/example/Elsewhere.java",
+          "from": "basic/src/main/java/com/example/Elsewhere.java::Elsewhere::run::method",
+          "kind": "Calls",
+          "line": 9,
+          "properties_accessed": [],
+          "resolution": "resolved",
+          "to": "basic/src/main/java/com/example/UserService.java::UserService::handle::method"
+        }
+      ],
+      "symbols": [
+        {
+          "file": "basic/src/main/java/com/example/Elsewhere.java",
+          "id": "basic/src/main/java/com/example/Elsewhere.java::module::module",
+          "kind": "Module",
+          "language": "Java",
+          "line_end": 1,
+          "line_start": 1,
+          "name": "module",
+          "signature": null
+        },
+        {
+          "file": "basic/src/main/java/com/example/Elsewhere.java",
+          "id": "basic/src/main/java/com/example/Elsewhere.java::Elsewhere::class",
+          "kind": "Class",
+          "language": "Java",
+          "line_end": 11,
+          "line_start": 6,
+          "name": "Elsewhere",
+          "signature": "public class Elsewhere {"
+        },
+        {
+          "file": "basic/src/main/java/com/example/Elsewhere.java",
+          "id": "basic/src/main/java/com/example/Elsewhere.java::Elsewhere::run::method",
+          "kind": "Method",
+          "language": "Java",
+          "line_end": 10,
+          "line_start": 7,
+          "name": "run",
+          "signature": "public void run() {"
+        }
+      ]
+    },
+    {
+      "assertions": {},
+      "assertions_counted": false,
+      "diagnostics": [],
+      "file": "basic/src/main/java/com/example/Report.java",
+      "language": "Java",
+      "re_exports": [],
+      "relationships": [
+        {
+          "alias": null,
+          "context": "import",
+          "file": "basic/src/main/java/com/example/Report.java",
+          "from": "basic/src/main/java/com/example/Report.java::module::module",
+          "kind": "Imports",
+          "line": 8,
+          "properties_accessed": [],
+          "resolution": "resolved",
+          "to": "basic/src/main/java/com/example/model/User.java::User::class"
+        },
+        {
+          "alias": null,
+          "context": "extends",
+          "file": "basic/src/main/java/com/example/Report.java",
+          "from": "basic/src/main/java/com/example/Report.java::Report::class",
+          "kind": "Extends",
+          "line": 12,
+          "properties_accessed": [],
+          "resolution": "resolved",
+          "to": "basic/src/main/java/com/example/Elsewhere.java::Elsewhere::class"
+        },
+        {
+          "alias": null,
+          "context": "field type",
+          "file": "basic/src/main/java/com/example/Report.java",
+          "from": "basic/src/main/java/com/example/Report.java::Report::subject::property",
+          "kind": "UsesType",
+          "line": 13,
+          "properties_accessed": [],
+          "resolution": "resolved",
+          "to": "basic/src/main/java/com/example/model/User.java::User::class"
+        },
+        {
+          "alias": null,
+          "context": "parameter type",
+          "file": "basic/src/main/java/com/example/Report.java",
+          "from": "basic/src/main/java/com/example/Report.java::Report::render::method",
+          "kind": "UsesType",
+          "line": 15,
+          "properties_accessed": [],
+          "resolution": "resolved",
+          "to": "basic/src/main/java/com/example/util/Formatter.java::Formatter::class"
+        },
+        {
+          "alias": null,
+          "context": "call",
+          "file": "basic/src/main/java/com/example/Report.java",
+          "from": "basic/src/main/java/com/example/Report.java::Report::render::method",
+          "kind": "Calls",
+          "line": 16,
+          "properties_accessed": [],
+          "resolution": "resolved",
+          "to": "basic/src/main/java/com/example/util/Formatter.java::Formatter::format::method"
+        },
+        {
+          "alias": null,
+          "context": "call",
+          "file": "basic/src/main/java/com/example/Report.java",
+          "from": "basic/src/main/java/com/example/Report.java::Report::render::method",
+          "kind": "Calls",
+          "line": 17,
+          "properties_accessed": [],
+          "resolution": "resolved",
+          "to": "basic/src/main/java/com/example/util/Helpers.java::Helpers::log::method"
+        },
+        {
+          "alias": null,
+          "context": "call",
+          "file": "basic/src/main/java/com/example/Report.java",
+          "from": "basic/src/main/java/com/example/Report.java::Report::render::method",
+          "kind": "Calls",
+          "line": 20,
+          "properties_accessed": [],
+          "resolution": "resolved",
+          "to": "basic/src/main/java/com/example/Elsewhere.java::Elsewhere::run::method"
+        },
+        {
+          "alias": "User",
+          "context": "property access",
+          "file": "basic/src/main/java/com/example/Report.java",
+          "from": "basic/src/main/java/com/example/Report.java::Report::render::method",
+          "kind": "AccessesProperty",
+          "line": 16,
+          "properties_accessed": [
+            "email",
+            "name"
+          ],
+          "resolution": "resolved",
+          "to": "basic/src/main/java/com/example/model/User.java::User::class"
+        }
+      ],
+      "symbols": [
+        {
+          "file": "basic/src/main/java/com/example/Report.java",
+          "id": "basic/src/main/java/com/example/Report.java::module::module",
+          "kind": "Module",
+          "language": "Java",
+          "line_end": 1,
+          "line_start": 1,
+          "name": "module",
+          "signature": null
+        },
+        {
+          "file": "basic/src/main/java/com/example/Report.java",
+          "id": "basic/src/main/java/com/example/Report.java::Report::class",
+          "kind": "Class",
+          "language": "Java",
+          "line_end": 23,
+          "line_start": 12,
+          "name": "Report",
+          "signature": "public class Report extends Elsewhere {"
+        },
+        {
+          "file": "basic/src/main/java/com/example/Report.java",
+          "id": "basic/src/main/java/com/example/Report.java::Report::subject::property",
+          "kind": "Property",
+          "language": "Java",
+          "line_end": 13,
+          "line_start": 13,
+          "name": "subject",
+          "signature": "private User subject;"
+        },
+        {
+          "file": "basic/src/main/java/com/example/Report.java",
+          "id": "basic/src/main/java/com/example/Report.java::Report::render::method",
+          "kind": "Method",
+          "language": "Java",
+          "line_end": 22,
+          "line_start": 15,
+          "name": "render",
+          "signature": "public String render(Formatter formatter) {"
+        }
+      ]
+    },
+    {
+      "assertions": {},
+      "assertions_counted": false,
+      "diagnostics": [],
+      "file": "basic/src/main/java/com/example/UserService.java",
+      "language": "Java",
+      "re_exports": [],
+      "relationships": [
+        {
+          "alias": null,
+          "context": "super_interfaces",
+          "file": "basic/src/main/java/com/example/UserService.java",
+          "from": "basic/src/main/java/com/example/UserService.java::UserService::class",
+          "kind": "Implements",
+          "line": 16,
+          "properties_accessed": [],
+          "resolution": "resolved",
+          "to": "basic/src/main/java/com/example/UserService.java::Auditable::interface"
+        },
+        {
+          "alias": null,
+          "context": "field type",
+          "file": "basic/src/main/java/com/example/UserService.java",
+          "from": "basic/src/main/java/com/example/UserService.java::UserService::log::property",
+          "kind": "UsesType",
+          "line": 17,
+          "properties_accessed": [],
+          "resolution": "resolved",
+          "to": "basic/src/main/java/com/example/UserService.java::AuditLog::class"
+        },
+        {
+          "alias": null,
+          "context": "call",
+          "file": "basic/src/main/java/com/example/UserService.java",
+          "from": "basic/src/main/java/com/example/UserService.java::UserService::handle::method",
+          "kind": "Calls",
+          "line": 25,
+          "properties_accessed": [],
+          "resolution": "resolved",
+          "to": "basic/src/main/java/com/example/UserService.java::UserService::describe::method"
+        },
+        {
+          "alias": null,
+          "context": "call",
+          "file": "basic/src/main/java/com/example/UserService.java",
+          "from": "basic/src/main/java/com/example/UserService.java::UserService::handle::method",
+          "kind": "Calls",
+          "line": 27,
+          "properties_accessed": [],
+          "resolution": "resolved",
+          "to": "basic/src/main/java/com/example/UserService.java::AuditLog::record::method"
+        }
+      ],
+      "symbols": [
+        {
+          "file": "basic/src/main/java/com/example/UserService.java",
+          "id": "basic/src/main/java/com/example/UserService.java::module::module",
+          "kind": "Module",
+          "language": "Java",
+          "line_end": 1,
+          "line_start": 1,
+          "name": "module",
+          "signature": null
+        },
+        {
+          "file": "basic/src/main/java/com/example/UserService.java",
+          "id": "basic/src/main/java/com/example/UserService.java::Auditable::interface",
+          "kind": "Interface",
+          "language": "Java",
+          "line_end": 9,
+          "line_start": 7,
+          "name": "Auditable",
+          "signature": "public interface Auditable {"
+        },
+        {
+          "file": "basic/src/main/java/com/example/UserService.java",
+          "id": "basic/src/main/java/com/example/UserService.java::Auditable::describe::method",
+          "kind": "Method",
+          "language": "Java",
+          "line_end": 8,
+          "line_start": 8,
+          "name": "describe",
+          "signature": "String describe();"
+        },
+        {
+          "file": "basic/src/main/java/com/example/UserService.java",
+          "id": "basic/src/main/java/com/example/UserService.java::AuditLog::class",
+          "kind": "Class",
+          "language": "Java",
+          "line_end": 14,
+          "line_start": 11,
+          "name": "AuditLog",
+          "signature": "class AuditLog {"
+        },
+        {
+          "file": "basic/src/main/java/com/example/UserService.java",
+          "id": "basic/src/main/java/com/example/UserService.java::AuditLog::record::method",
+          "kind": "Method",
+          "language": "Java",
+          "line_end": 13,
+          "line_start": 12,
+          "name": "record",
+          "signature": "void record(String message) {"
+        },
+        {
+          "file": "basic/src/main/java/com/example/UserService.java",
+          "id": "basic/src/main/java/com/example/UserService.java::UserService::class",
+          "kind": "Class",
+          "language": "Java",
+          "line_end": 29,
+          "line_start": 16,
+          "name": "UserService",
+          "signature": "public class UserService implements Auditable {"
+        },
+        {
+          "file": "basic/src/main/java/com/example/UserService.java",
+          "id": "basic/src/main/java/com/example/UserService.java::UserService::log::property",
+          "kind": "Property",
+          "language": "Java",
+          "line_end": 17,
+          "line_start": 17,
+          "name": "log",
+          "signature": "private AuditLog log;"
+        },
+        {
+          "file": "basic/src/main/java/com/example/UserService.java",
+          "id": "basic/src/main/java/com/example/UserService.java::UserService::describe::method",
+          "kind": "Method",
+          "language": "Java",
+          "line_end": 21,
+          "line_start": 19,
+          "name": "describe",
+          "signature": "public String describe() {"
+        },
+        {
+          "file": "basic/src/main/java/com/example/UserService.java",
+          "id": "basic/src/main/java/com/example/UserService.java::UserService::handle::method",
+          "kind": "Method",
+          "language": "Java",
+          "line_end": 28,
+          "line_start": 23,
+          "name": "handle",
+          "signature": "public void handle() {"
+        }
+      ]
+    },
+    {
+      "assertions": {},
+      "assertions_counted": false,
+      "diagnostics": [],
+      "file": "basic/src/main/java/com/example/model/User.java",
+      "language": "Java",
+      "re_exports": [],
+      "relationships": [],
+      "symbols": [
+        {
+          "file": "basic/src/main/java/com/example/model/User.java",
+          "id": "basic/src/main/java/com/example/model/User.java::module::module",
+          "kind": "Module",
+          "language": "Java",
+          "line_end": 1,
+          "line_start": 1,
+          "name": "module",
+          "signature": null
+        },
+        {
+          "file": "basic/src/main/java/com/example/model/User.java",
+          "id": "basic/src/main/java/com/example/model/User.java::User::class",
+          "kind": "Class",
+          "language": "Java",
+          "line_end": 10,
+          "line_start": 3,
+          "name": "User",
+          "signature": "public class User {"
+        },
+        {
+          "file": "basic/src/main/java/com/example/model/User.java",
+          "id": "basic/src/main/java/com/example/model/User.java::User::email::property",
+          "kind": "Property",
+          "language": "Java",
+          "line_end": 4,
+          "line_start": 4,
+          "name": "email",
+          "signature": "public String email;"
+        },
+        {
+          "file": "basic/src/main/java/com/example/model/User.java",
+          "id": "basic/src/main/java/com/example/model/User.java::User::name::property",
+          "kind": "Property",
+          "language": "Java",
+          "line_end": 5,
+          "line_start": 5,
+          "name": "name",
+          "signature": "public String name;"
+        },
+        {
+          "file": "basic/src/main/java/com/example/model/User.java",
+          "id": "basic/src/main/java/com/example/model/User.java::User::getId::method",
+          "kind": "Method",
+          "language": "Java",
+          "line_end": 9,
+          "line_start": 7,
+          "name": "getId",
+          "signature": "public String getId() {"
+        }
+      ]
+    },
+    {
+      "assertions": {},
+      "assertions_counted": false,
+      "diagnostics": [],
+      "file": "basic/src/main/java/com/example/util/Formatter.java",
+      "language": "Java",
+      "re_exports": [],
+      "relationships": [],
+      "symbols": [
+        {
+          "file": "basic/src/main/java/com/example/util/Formatter.java",
+          "id": "basic/src/main/java/com/example/util/Formatter.java::module::module",
+          "kind": "Module",
+          "language": "Java",
+          "line_end": 1,
+          "line_start": 1,
+          "name": "module",
+          "signature": null
+        },
+        {
+          "file": "basic/src/main/java/com/example/util/Formatter.java",
+          "id": "basic/src/main/java/com/example/util/Formatter.java::Formatter::class",
+          "kind": "Class",
+          "language": "Java",
+          "line_end": 7,
+          "line_start": 3,
+          "name": "Formatter",
+          "signature": "public class Formatter {"
+        },
+        {
+          "file": "basic/src/main/java/com/example/util/Formatter.java",
+          "id": "basic/src/main/java/com/example/util/Formatter.java::Formatter::format::method",
+          "kind": "Method",
+          "language": "Java",
+          "line_end": 6,
+          "line_start": 4,
+          "name": "format",
+          "signature": "public String format(String value) {"
+        }
+      ]
+    },
+    {
+      "assertions": {},
+      "assertions_counted": false,
+      "diagnostics": [],
+      "file": "basic/src/main/java/com/example/util/Helpers.java",
+      "language": "Java",
+      "re_exports": [],
+      "relationships": [],
+      "symbols": [
+        {
+          "file": "basic/src/main/java/com/example/util/Helpers.java",
+          "id": "basic/src/main/java/com/example/util/Helpers.java::module::module",
+          "kind": "Module",
+          "language": "Java",
+          "line_end": 1,
+          "line_start": 1,
+          "name": "module",
+          "signature": null
+        },
+        {
+          "file": "basic/src/main/java/com/example/util/Helpers.java",
+          "id": "basic/src/main/java/com/example/util/Helpers.java::Helpers::class",
+          "kind": "Class",
+          "language": "Java",
+          "line_end": 6,
+          "line_start": 3,
+          "name": "Helpers",
+          "signature": "public class Helpers {"
+        },
+        {
+          "file": "basic/src/main/java/com/example/util/Helpers.java",
+          "id": "basic/src/main/java/com/example/util/Helpers.java::Helpers::log::method",
+          "kind": "Method",
+          "language": "Java",
+          "line_end": 5,
+          "line_start": 4,
+          "name": "log",
+          "signature": "public static void log(String message) {"
+        }
+      ]
+    }
+  ],
+  "language_stats": {
+    "Java": 6
+  },
+  "root": "<root>",
+  "schema_version": 1,
+  "stats": {
+    "alias_chains": 0,
+    "aliases": 0,
+    "diagnostics": 0,
+    "files_indexed": 6,
+    "relationships": 14,
+    "symbols": 27
+  }
+}

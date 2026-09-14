@@ -80,7 +80,10 @@ fn the_tier_one_languages_are_reported_as_resolved() {
 
     for support in supported_languages() {
         let expected = match support.name {
-            "Java" | "Ruby" | "C#" => Tier::Structural,
+            // Java was promoted: it has an import resolver, a scope analyzer
+            // binding receivers to declared types, and a supertype walk, so a
+            // gate may act on it. Ruby and C# have none of that yet.
+            "Ruby" | "C#" => Tier::Structural,
             _ => Tier::Resolved,
         };
         assert_eq!(

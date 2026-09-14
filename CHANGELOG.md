@@ -14,6 +14,42 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Java is now Tier 1.** It shipped as the demonstration Tier 2 language, with
+  its own module saying what promotion would take:
+
+  > Promoting Java to Tier 1 means implementing import resolution, alias
+  > resolution and declared-type binding for it.
+
+  That is what this adds: a parser, an extractor, a scope analyzer binding each
+  receiver to its declared type, and a resolver following Java's own name
+  resolution order. Gates may now act on Java, and `status` reports it as
+  `tier 1 (resolved)`.
+
+  The order is the substance. A type declared in the file shadows an import;
+  the file's own package is searched before any on-demand import; two wildcard
+  imports offering one name is an ambiguity `javac` rejects, so the reference is
+  **dropped rather than guessed**; a method declared on the enclosing type
+  shadows a statically imported one; and an inherited method resolves by walking
+  supertypes across files rather than by matching the name wherever it appears.
+  Each of those has a test that fails when the rule is inverted.
+
+  Nothing outside the repository records an edge. `String` and `List` are not
+  declared anywhere in the analysed tree, so any edge to them would be invented
+  — and `dispatch` stamps every Tier 1 edge gate-safe on the way out, so an
+  invented one would be marked as evidence a gate may act on. Imports that leave
+  the repository become external package nodes instead, which keeps the
+  dependency visible without fabricating a symbol.
+
+  Measured on this repository, Java's resolution coverage moves from
+  `0.0% of 2 edge(s)` to `100.0% of 14 edge(s)`, and `fixtures/adapter-java`
+  joins the golden corpus with 10 cross-file edges that Tier 2 could not record
+  at all.
+
+  **Tier 2 is a status, not a permanent class**, and this is the evidence. Ruby
+  remains the honest caveat: autoloading, monkey-patching and `method_missing`
+  leave a large share of its references undecidable statically, so it may stay
+  Tier 2 rather than be promoted on a claim the analysis cannot support.
+
 - **`assertion-removal`** — a fourth audit detector, for a test that kept its
   coverage but stopped checking anything.
 

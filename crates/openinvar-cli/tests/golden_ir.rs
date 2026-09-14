@@ -29,6 +29,7 @@ use std::process::Command;
 const CORPUS: &[&str] = &[
     "adapter-c",
     "adapter-go",
+    "adapter-java",
     "adapter-py",
     "adapter-rust",
     "adapter-ts",
@@ -46,7 +47,7 @@ const CORPUS: &[&str] = &[
 /// depends on how the binary was configured is not a golden. Tier 2 behaviour
 /// is covered directly in `openinvar-lang/tests/<language>_structural.rs`, where
 /// the feature is a precondition rather than a variable.
-const STRUCTURAL_FIXTURES: &[&str] = &["adapter-csharp", "adapter-java", "adapter-ruby"];
+const STRUCTURAL_FIXTURES: &[&str] = &["adapter-csharp", "adapter-ruby"];
 
 fn repo_root() -> PathBuf {
     PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../..")
@@ -215,6 +216,7 @@ macro_rules! golden_test {
 
 golden_test!(golden_adapter_c, "adapter-c");
 golden_test!(golden_adapter_go, "adapter-go");
+golden_test!(golden_adapter_java, "adapter-java");
 golden_test!(golden_adapter_py, "adapter-py");
 golden_test!(golden_adapter_rust, "adapter-rust");
 golden_test!(golden_adapter_ts, "adapter-ts");
