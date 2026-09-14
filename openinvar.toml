@@ -1,0 +1,50 @@
+# OpenInvar's constraints on itself.
+#
+# Committed on purpose: these are the repository's architectural boundaries,
+# and a constraint nobody can read is not a constraint. The graph database
+# lives in .openinvar/, which is gitignored — this file does not.
+#
+# `openinvar check .` evaluates everything here. CI runs it with
+# fail-on-violation, so a change that breaks one of these does not merge.
+
+# ── crate layering ───────────────────────────────────────────
+#
+# The dependency direction is core <- lang <- store <- mcp <- cli. These two
+# rules pin the ends of it: nothing may reach back up into the binary, and the
+# language adapters have no business knowing how anything is persisted.
+
+[[rule]]
+name = "core-does-not-depend-on-cli"
+kind = "forbid-dependency"
+from = "crates/openinvar-core/**"
+to   = "crates/openinvar-cli/**"
+severity = "error"
+
+[[rule]]
+name = "lang-does-not-depend-on-store"
+kind = "forbid-dependency"
+from = "crates/openinvar-lang/**"
+to   = "crates/openinvar-store/**"
+severity = "error"
+
+# ── coupling ─────────────────────────────────────────────────
+#
+# Advisory, and deliberately set above what this repository already has.
+#
+# A high fan-in is frequently correct. The three highest here are
+# RelationshipKind (169), InvarGraph (105) and node_text (104) — the edge-kind
+# enum, the graph type, and the AST helper every adapter calls. Each is a hub
+# because it is supposed to be one.
+#
+# A threshold below those would fire on all three from the first run, and a
+# rule that is violated on day one is a rule somebody raises until it means
+# nothing. 180 sits above the real maximum, so this fires when something *new*
+# climbs into that class, which is the only version of this rule worth having.
+#
+# Raise it when a hub is genuinely justified; do not raise it to silence one.
+
+[[rule]]
+name = "no-new-god-symbol"
+kind = "max-fan-in"
+threshold = 180
+severity = "warn"

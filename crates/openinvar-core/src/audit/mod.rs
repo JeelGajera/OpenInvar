@@ -312,14 +312,19 @@ pub fn run(
 
 // ── suppression ──────────────────────────────────────────────
 
-/// The contents of `.openinvar/audit-ignore`.
+/// Deliberate exceptions: finding ids, each with the reason it is allowed.
 ///
-/// One finding id per line, with an optional reason after `#`:
+/// Written in the `[suppress]` table of `openinvar.toml`:
 ///
-/// ```text
-/// # the test was rewritten deliberately when the API changed
-/// test-tampering-1a2b3c4d  # rewritten in the API migration
+/// ```toml
+/// [suppress]
+/// "test-tampering-1a2b3c4d" = "the test was rewritten when the API changed"
 /// ```
+///
+/// In a committed file on purpose. Suppressing a finding is an act someone
+/// should be able to review, and the previous home — `.openinvar/audit-ignore`
+/// — sat inside the gitignored data directory, so the record of what a
+/// repository had chosen to ignore could never be shared with anyone.
 ///
 /// Ids rather than patterns, deliberately. A glob would let one line silence a
 /// whole detector, and a suppression that broad is indistinguishable from
@@ -350,7 +355,13 @@ impl Suppressions {
         Suppressions { entries }
     }
 
-    /// Read the file, treating absence as "nothing suppressed".
+    /// Build from the `[suppress]` table of a parsed config file.
+    pub fn from_map(entries: BTreeMap<String, String>) -> Self {
+        Suppressions { entries }
+    }
+
+    /// Read a pre-0.3.0 `audit-ignore` file, treating absence as "nothing
+    /// suppressed".
     ///
     /// A missing ignore file is the normal case and not worth an error; an
     /// unreadable one is, because silently suppressing nothing when the author
@@ -389,7 +400,11 @@ impl Suppressions {
     }
 }
 
-/// The conventional location, relative to a repository root.
-pub fn default_ignore_path(root: &std::path::Path) -> std::path::PathBuf {
+/// The pre-0.3.0 location, relative to a repository root.
+///
+/// Suppressions now live in the `[suppress]` table of `openinvar.toml`. This
+/// path is still read for one release so an upgrade does not silently
+/// un-suppress a finding somebody deliberately accepted.
+pub fn legacy_ignore_path(root: &std::path::Path) -> std::path::PathBuf {
     root.join(".openinvar").join("audit-ignore")
 }

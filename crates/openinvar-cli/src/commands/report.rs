@@ -26,6 +26,7 @@ pub fn run(
     base: &str,
     head: &str,
     rules_path: Option<&str>,
+    require_rules: bool,
 ) -> Result<i32, Box<dyn std::error::Error>> {
     let root = super::normalize_path(
         &std::fs::canonicalize(path).map_err(|e| format!("cannot access '{}': {}", path, e))?,
@@ -46,11 +47,22 @@ pub fn run(
     // report, and saying nothing about rules is honest when none were written.
     let rules_file = match rules_path {
         Some(given) => std::path::PathBuf::from(given),
-        None => rules::default_path(&root),
+        None => match super::locate_config(&root) {
+            Some(found) => found.path().to_path_buf(),
+            None => rules::config_path(&root),
+        },
     };
     let evaluation: Option<Evaluation> = if rules_file.exists() {
         let parsed = rules::load(&rules_file).map_err(|e| e.to_string())?;
         Some(rule_eval::evaluate(&parsed, &before, Some(&computed)))
+    } else if require_rules {
+        // The caller said a rules file must exist. Producing a clean report
+        // having enforced nothing is precisely what they asked to prevent.
+        return Err(format!(
+            "no rules file at {} (--require-rules was given)",
+            rules_file.display()
+        )
+        .into());
     } else {
         None
     };

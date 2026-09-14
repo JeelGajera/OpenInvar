@@ -42,7 +42,7 @@ output=$(openinvar_with_timeout "$TIMEOUT" "$bin" audit "$root" --base HEAD --he
 status=$?
 
 if [ $status -eq 1 ]; then
-  printf 'OpenInvar audit found changes that look like they were made to pass a check rather than to work:\n\n%s\n\nFix the change, or record a deliberate exception in .openinvar/audit-ignore with a reason.\n' "$output" >&2
+  printf 'OpenInvar audit found changes that look like they were made to pass a check rather than to work:\n\n%s\n\nFix the change, or record a deliberate exception in the [suppress] table of openinvar.toml with a reason.\n' "$output" >&2
   exit 2
 fi
 

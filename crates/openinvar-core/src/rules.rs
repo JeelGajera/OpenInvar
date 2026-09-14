@@ -1,4 +1,4 @@
-//! `.openinvar/rules.toml` — the constraints a repository chooses to enforce.
+//! `openinvar.toml` — the constraints a repository chooses to enforce.
 //!
 //! Parsing and validation only. Evaluating a rule against a graph is a
 //! separate concern and a separate change; this decides whether a rules file
@@ -12,7 +12,7 @@
 //! day it was supposed to catch something, and a gate that quietly enforces
 //! four of your five rules is worse than one that refuses to start.
 
-use std::collections::BTreeSet;
+use std::collections::{BTreeMap, BTreeSet};
 use std::fmt::{Display, Formatter};
 use std::path::Path;
 
@@ -103,10 +103,15 @@ pub struct Rule {
     pub severity: Severity,
 }
 
-/// A parsed rules file.
+/// A parsed configuration file.
 #[derive(Debug, Clone, Default, PartialEq, Eq)]
 pub struct Rules {
     pub rules: Vec<Rule>,
+    /// `[suppress]` — audit finding ids, each with the reason it is allowed.
+    ///
+    /// Parsed here because it shares the file, not because rules and audit
+    /// share anything else. `audit` builds its own type from this map.
+    pub suppress: BTreeMap<String, String>,
 }
 
 impl Rules {
@@ -128,10 +133,18 @@ impl Rules {
 // representation rather than the file the user wrote, and a rules file is
 // something a person edits by hand.
 
+/// `deny_unknown_fields` because this file's whole contract is that a mistake
+/// surfaces when the file is read. Without it a mistyped `[supress]` parses
+/// happily and silences nothing, and a mistyped `[[rules]]` yields an empty
+/// rule set that reports a clean run — both of which are the silent pass this
+/// module exists to prevent.
 #[derive(Debug, Deserialize)]
+#[serde(deny_unknown_fields)]
 struct RawFile {
     #[serde(default)]
     rule: Vec<RawRule>,
+    #[serde(default)]
+    suppress: BTreeMap<String, String>,
 }
 
 #[derive(Debug, Deserialize)]
@@ -271,7 +284,10 @@ pub fn parse(text: &str) -> Result<Rules, RuleError> {
         rules.push(rule);
     }
 
-    Ok(Rules { rules })
+    Ok(Rules {
+        rules,
+        suppress: raw.suppress,
+    })
 }
 
 /// Read and parse a rules file.
@@ -280,7 +296,58 @@ pub fn load(path: &Path) -> Result<Rules, RuleError> {
     parse(&text)
 }
 
-/// The conventional location, relative to a repository root.
-pub fn default_path(root: &Path) -> std::path::PathBuf {
+/// Where a repository's configuration was found.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum Located {
+    /// `openinvar.toml` at the repository root. The supported location.
+    Root(std::path::PathBuf),
+    /// A pre-0.3.0 `.openinvar/rules.toml`.
+    ///
+    /// Still read, for one release, so an upgrade does not silently stop
+    /// enforcing rules — the failure mode this whole module is built against.
+    /// Callers are expected to say it is deprecated.
+    Legacy(std::path::PathBuf),
+}
+
+impl Located {
+    pub fn path(&self) -> &Path {
+        match self {
+            Self::Root(p) | Self::Legacy(p) => p,
+        }
+    }
+
+    pub fn is_legacy(&self) -> bool {
+        matches!(self, Self::Legacy(_))
+    }
+}
+
+/// The supported location, relative to a repository root.
+///
+/// At the root, and committed. The previous location was inside `.openinvar/`,
+/// which every repository gitignores because the graph database lives there —
+/// so the file specified as a repository's versioned constraints could not be
+/// versioned, and `check` had nothing to enforce anywhere.
+pub fn config_path(root: &Path) -> std::path::PathBuf {
+    root.join("openinvar.toml")
+}
+
+/// The pre-0.3.0 location.
+pub fn legacy_path(root: &Path) -> std::path::PathBuf {
     root.join(".openinvar").join("rules.toml")
+}
+
+/// Find a repository's configuration, preferring the supported location.
+///
+/// `None` means neither exists, which is not an error: a repository that has
+/// written no rules is the ordinary case.
+pub fn locate(root: &Path) -> Option<Located> {
+    let root_file = config_path(root);
+    if root_file.is_file() {
+        return Some(Located::Root(root_file));
+    }
+    let legacy = legacy_path(root);
+    if legacy.is_file() {
+        return Some(Located::Legacy(legacy));
+    }
+    None
 }

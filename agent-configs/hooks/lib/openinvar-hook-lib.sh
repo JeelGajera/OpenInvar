@@ -35,6 +35,26 @@ openinvar_has_graph() {
   [ -f "$(openinvar_root)/.openinvar/graph.db" ]
 }
 
+# Where this repository's rules live, if anywhere.
+#
+# Echoes the path and returns 0, or returns 1 when there are none. Both
+# locations are checked: rules moved to openinvar.toml at the root in 0.3.0,
+# and a hook that only knew the old path would exit 0 on an upgraded
+# repository — going quiet rather than going wrong, which is the failure
+# nobody notices.
+openinvar_rules_file() {
+  root="$(openinvar_root)"
+  if [ -f "$root/openinvar.toml" ]; then
+    echo "$root/openinvar.toml"
+    return 0
+  fi
+  if [ -f "$root/.openinvar/rules.toml" ]; then
+    echo "$root/.openinvar/rules.toml"
+    return 0
+  fi
+  return 1
+}
+
 # Run a command under a wall-clock limit.
 #
 # `timeout` is GNU coreutils and is missing on stock macOS, so fall back to a

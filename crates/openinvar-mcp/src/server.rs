@@ -104,7 +104,7 @@ impl InvarMcpServer {
     /// Evaluate the repository's own rules against a change.
     #[tool(
         name = "check_rules",
-        description = "Evaluates the constraints in .openinvar/rules.toml — forbidden dependencies, forbidden references, field removals, and fan-in limits — and reports which are violated. Pass base and head to also check rules that need a change. A rule too weakly resolved to judge is reported as undecided and a rule needing a change that was not supplied is reported as skipped; neither is a pass."
+        description = "Evaluates the constraints in openinvar.toml — forbidden dependencies, forbidden references, field removals, and fan-in limits — and reports which are violated. Pass base and head to also check rules that need a change. A rule too weakly resolved to judge is reported as undecided and a rule needing a change that was not supplied is reported as skipped; neither is a pass."
     )]
     async fn check_rules(
         &self,

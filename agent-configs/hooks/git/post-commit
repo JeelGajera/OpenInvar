@@ -37,7 +37,7 @@ bin=$(openinvar_bin)
 [ -n "$bin" ] || exit 0
 
 root=$(openinvar_root)
-[ -f "$root/.openinvar/rules.toml" ] || exit 0
+openinvar_rules_file >/dev/null || exit 0
 
 # The commit is done and the working tree now matches it, so analysing the
 # tree and labelling it HEAD records exactly the commit that was just made.

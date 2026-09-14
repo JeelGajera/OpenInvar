@@ -42,13 +42,13 @@ bin=$(openinvar_bin)
 openinvar_has_graph || exit 0
 
 root=$(openinvar_root)
-[ -f "$root/.openinvar/rules.toml" ] || exit 0
+openinvar_rules_file >/dev/null || exit 0
 
 output=$(openinvar_with_timeout "$TIMEOUT" "$bin" check "$root" --diff-only 2>&1)
 status=$?
 
 if [ $status -eq 1 ]; then
-  printf 'OpenInvar rules were violated by this change:\n\n%s\n\nFix the violations above, or amend the rule in .openinvar/rules.toml if it is wrong.\n' "$output" >&2
+  printf 'OpenInvar rules were violated by this change:\n\n%s\n\nFix the violations above, or amend the rule in openinvar.toml if it is wrong.\n' "$output" >&2
   exit 2
 fi
 

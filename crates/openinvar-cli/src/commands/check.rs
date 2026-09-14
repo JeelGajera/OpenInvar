@@ -59,7 +59,12 @@ pub fn run(
 
     let rules_file = match rules_path {
         Some(given) => std::path::PathBuf::from(given),
-        None => rules::default_path(&root),
+        None => match super::locate_config(&root) {
+            Some(found) => found.path().to_path_buf(),
+            // Nothing on disk. Name the supported location so the warning
+            // below tells the reader where to write one.
+            None => rules::config_path(&root),
+        },
     };
 
     let Some(parsed) = load_rules(&rules_file, require_rules)? else {

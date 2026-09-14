@@ -1,6 +1,6 @@
 //! MCP tool: check_rules
 //!
-//! Evaluate `.openinvar/rules.toml` and report what the change breaks.
+//! Evaluate `openinvar.toml` and report what the change breaks.
 //!
 //! The agent-facing half of `openinvar check`. It reports the same four verdicts
 //! and takes the same care with them: a rule too weakly resolved to judge is
@@ -40,7 +40,9 @@ pub fn execute(
     graph: &InvarGraph,
     params: CheckRulesParams,
 ) -> Result<String, String> {
-    let rules_file = rules::default_path(repo_root);
+    let rules_file = rules::locate(repo_root)
+        .map(|f| f.path().to_path_buf())
+        .unwrap_or_else(|| rules::config_path(repo_root));
     if !rules_file.exists() {
         // Not an error, and not silence either. A caller told "no violations"
         // by a repository that has written no rules would draw exactly the

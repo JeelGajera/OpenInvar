@@ -5,9 +5,13 @@
 # repository, from source rather than from a release, so a change to the action
 # is exercised by the pull request that makes it.
 #
-# It does not gate merges here. This repository has no .openinvar/rules.toml yet,
-# so there is nothing to violate; the value is the report and the proof that
-# the action runs.
+# It gates merges here. `openinvar.toml` at the root holds this repository's
+# own architectural rules, and a change that breaks one does not merge — the
+# same thing it asks of anyone else's repository.
+#
+# `--require-rules` is deliberate: if that file ever goes missing, this job
+# fails rather than passing with nothing enforced. A gate that stops enforcing
+# without saying so is the exact failure the project exists to prevent.
 name: OpenInvar
 
 on:
@@ -32,4 +36,5 @@ jobs:
       - uses: ./
         with:
           version: source
-          fail-on-violation: 'false'
+          require-rules: 'true'
+          fail-on-violation: 'true'

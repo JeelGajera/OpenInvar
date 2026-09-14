@@ -24,13 +24,20 @@ inputs:
     required: false
     default: ''
   rules:
-    description: 'Rules file. Defaults to <path>/.openinvar/rules.toml.'
+    description: 'Rules file. Defaults to <path>/openinvar.toml.'
     required: false
     default: ''
   comment:
     description: 'Post the report as a pull request comment, updating the previous one.'
     required: false
     default: 'true'
+  require-rules:
+    description: >
+      Fail when there is no rules file, instead of reporting a clean run
+      having enforced nothing. Off by default so the action is useful on a
+      repository that has written no rules; worth turning on once it has.
+    required: false
+    default: 'false'
   fail-on-violation:
     description: >
       Fail the job when a rule is violated on resolved evidence, or when the
@@ -75,6 +82,7 @@ runs:
         OPENINVAR_PATH: ${{ inputs.path }}
         OPENINVAR_BASE_REF: ${{ inputs.base-ref }}
         OPENINVAR_RULES: ${{ inputs.rules }}
+        OPENINVAR_REQUIRE_RULES: ${{ inputs.require-rules }}
         OPENINVAR_AUDIT_SEVERITY: ${{ inputs.audit-severity }}
       run: ${{ github.action_path }}/action/report.sh
 
@@ -90,7 +98,7 @@ runs:
       if: inputs.fail-on-violation == 'true' && steps.report.outputs.verdict == 'violated'
       shell: bash
       run: |
-        echo "::error::OpenInvar: a rule in .openinvar/rules.toml was violated by this change."
+        echo "::error::OpenInvar: a rule in openinvar.toml was violated by this change."
         exit 1
 
     - name: Fail on audit finding

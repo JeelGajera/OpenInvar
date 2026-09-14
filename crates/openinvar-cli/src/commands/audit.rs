@@ -14,7 +14,7 @@
 
 use std::collections::BTreeSet;
 
-use openinvar_core::audit::{self, detectors, AuditContext, AuditReport, Suppressions};
+use openinvar_core::audit::{self, detectors, AuditContext, AuditReport};
 use openinvar_core::delta;
 use openinvar_core::graph::InvarGraph;
 use openinvar_core::rules::Severity;
@@ -59,7 +59,7 @@ pub fn run(
     let after = load(&store, &head_rev, head)?;
 
     let computed = delta::compute(&before, &after);
-    let suppressions = Suppressions::load(&audit::default_ignore_path(&root))?;
+    let suppressions = super::load_suppressions(&root)?;
 
     // Only files a Tier 1 adapter resolved. Computed from both graphs: a file
     // deleted by the change is still where a finding about its removal points.
