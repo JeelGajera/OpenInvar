@@ -44,6 +44,13 @@ jobs:
       - name: Setup Cache
         uses: Swatinem/rust-cache@v2
 
+      # One artifact per platform, carrying every language.
+      #
+      # Deliberately no `--features`: `default` is `full`, so the binary a user
+      # downloads analyses everything and reports the coverage figure the
+      # README publishes. This line used to look like it shipped `full` and did
+      # not — it built the Tier 1 set while the docs quoted `full`'s numbers.
+      # If a feature flag ever reappears here, that gap reopens.
       - name: Build Binary
         run: cargo build --locked --release -p openinvar-cli --target ${{ matrix.target }}
 

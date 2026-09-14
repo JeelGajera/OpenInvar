@@ -16,11 +16,13 @@ name = "openinvar"
 path = "src/main.rs"
 
 [features]
-# The languages a default binary carries. `--no-default-features --features
-# python` builds a Python-only `openinvar`; `full` is the published everything
-# binary, and is the same set until Tier 2 languages land.
-default = ["typescript", "python", "rust", "go", "c"]
-full = ["default", "java", "ruby", "csharp"]
+# One released binary, carrying every language. `--no-default-features
+# --features python` still builds a Python-only `openinvar` — the per-language
+# features are what a source install and the per-language CI job use, and only
+# the release artifact collapsed.
+default = ["full"]
+full = ["tier1", "java", "ruby", "csharp"]
+tier1 = ["typescript", "python", "rust", "go", "c"]
 typescript = ["openinvar-lang/typescript", "openinvar-mcp/typescript"]
 python = ["openinvar-lang/python", "openinvar-mcp/python"]
 rust = ["openinvar-lang/rust", "openinvar-mcp/rust"]

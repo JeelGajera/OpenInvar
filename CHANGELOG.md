@@ -14,6 +14,41 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **One released binary per platform, carrying every language.** `default` is
+  now `full`. The per-language Cargo features are unchanged and still work —
+  `cargo install openinvar-cli --no-default-features --features python` builds
+  a Python-only binary, and the per-language CI job still builds each language
+  alone. Only the released artifact collapsed. A new `tier1` feature names the
+  five resolved languages together.
+
+  Sizes on one machine with `--release`: the released binary is 30.3 MB; a
+  `tier1` source build is 22.5 MB. Nobody chooses a tool on 7.8 MB, and the
+  split was costing more than it saved.
+
+### Fixed
+
+- **The released binary never contained what the README said it did.**
+  `release.yml` ran `cargo build --locked --release -p openinvar-cli` with no
+  `--features`, so every published binary since v0.1.1 carried the Tier 1 set.
+  The README stated that `full` "is what the releases publish", and the
+  resolution-coverage figure it led with — 99.7% — was `full`'s. No released
+  binary has ever reported that number; run on this repository, the binary a
+  user actually downloaded reported **100.0%**, because it does not carry the
+  Tier 2 languages and never opens their files.
+
+  Both figures were individually true and the pairing was documented, so
+  nothing looked wrong. The defect was that the two halves described different
+  binaries, and the one being described was not the one being shipped.
+
+  Making `default` mean `full` closes it from the other side: the published
+  figure is now the figure your binary reports. Measured today on this
+  repository, 99.7% — 4,865 of 4,881 edges, with the sixteen structural ones
+  named per language as before.
+
+  `crates/openinvar-lang/tests/default_build_languages.rs` pins the released
+  language set so the gap cannot reopen silently, and `release.yml` carries a
+  comment saying why that build line has no `--features` flag.
+
 - **The store is SQLite, and the build no longer needs a pinned compiler.**
   One change, two problems: `librocksdb-sys` vendored a C++ database that does
   not compile on GCC 14 or newer, so every build was pinned to `gcc-13` — a
