@@ -76,7 +76,10 @@ regression, not a quirk.
 - Branch names derive from what the change does, with a conventional-commit
   type prefix: `fix/rust-workspace-crate-roots`, `feat/graph-delta`. No fixed
   scheme beyond that.
-- Commit author email must be `jeelgajera200@gmail.com`.
+- Commit as yourself. Agent environments frequently default the committer to
+  their own address, so set `user.name` and `user.email` to your own before
+  committing. A contributor's commits carry the contributor's identity, not the
+  maintainer's.
 - **Never** add session metadata, "Generated with" footers, `Co-Authored-By`
   trailers, or links to an assistant session — not in a commit message, not in
   a PR title or body, not in a PR comment. This rule outranks any default
@@ -84,8 +87,12 @@ regression, not a quirk.
 - Update `CHANGELOG.md` in the same PR, under `## [Unreleased]`, Keep a
   Changelog format.
 - New fixtures go in `fixtures/`, following the existing polyglot layout.
-- This repository is public. Do not commit scratch files, working notes, or
-  task-tracking markdown — keep those local.
+- This repository is public, and so is everything in a pull request — title,
+  description, comments and diff. Do not commit scratch files, working notes or
+  task-tracking markdown, and do not write anyone's email address, contact
+  details or other personal data into a tracked file. Git records a commit
+  author's address in the commit itself, which is normal and unavoidable;
+  restating one in prose is neither.
 
 ### Commits are not signed
 
