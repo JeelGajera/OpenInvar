@@ -19,7 +19,7 @@ ast = ["dep:tree-sitter"]
 
 [dependencies]
 petgraph = "0.6"
-dashmap = "5"
+dashmap = "6"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 thiserror = "1"
