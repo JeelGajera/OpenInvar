@@ -50,6 +50,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   leave a large share of its references undecidable statically, so it may stay
   Tier 2 rather than be promoted on a claim the analysis cannot support.
 
+  This repository's own `no-new-god-symbol` threshold moves from 180 to 200,
+  which its comment calls the justified case rather than the silencing one:
+  every Tier 1 adapter matches on the relationship vocabulary, so
+  `RelationshipKind` gains about fifteen references per language — 169 to 184
+  for Java. The figure tracks the language count by design. Caught by the
+  repository gating on its own binary, not by review.
+
 - **`assertion-removal`** — a fourth audit detector, for a test that kept its
   coverage but stopped checking anything.
 
