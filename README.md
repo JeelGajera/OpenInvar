@@ -48,27 +48,30 @@ An enforcement tool that tells you what it could **not** resolve is worth more
 than one implying completeness, so `openinvar status` publishes the figure on
 every run — overall and per language.
 
-Measured on this repository, with the `full` binary:
+Measured on this repository, with the released binary:
 
 ```
-Resolved           99.7% (4844 of 4860 edge(s))
+Resolved           99.7% (4865 of 4881 edge(s))
   C#               0.0% of 2 edge(s)
   C/C++            100.0% of 32 edge(s)
   Go               100.0% of 40 edge(s)
   Java             0.0% of 2 edge(s)
   Python           100.0% of 33 edge(s)
   Ruby             0.0% of 12 edge(s)
-  Rust             100.0% of 4663 edge(s)
+  Rust             100.0% of 4684 edge(s)
   TypeScript       100.0% of 76 edge(s)
   16 edge(s) are structural: matched by name within one file.
   A gate must not act on them.
 ```
 
 The 0.0% rows are Tier 2 languages, and they are the point: those sixteen edges
-are named rather than absorbed into a headline. The default binary reports
-100.0% of 4,844 edges for the same repository — not because it resolves more,
-but because it does not carry those languages and never looks at their files.
-Both figures are true; only one of them would be misleading on its own.
+are named rather than absorbed into a headline.
+
+There is one released binary and it carries every language, so this is the
+figure your binary reports. A build narrowed to fewer languages reports a
+*higher* number on the same repository — not because it resolves more, but
+because it never looks at the files it cannot carry. See [Building for one
+language](#building-for-one-language).
 
 ## Install
 
@@ -400,7 +403,7 @@ Supported now:
 | C | 1 | `.c` `.h` | `#include` resolution, `typedef` aliases |
 | C++ | 1 | `.cpp` `.cc` `.cxx` `.hpp` `.hxx` `.hh` | `using` aliases, base classes, namespace-qualified names |
 
-Tier 2, behind their own features and not in `default`:
+Tier 2, carried by the released binary and reported as tier 2 wherever they appear:
 
 | Language | Tier | Extensions |
 | --- | --- | --- |
@@ -554,7 +557,8 @@ through imports, aliases and declared types. The threshold is applied while
 traversing, not to the results, so nothing is reached by way of an edge below
 it. On a Tier 2 repository that correctly returns nothing.
 
-Tier 2 today: Java, Ruby, C# — each behind its own feature, none in `default`.
+Tier 2 today: Java, Ruby, C# — each has its own feature for a narrowed source
+build, and all three are in the released binary.
 
 Still planned as Tier 2: Kotlin, PHP, Swift, Scala, SQL, Lua, Bash. These are
 not held up by OpenInvar's architecture but by the grammar crates: adding one
@@ -697,32 +701,29 @@ version, and anything a consumer could observe breaking bumps it.
 Output is deterministic — the same input produces byte-identical bytes, which
 is what makes two analyses safe to diff.
 
-## Slim builds
+## Building for one language
 
-**A default `openinvar` carries the Tier 1 languages only.** `full` is the
-everything binary, and is what the releases publish. This matters beyond size:
-a default build does not merely resolve less of a polyglot repository, it does
-not look at the Tier 2 files at all — which is why it can report 100% coverage
-on a repository the `full` binary reports 99.7% on.
+**There is one released binary per platform, and it carries every language.**
+Nothing to choose, and the coverage figure above is the one your binary
+reports.
 
-| Build | Languages | Size |
-|---|---|---|
-| `--no-default-features --features typescript` | TypeScript / JavaScript | 14.9 MB |
-| `default` | TypeScript, Python, Rust, Go, C/C++ | 22.5 MB |
-| `full` | the above plus Java, Ruby, C# | 30.3 MB |
-
-Measured on one machine with `--release`; treat them as relative, not absolute.
+A source install can still be narrowed, which is worth doing only if binary
+size actually matters to you:
 
 ```bash
 cargo install openinvar-cli --no-default-features --features python
-cargo install openinvar-cli --features full
+cargo install openinvar-cli --no-default-features --features tier1
 ```
 
-Tier 1 features: `typescript` (includes JavaScript), `python`, `rust`, `go`,
-`c` (includes C++) — these are `default`. Tier 2 features: `java`, `ruby`,
-`csharp`; `full` is everything. `openinvar status` and `--help` report what your
-build can analyse, and a build skips files in languages it does not carry
-rather than failing on them.
+Features: `typescript` (includes JavaScript), `python`, `rust`, `go`, `c`
+(includes C++) are Tier 1, and `tier1` is the five together. `java`, `ruby` and
+`csharp` are Tier 2. `full` is everything and is the default.
+
+`openinvar status` and `--help` report what your build can analyse, and a build
+skips files in languages it does not carry rather than failing on them — which
+also means a narrowed build reports coverage over fewer files. A `tier1` build
+reports 100% on this repository where the released binary reports 99.7%, not
+because it resolves more but because it never looks at the Tier 2 files.
 
 ## Build & Test
 

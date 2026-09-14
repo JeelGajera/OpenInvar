@@ -12,10 +12,17 @@ categories.workspace = true
 keywords.workspace = true
 
 [features]
-# The languages 0.2.0 shipped, so a default build behaves as it always has.
-default = ["typescript", "python", "rust", "go", "c"]
-# Everything, including Tier 2 languages.
-full = ["default", "java", "ruby", "csharp"]
+# Every language, because there is one released binary and it carries them all.
+#
+# The split this replaces was not doing the job it looked like it was doing:
+# `release.yml` never passed `--features full`, so every published binary was
+# in fact the Tier 1 set, while the README said otherwise and quoted the `full`
+# coverage figure. One default that matches what ships is the fix.
+default = ["full"]
+full = ["tier1", "java", "ruby", "csharp"]
+# The languages whose imports, aliases and declared types are resolved. Gates
+# act on these; `--no-default-features --features tier1` is the slim build.
+tier1 = ["typescript", "python", "rust", "go", "c"]
 
 # Each language pulls in its own grammars and nothing else, so a slim build
 # leaves the rest out of the binary entirely. `supported_languages()` is built
@@ -26,8 +33,9 @@ rust = ["dep:tree-sitter-rust", "dep:toml", "dep:glob"]
 go = ["dep:tree-sitter-go"]
 c = ["dep:tree-sitter-c", "dep:tree-sitter-cpp"]
 # Tier 2: analysed through the structural analyzer using the grammar's own
-# tags.scm. Not in `default` — a Tier 2 language is advisory, and a default
-# build should carry the languages OpenInvar can actually resolve.
+# tags.scm. Carried by a default build, and reported as tier 2 everywhere it
+# appears — a gate never draws a conclusion from a structural region, so
+# shipping these costs a user nothing but gives them symbol lookup.
 java = ["dep:tree-sitter-java"]
 ruby = ["dep:tree-sitter-ruby"]
 csharp = ["dep:tree-sitter-c-sharp"]

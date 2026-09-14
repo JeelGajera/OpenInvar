@@ -15,7 +15,9 @@ keywords.workspace = true
 # Forwarded to openinvar-lang so a slim build stays slim all the way to the
 # binary. Without this the CLI could pull every grammar back in through its
 # dependency on the MCP server.
-default = ["typescript", "python", "rust", "go", "c"]
+default = ["full"]
+full = ["tier1", "java", "ruby", "csharp"]
+tier1 = ["typescript", "python", "rust", "go", "c"]
 typescript = ["openinvar-lang/typescript"]
 python = ["openinvar-lang/python"]
 rust = ["openinvar-lang/rust"]
