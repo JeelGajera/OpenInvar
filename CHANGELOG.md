@@ -53,6 +53,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   whether its language was counted. Versions 1 to 3 read back as having counted
   nothing, which is what makes the upgrade decline rather than accuse.
 
+### Changed
+
+- **Dependencies updated**: `thiserror` 1 → 2, `dashmap` 5 → 6, `toml` 0.8 →
+  1.1, `actions/checkout` v4 → v7, `softprops/action-gh-release` v1 → v3, and
+  the lockfile refreshed within existing constraints. No source change was
+  needed for any of them, and the golden snapshots are unchanged — the
+  dependency updates move no analysis output.
+
+  `tree-sitter-python` 0.21 → 0.23 is **not** included. Its 0.23 binding
+  replaces `language()` with a `LANGUAGE: LanguageFn` constant, and `LanguageFn`
+  needs the tree-sitter runtime at 0.23 while this workspace is on 0.22 with
+  every other grammar on 0.21. Taking it alone does not compile. Moving the
+  whole ecosystem (tree-sitter is at 0.27, the grammars at 0.23–0.25) is an API
+  migration across ten grammars that also moves parse trees, so it belongs in
+  its own change where the golden diff can be read as evidence rather than
+  noise.
+
 - **`analyze --at <rev>`** — analyse the tree at a revision instead of the
   working tree.
 
