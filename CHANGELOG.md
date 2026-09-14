@@ -14,6 +14,34 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **An evaluation against real repositories**, in `eval/`. The claims this
+  project makes were measured only against fixtures it wrote itself, which
+  resolve at 100% because they were built to — that proves the code does what
+  its author expected, not that it survives code nobody here wrote.
+
+  Four ordinary, widely-used repositories (rust-lang/log, spf13/cobra,
+  pallets/click, google/gson), eight consecutive commits each: 32 revisions and
+  28 commit pairs. Thresholds were fixed in `eval/criteria.md` before the run,
+  and the runner and the summariser are separate files so a threshold cannot be
+  moved in the same edit that produces the result it judges.
+
+  **Determinism held 32 of 32, byte for byte**, each revision analysed twice
+  into worktrees on different paths. **No error-severity audit finding on any
+  of the 28 commit pairs**, against a ≤10% threshold. Slowest revision 0.71s
+  for 313 files and 18,989 edges.
+
+  The run's substantive finding is that the resolution-coverage criterion does
+  not measure what it was written to measure: `dispatch` stamps every Tier 1
+  edge `Resolved`, so a repository with no Tier 2 files reports 100% by
+  construction. It is a tier classification, not a resolution rate. Recorded as
+  such rather than scored as the pass it numerically was, with the criterion
+  left unedited and a replacement proposed for the next run.
+
+  An independent check, against the source text rather than anything OpenInvar
+  reports about itself, found gson's 2432 `import` statements produced exactly
+  2432 `Imports` edges — import resolution verified complete on that corpus,
+  with reference-level drop rate still unmeasured.
+
 - **Java is now Tier 1.** It shipped as the demonstration Tier 2 language, with
   its own module saying what promotion would take:
 
