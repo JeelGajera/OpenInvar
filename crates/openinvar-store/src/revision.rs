@@ -59,6 +59,41 @@ pub fn resolve(root: &Path, revision: &str) -> Result<String, String> {
     Ok(sha)
 }
 
+/// Resolve a revision that has to name a commit, rejecting `worktree`.
+///
+/// `analyze --at` reads a revision's tree out of git, and the working tree is
+/// not something git can check out — it is what you already have. Accepting the
+/// name and quietly analysing the working tree instead would record a
+/// working-tree graph under a name every reader takes for a commit, which is
+/// the kind of confidently mislabelled result a later `diff` cannot detect.
+///
+/// Separate from [`resolve`] rather than a flag on it because the two have
+/// different vocabularies: `--snapshot` offers three forms and this offers two,
+/// and an error message that lists an option the caller will then refuse is
+/// how a user ends up trying `worktree` twice.
+pub fn resolve_commit(root: &Path, revision: &str) -> Result<String, String> {
+    if revision == WORKTREE {
+        return Err(format!(
+            "'{WORKTREE}' is the working tree, which is what `analyze` reads by default. \
+             Pass a commit, a branch, or a tag."
+        ));
+    }
+
+    resolve(root, revision).map_err(|err| {
+        // Only the "unknown revision" case names the accepted forms, so only
+        // that one needs rewording; anything else (git missing, git failing) is
+        // reported as it happened.
+        if err.contains(WORKTREE) {
+            format!(
+                "'{revision}' is not a revision in this repository. \
+                 Pass a commit, a branch, or a tag."
+            )
+        } else {
+            err
+        }
+    })
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -79,6 +114,43 @@ mod tests {
         assert!(
             result.is_err(),
             "an unresolvable revision became a snapshot name: {result:?}"
+        );
+    }
+
+    #[test]
+    fn resolve_commit_refuses_the_working_tree() {
+        let root = std::env::current_dir().expect("cwd");
+        let err = resolve_commit(&root, WORKTREE).expect_err("worktree is not a commit");
+        assert!(
+            err.contains("commit"),
+            "the refusal does not say what to pass instead: {err}"
+        );
+    }
+
+    #[test]
+    fn resolve_commit_does_not_offer_worktree_when_a_revision_is_unknown() {
+        // The shared resolver lists `worktree` among the accepted forms, which
+        // is right for `--snapshot` and wrong here: a user told to try it would
+        // have it refused by the check above.
+        let root = std::env::current_dir().expect("cwd");
+        let err = resolve_commit(&root, "definitely-not-a-revision-xyz")
+            .expect_err("unknown revision is an error");
+        assert!(
+            !err.contains(WORKTREE),
+            "the error offers an option this function rejects: {err}"
+        );
+    }
+
+    #[test]
+    fn resolve_commit_agrees_with_resolve_on_a_real_commit() {
+        let root = std::env::current_dir().expect("cwd");
+        let (Ok(plain), Ok(commit)) = (resolve(&root, "HEAD"), resolve_commit(&root, "HEAD")) else {
+            // A checkout without git history is not a failure of this code.
+            return;
+        };
+        assert_eq!(
+            plain, commit,
+            "the two resolvers disagree about what HEAD is"
         );
     }
 

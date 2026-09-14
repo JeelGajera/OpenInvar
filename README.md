@@ -125,7 +125,7 @@ Everything they are built on:
 
 | Command | Purpose |
 |---|---|
-| `openinvar analyze <path> [--snapshot <rev>] [--json]` | Build the graph into `.openinvar/graph.db`, optionally recording it |
+| `openinvar analyze <path> [--snapshot <rev>] [--at <rev>] [--json]` | Build the graph into `.openinvar/graph.db`, optionally recording it |
 | `openinvar diff --base <rev> --head <rev>` | What changed between two recorded revisions |
 | `openinvar tests <symbol> \| --diff` | Which tests exercise a symbol or a change |
 | `openinvar report --base <rev> --head <rev>` | One markdown report for a PR comment |
@@ -136,6 +136,37 @@ Everything they are built on:
 And the graph queries underneath, covered in [It also answers graph
 questions](#it-also-answers-graph-questions): `openinvar query`,
 `openinvar impact`, `openinvar context`.
+
+### Analyzing a past revision
+
+`--snapshot` records whatever is on disk. `--at` goes and gets a revision:
+
+```bash
+# record the graph for a commit nobody has checked out
+openinvar analyze . --at 4f2a1c9
+
+# then compare it to anything else already recorded
+openinvar diff . --base 4f2a1c9 --head worktree
+```
+
+Useful for building history without a checkout per commit — walking a range to
+see when a dependency first appeared, or comparing a release tag to `HEAD`.
+
+Three things it will not do:
+
+- **Touch your working tree.** The revision is checked out into a temporary
+  worktree and removed afterwards. Uncommitted work is untouched and `HEAD`
+  does not move.
+- **Replace the working graph.** `query`, `check` and `audit` read the working
+  graph when nobody names a revision, so `--at` records its revision and leaves
+  that alone. A command answering about a past revision without saying so is
+  the failure this avoids.
+- **Accept `worktree`.** That names the tree you already have, which is what
+  plain `analyze` reads. `--at` takes a commit, branch or tag, and pairs with
+  `--snapshot` only by replacing it — the revision named is the one recorded.
+
+Two runs of `--at` on one revision produce byte-identical output, temporary
+directory notwithstanding: the checkout's path never enters the result.
 
 ## Audit
 
