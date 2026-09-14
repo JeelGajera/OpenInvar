@@ -1,7 +1,9 @@
 package com.example;
 
-// Everything below is resolvable inside this one file, which is exactly the
-// limit of Tier 2: the analyzer records what it can see here and nothing more.
+// Everything here is resolved: the analyzer follows imports, binds each
+// receiver to its declared type, and walks supertypes to find an inherited
+// method. What it cannot resolve — String, the standard library — records no
+// edge rather than a guessed one.
 public interface Auditable {
     String describe();
 }
@@ -21,5 +23,7 @@ public class UserService implements Auditable {
     public void handle() {
         // A call to a method defined in this file.
         describe();
+        // A call on a field, resolved through the field's declared type.
+        log.record("handled");
     }
 }
