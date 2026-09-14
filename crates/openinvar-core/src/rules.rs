@@ -73,6 +73,13 @@ pub enum RuleKind {
     NoFieldRemoval { symbol: String },
     /// No symbol may exceed this many inbound edges.
     MaxFanIn { threshold: usize },
+    /// An ordered stack. Each layer may depend downward, never upward.
+    ///
+    /// Listed top first, so `layers[0]` is the outermost and may reach
+    /// everything below it.
+    Layers { layers: Vec<String> },
+    /// Siblings that may not reference each other in any direction.
+    Independence { modules: Vec<String> },
 }
 
 impl RuleKind {
@@ -82,6 +89,8 @@ impl RuleKind {
             Self::ForbidReference { .. } => "forbid-reference",
             Self::NoFieldRemoval { .. } => "no-field-removal",
             Self::MaxFanIn { .. } => "max-fan-in",
+            Self::Layers { .. } => "layers",
+            Self::Independence { .. } => "independence",
         }
     }
 
@@ -155,6 +164,8 @@ struct RawRule {
     to: Option<String>,
     symbol: Option<String>,
     threshold: Option<i64>,
+    layers: Option<Vec<String>>,
+    modules: Option<Vec<String>>,
     #[serde(default)]
     severity: Option<Severity>,
 }
@@ -165,7 +176,52 @@ const KNOWN_KINDS: &[&str] = &[
     "forbid-reference",
     "no-field-removal",
     "max-fan-in",
+    "layers",
+    "independence",
 ];
+
+/// Validate a list of path globs used as an ordered or unordered scope set.
+///
+/// Two entries is the minimum that can mean anything: one layer has nothing to
+/// be above, and one module has nobody to stay independent from. A rule that
+/// cannot be violated by construction is a rule someone believes is protecting
+/// them.
+fn check_glob_list(
+    rule: &str,
+    field: &str,
+    values: Option<&Vec<String>>,
+) -> Result<Vec<String>, RuleError> {
+    let values = values.ok_or_else(|| RuleError::Invalid {
+        rule: rule.to_string(),
+        reason: format!("'{field}' is required for this kind"),
+    })?;
+
+    if values.len() < 2 {
+        return Err(RuleError::Invalid {
+            rule: rule.to_string(),
+            reason: format!(
+                "'{field}' needs at least 2 entries to mean anything, got {}",
+                values.len()
+            ),
+        });
+    }
+
+    let mut checked = Vec::with_capacity(values.len());
+    let mut seen = BTreeSet::new();
+    for value in values {
+        let pattern = check_glob(rule, field, value)?;
+        // A repeated entry is either a copy-paste slip or a belief that the
+        // same scope can sit at two depths. Neither should evaluate.
+        if !seen.insert(pattern.clone()) {
+            return Err(RuleError::Invalid {
+                rule: rule.to_string(),
+                reason: format!("'{field}' lists '{value}' twice"),
+            });
+        }
+        checked.push(pattern);
+    }
+    Ok(checked)
+}
 
 /// Validate a glob without evaluating it.
 ///
@@ -245,6 +301,12 @@ fn build(raw: RawRule, index: usize) -> Result<Rule, RuleError> {
                 threshold: threshold as usize,
             }
         }
+        "layers" => RuleKind::Layers {
+            layers: check_glob_list(&name, "layers", raw.layers.as_ref())?,
+        },
+        "independence" => RuleKind::Independence {
+            modules: check_glob_list(&name, "modules", raw.modules.as_ref())?,
+        },
         other => {
             return Err(RuleError::Invalid {
                 rule: name,
