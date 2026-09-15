@@ -14,6 +14,56 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **C# is now Tier 1.** The last of the two languages that shipped structural,
+  and the harder one. Its module said plainly that nothing in it resolved an
+  import, followed an alias, or bound a declared type; all three are here now,
+  and gates may act on C#.
+
+  Three things C# does that Java does not, each of which drives a rule:
+
+  - **`using` names a namespace, not a type.** There is no single-type import,
+    so every `using` is the on-demand form and the ambiguity Java reaches only
+    through wildcards is C#'s ordinary case. Two `using` directives offering one
+    name is what the compiler rejects, so the reference is **dropped rather than
+    guessed**.
+  - **Enclosing namespaces are in scope.** Inside `namespace A.B.C`, a type in
+    `A.B` or `A` resolves with no `using` at all, innermost first. A resolver
+    searching only the exact namespace would drop most references in a
+    deeply-namespaced project.
+  - **A type can be declared across files.** `partial class Report` in two files
+    is one type with the union of its members, so a call into the other half has
+    to resolve. Members are indexed by the owner's fully-qualified name rather
+    than by declaration, which makes that fall out instead of needing a special
+    case.
+
+  Alias directives, `using static`, inherited members via a supertype walk, and
+  declared-type binding for property attribution are all resolved. Each rule has
+  a test that fails when the rule is inverted, and the partial-class test checks
+  **both** directions deliberately: an index keyed by declaration still answers
+  one of them, so a one-way test would pass without the halves ever merging.
+
+  `var` is read, not inferred. `var x = new Foo()` states its type in the
+  initialiser, so binding it is reading; `var x = Something()` does not, and
+  working it out would mean inferring a return type — a second type system
+  beside the real one, disagreeing with it exactly where it matters. The second
+  form binds to nothing and records no edge.
+
+  A `using` of a namespace the repository itself declares is dropped rather than
+  recorded as an external package: the concrete edges to the types it brought in
+  carry the real information, and marking it external would put the repository's
+  own code in its own third-party list. A `using` of a namespace declared
+  nowhere in the tree still becomes an external package node.
+
+  Measured on this repository, C#'s resolution coverage moves from
+  `0.0% of 2 edge(s)` to `100.0% of 12 edge(s)`, and `fixtures/adapter-csharp`
+  joins the golden corpus with 8 cross-file edges that Tier 2 could not record
+  at all. No other fixture's golden moved.
+
+  Ruby is now the only Tier 2 language, and remains the honest caveat:
+  autoloading, monkey-patching and `method_missing` leave a large share of its
+  references undecidable statically, so it may stay Tier 2 rather than be
+  promoted on a claim the analysis cannot support.
+
 - **An evaluation against real repositories**, in `eval/`. The claims this
   project makes were measured only against fixtures it wrote itself, which
   resolve at 100% because they were built to — that proves the code does what
@@ -125,6 +175,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   nothing, which is what makes the upgrade decline rather than accuse.
 
 ### Changed
+
+- **The `tier1` build feature now means what Tier 1 means.** It listed five
+  languages and its comment called them "the languages whose imports, aliases
+  and declared types are resolved" — which stopped being true when Java was
+  promoted, and `full` still named `java` and `csharp` separately as though they
+  were not. `tier1` is now the seven resolved languages and `full` is `tier1`
+  plus `ruby`. A `--no-default-features --features tier1` build therefore
+  carries Java and C# and reports 100% resolution on this repository, against
+  99.8% for the released binary — the difference being the Ruby files it never
+  looks at, not anything it resolves better.
 
 - **Dependencies updated**: `thiserror` 1 → 2, `dashmap` 5 → 6, `toml` 0.8 →
   1.1, `actions/checkout` v4 → v7, `softprops/action-gh-release` v1 → v3, and

@@ -1,0 +1,521 @@
+{
+  "files": [
+    {
+      "assertions": {},
+      "assertions_counted": false,
+      "diagnostics": [],
+      "file": "basic/Elsewhere.cs",
+      "language": "CSharp",
+      "re_exports": [],
+      "relationships": [
+        {
+          "alias": null,
+          "context": "instantiation",
+          "file": "basic/Elsewhere.cs",
+          "from": "basic/Elsewhere.cs::Elsewhere::Run::method",
+          "kind": "Instantiates",
+          "line": 10,
+          "properties_accessed": [],
+          "resolution": "resolved",
+          "to": "basic/UserService.cs::UserService::class"
+        },
+        {
+          "alias": null,
+          "context": "call",
+          "file": "basic/Elsewhere.cs",
+          "from": "basic/Elsewhere.cs::Elsewhere::Run::method",
+          "kind": "Calls",
+          "line": 11,
+          "properties_accessed": [],
+          "resolution": "resolved",
+          "to": "basic/UserService.cs::UserService::Handle::method"
+        }
+      ],
+      "symbols": [
+        {
+          "file": "basic/Elsewhere.cs",
+          "id": "basic/Elsewhere.cs::module::module",
+          "kind": "Module",
+          "language": "CSharp",
+          "line_end": 1,
+          "line_start": 1,
+          "name": "module",
+          "signature": null
+        },
+        {
+          "file": "basic/Elsewhere.cs",
+          "id": "basic/Elsewhere.cs::Elsewhere::class",
+          "kind": "Class",
+          "language": "CSharp",
+          "line_end": 13,
+          "line_start": 6,
+          "name": "Elsewhere",
+          "signature": "public class Elsewhere"
+        },
+        {
+          "file": "basic/Elsewhere.cs",
+          "id": "basic/Elsewhere.cs::Elsewhere::Run::method",
+          "kind": "Method",
+          "language": "CSharp",
+          "line_end": 12,
+          "line_start": 8,
+          "name": "Run",
+          "signature": "public void Run()"
+        }
+      ]
+    },
+    {
+      "assertions": {},
+      "assertions_counted": false,
+      "diagnostics": [],
+      "file": "basic/Models/User.cs",
+      "language": "CSharp",
+      "re_exports": [],
+      "relationships": [],
+      "symbols": [
+        {
+          "file": "basic/Models/User.cs",
+          "id": "basic/Models/User.cs::module::module",
+          "kind": "Module",
+          "language": "CSharp",
+          "line_end": 1,
+          "line_start": 1,
+          "name": "module",
+          "signature": null
+        },
+        {
+          "file": "basic/Models/User.cs",
+          "id": "basic/Models/User.cs::User::class",
+          "kind": "Class",
+          "language": "CSharp",
+          "line_end": 7,
+          "line_start": 3,
+          "name": "User",
+          "signature": "public class User"
+        },
+        {
+          "file": "basic/Models/User.cs",
+          "id": "basic/Models/User.cs::User::Email::property",
+          "kind": "Property",
+          "language": "CSharp",
+          "line_end": 5,
+          "line_start": 5,
+          "name": "Email",
+          "signature": "public string Email { get; set; }"
+        },
+        {
+          "file": "basic/Models/User.cs",
+          "id": "basic/Models/User.cs::User::Name::property",
+          "kind": "Property",
+          "language": "CSharp",
+          "line_end": 6,
+          "line_start": 6,
+          "name": "Name",
+          "signature": "public string Name { get; set; }"
+        }
+      ]
+    },
+    {
+      "assertions": {},
+      "assertions_counted": false,
+      "diagnostics": [],
+      "file": "basic/Report.Extra.cs",
+      "language": "CSharp",
+      "re_exports": [],
+      "relationships": [],
+      "symbols": [
+        {
+          "file": "basic/Report.Extra.cs",
+          "id": "basic/Report.Extra.cs::module::module",
+          "kind": "Module",
+          "language": "CSharp",
+          "line_end": 1,
+          "line_start": 1,
+          "name": "module",
+          "signature": null
+        },
+        {
+          "file": "basic/Report.Extra.cs",
+          "id": "basic/Report.Extra.cs::Report::class",
+          "kind": "Class",
+          "language": "CSharp",
+          "line_end": 12,
+          "line_start": 6,
+          "name": "Report",
+          "signature": "public partial class Report"
+        },
+        {
+          "file": "basic/Report.Extra.cs",
+          "id": "basic/Report.Extra.cs::Report::Summarise::method",
+          "kind": "Method",
+          "language": "CSharp",
+          "line_end": 11,
+          "line_start": 8,
+          "name": "Summarise",
+          "signature": "public string Summarise()"
+        }
+      ]
+    },
+    {
+      "assertions": {},
+      "assertions_counted": false,
+      "diagnostics": [],
+      "file": "basic/Report.cs",
+      "language": "CSharp",
+      "re_exports": [],
+      "relationships": [
+        {
+          "alias": null,
+          "context": "field type",
+          "file": "basic/Report.cs",
+          "from": "basic/Report.cs::Report::subject::property",
+          "kind": "UsesType",
+          "line": 13,
+          "properties_accessed": [],
+          "resolution": "resolved",
+          "to": "basic/Models/User.cs::User::class"
+        },
+        {
+          "alias": null,
+          "context": "parameter type",
+          "file": "basic/Report.cs",
+          "from": "basic/Report.cs::Report::Render::method",
+          "kind": "UsesType",
+          "line": 15,
+          "properties_accessed": [],
+          "resolution": "resolved",
+          "to": "basic/Util/Formatter.cs::Formatter::class"
+        },
+        {
+          "alias": null,
+          "context": "call",
+          "file": "basic/Report.cs",
+          "from": "basic/Report.cs::Report::Render::method",
+          "kind": "Calls",
+          "line": 17,
+          "properties_accessed": [],
+          "resolution": "resolved",
+          "to": "basic/Util/Formatter.cs::Formatter::Format::method"
+        },
+        {
+          "alias": null,
+          "context": "call",
+          "file": "basic/Report.cs",
+          "from": "basic/Report.cs::Report::Render::method",
+          "kind": "Calls",
+          "line": 18,
+          "properties_accessed": [],
+          "resolution": "resolved",
+          "to": "basic/Util/Helpers.cs::Helpers::Log::method"
+        },
+        {
+          "alias": null,
+          "context": "call",
+          "file": "basic/Report.cs",
+          "from": "basic/Report.cs::Report::Render::method",
+          "kind": "Calls",
+          "line": 19,
+          "properties_accessed": [],
+          "resolution": "resolved",
+          "to": "basic/Report.Extra.cs::Report::Summarise::method"
+        },
+        {
+          "alias": "User",
+          "context": "property access",
+          "file": "basic/Report.cs",
+          "from": "basic/Report.cs::Report::Render::method",
+          "kind": "AccessesProperty",
+          "line": 17,
+          "properties_accessed": [
+            "Email"
+          ],
+          "resolution": "resolved",
+          "to": "basic/Models/User.cs::User::class"
+        }
+      ],
+      "symbols": [
+        {
+          "file": "basic/Report.cs",
+          "id": "basic/Report.cs::module::module",
+          "kind": "Module",
+          "language": "CSharp",
+          "line_end": 1,
+          "line_start": 1,
+          "name": "module",
+          "signature": null
+        },
+        {
+          "file": "basic/Report.cs",
+          "id": "basic/Report.cs::Report::class",
+          "kind": "Class",
+          "language": "CSharp",
+          "line_end": 21,
+          "line_start": 11,
+          "name": "Report",
+          "signature": "public partial class Report"
+        },
+        {
+          "file": "basic/Report.cs",
+          "id": "basic/Report.cs::Report::subject::property",
+          "kind": "Property",
+          "language": "CSharp",
+          "line_end": 13,
+          "line_start": 13,
+          "name": "subject",
+          "signature": "private User subject;"
+        },
+        {
+          "file": "basic/Report.cs",
+          "id": "basic/Report.cs::Report::Render::method",
+          "kind": "Method",
+          "language": "CSharp",
+          "line_end": 20,
+          "line_start": 15,
+          "name": "Render",
+          "signature": "public string Render(Fmt formatter)"
+        }
+      ]
+    },
+    {
+      "assertions": {},
+      "assertions_counted": false,
+      "diagnostics": [],
+      "file": "basic/UserService.cs",
+      "language": "CSharp",
+      "re_exports": [],
+      "relationships": [
+        {
+          "alias": null,
+          "context": "base list",
+          "file": "basic/UserService.cs",
+          "from": "basic/UserService.cs::UserService::class",
+          "kind": "Implements",
+          "line": 15,
+          "properties_accessed": [],
+          "resolution": "resolved",
+          "to": "basic/UserService.cs::IAuditable::interface"
+        },
+        {
+          "alias": null,
+          "context": "field type",
+          "file": "basic/UserService.cs",
+          "from": "basic/UserService.cs::UserService::log::property",
+          "kind": "UsesType",
+          "line": 17,
+          "properties_accessed": [],
+          "resolution": "resolved",
+          "to": "basic/UserService.cs::AuditLog::class"
+        },
+        {
+          "alias": null,
+          "context": "call",
+          "file": "basic/UserService.cs",
+          "from": "basic/UserService.cs::UserService::Handle::method",
+          "kind": "Calls",
+          "line": 27,
+          "properties_accessed": [],
+          "resolution": "resolved",
+          "to": "basic/UserService.cs::UserService::Describe::method"
+        },
+        {
+          "alias": null,
+          "context": "call",
+          "file": "basic/UserService.cs",
+          "from": "basic/UserService.cs::UserService::Handle::method",
+          "kind": "Calls",
+          "line": 29,
+          "properties_accessed": [],
+          "resolution": "resolved",
+          "to": "basic/UserService.cs::AuditLog::Record::method"
+        }
+      ],
+      "symbols": [
+        {
+          "file": "basic/UserService.cs",
+          "id": "basic/UserService.cs::module::module",
+          "kind": "Module",
+          "language": "CSharp",
+          "line_end": 1,
+          "line_start": 1,
+          "name": "module",
+          "signature": null
+        },
+        {
+          "file": "basic/UserService.cs",
+          "id": "basic/UserService.cs::IAuditable::interface",
+          "kind": "Interface",
+          "language": "CSharp",
+          "line_end": 8,
+          "line_start": 5,
+          "name": "IAuditable",
+          "signature": "public interface IAuditable"
+        },
+        {
+          "file": "basic/UserService.cs",
+          "id": "basic/UserService.cs::IAuditable::Describe::method",
+          "kind": "Method",
+          "language": "CSharp",
+          "line_end": 7,
+          "line_start": 7,
+          "name": "Describe",
+          "signature": "string Describe();"
+        },
+        {
+          "file": "basic/UserService.cs",
+          "id": "basic/UserService.cs::AuditLog::class",
+          "kind": "Class",
+          "language": "CSharp",
+          "line_end": 13,
+          "line_start": 10,
+          "name": "AuditLog",
+          "signature": "class AuditLog"
+        },
+        {
+          "file": "basic/UserService.cs",
+          "id": "basic/UserService.cs::AuditLog::Record::method",
+          "kind": "Method",
+          "language": "CSharp",
+          "line_end": 12,
+          "line_start": 12,
+          "name": "Record",
+          "signature": "public void Record(string message) { }"
+        },
+        {
+          "file": "basic/UserService.cs",
+          "id": "basic/UserService.cs::UserService::class",
+          "kind": "Class",
+          "language": "CSharp",
+          "line_end": 31,
+          "line_start": 15,
+          "name": "UserService",
+          "signature": "public class UserService : IAuditable"
+        },
+        {
+          "file": "basic/UserService.cs",
+          "id": "basic/UserService.cs::UserService::log::property",
+          "kind": "Property",
+          "language": "CSharp",
+          "line_end": 17,
+          "line_start": 17,
+          "name": "log",
+          "signature": "private AuditLog log;"
+        },
+        {
+          "file": "basic/UserService.cs",
+          "id": "basic/UserService.cs::UserService::Describe::method",
+          "kind": "Method",
+          "language": "CSharp",
+          "line_end": 22,
+          "line_start": 19,
+          "name": "Describe",
+          "signature": "public string Describe()"
+        },
+        {
+          "file": "basic/UserService.cs",
+          "id": "basic/UserService.cs::UserService::Handle::method",
+          "kind": "Method",
+          "language": "CSharp",
+          "line_end": 30,
+          "line_start": 24,
+          "name": "Handle",
+          "signature": "public void Handle()"
+        }
+      ]
+    },
+    {
+      "assertions": {},
+      "assertions_counted": false,
+      "diagnostics": [],
+      "file": "basic/Util/Formatter.cs",
+      "language": "CSharp",
+      "re_exports": [],
+      "relationships": [],
+      "symbols": [
+        {
+          "file": "basic/Util/Formatter.cs",
+          "id": "basic/Util/Formatter.cs::module::module",
+          "kind": "Module",
+          "language": "CSharp",
+          "line_end": 1,
+          "line_start": 1,
+          "name": "module",
+          "signature": null
+        },
+        {
+          "file": "basic/Util/Formatter.cs",
+          "id": "basic/Util/Formatter.cs::Formatter::class",
+          "kind": "Class",
+          "language": "CSharp",
+          "line_end": 6,
+          "line_start": 3,
+          "name": "Formatter",
+          "signature": "public class Formatter"
+        },
+        {
+          "file": "basic/Util/Formatter.cs",
+          "id": "basic/Util/Formatter.cs::Formatter::Format::method",
+          "kind": "Method",
+          "language": "CSharp",
+          "line_end": 5,
+          "line_start": 5,
+          "name": "Format",
+          "signature": "public string Format(string value) { return value; }"
+        }
+      ]
+    },
+    {
+      "assertions": {},
+      "assertions_counted": false,
+      "diagnostics": [],
+      "file": "basic/Util/Helpers.cs",
+      "language": "CSharp",
+      "re_exports": [],
+      "relationships": [],
+      "symbols": [
+        {
+          "file": "basic/Util/Helpers.cs",
+          "id": "basic/Util/Helpers.cs::module::module",
+          "kind": "Module",
+          "language": "CSharp",
+          "line_end": 1,
+          "line_start": 1,
+          "name": "module",
+          "signature": null
+        },
+        {
+          "file": "basic/Util/Helpers.cs",
+          "id": "basic/Util/Helpers.cs::Helpers::class",
+          "kind": "Class",
+          "language": "CSharp",
+          "line_end": 6,
+          "line_start": 3,
+          "name": "Helpers",
+          "signature": "public class Helpers"
+        },
+        {
+          "file": "basic/Util/Helpers.cs",
+          "id": "basic/Util/Helpers.cs::Helpers::Log::method",
+          "kind": "Method",
+          "language": "CSharp",
+          "line_end": 5,
+          "line_start": 5,
+          "name": "Log",
+          "signature": "public static void Log(string message) { }"
+        }
+      ]
+    }
+  ],
+  "language_stats": {
+    "CSharp": 7
+  },
+  "root": "<root>",
+  "schema_version": 1,
+  "stats": {
+    "alias_chains": 0,
+    "aliases": 0,
+    "diagnostics": 0,
+    "files_indexed": 7,
+    "relationships": 12,
+    "symbols": 29
+  }
+}

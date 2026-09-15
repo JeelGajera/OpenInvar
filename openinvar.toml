@@ -52,6 +52,9 @@ severity = "error"
 # the language count by design, and 200 leaves room for one more before it
 # needs looking at again.
 #
+# C# was that one more: 184 to 189, and the threshold holds unchanged. Ruby is
+# the only language left unpromoted, so the next raise is not close.
+#
 # The better fix is a scope or exclusion on max-fan-in, so a named hub can be
 # exempted without lifting the ceiling for everything. The rule takes only a
 # threshold today; until it takes more, this number has to move.

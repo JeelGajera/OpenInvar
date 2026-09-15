@@ -16,8 +16,8 @@ keywords.workspace = true
 # binary. Without this the CLI could pull every grammar back in through its
 # dependency on the MCP server.
 default = ["full"]
-full = ["tier1", "java", "ruby", "csharp"]
-tier1 = ["typescript", "python", "rust", "go", "c"]
+full = ["tier1", "ruby"]
+tier1 = ["typescript", "python", "rust", "go", "c", "java", "csharp"]
 typescript = ["openinvar-lang/typescript"]
 python = ["openinvar-lang/python"]
 rust = ["openinvar-lang/rust"]

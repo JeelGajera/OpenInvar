@@ -137,8 +137,9 @@ entry in the publish job.
 1. Add `crates/openinvar-lang/src/lang/<name>/`, following an existing
    language. [`rust`](crates/openinvar-lang/src/lang/rust) and
    [`typescript`](crates/openinvar-lang/src/lang/typescript) are the most
-   complete; [`java`](crates/openinvar-lang/src/lang/java) is the smallest
-   Tier 2 example.
+   complete; [`csharp`](crates/openinvar-lang/src/lang/csharp) is the smallest
+   Tier 1 example, and [`ruby`](crates/openinvar-lang/src/lang/ruby) the only
+   Tier 2 one.
 2. Add the feature to
    [`crates/openinvar-lang/Cargo.toml`](crates/openinvar-lang/Cargo.toml),
    pulling in only that language's grammar, and list it under `tier1` or

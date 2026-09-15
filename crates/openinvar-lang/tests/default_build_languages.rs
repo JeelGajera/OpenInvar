@@ -83,7 +83,7 @@ fn the_tier_one_languages_are_reported_as_resolved() {
             // Java was promoted: it has an import resolver, a scope analyzer
             // binding receivers to declared types, and a supertype walk, so a
             // gate may act on it. Ruby and C# have none of that yet.
-            "Ruby" | "C#" => Tier::Structural,
+            "Ruby" => Tier::Structural,
             _ => Tier::Resolved,
         };
         assert_eq!(
