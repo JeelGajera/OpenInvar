@@ -26,7 +26,7 @@
 
 use std::collections::{BTreeMap, BTreeSet};
 
-use openinvar_core::ir::{FileIR, RelationshipKind, SymbolId, SymbolKind};
+use openinvar_core::ir::{FileIR, RelationshipKind, Symbol, SymbolId, SymbolKind};
 use openinvar_core::symbol_id::{
     external_package_id, is_placeholder, parse_unresolved_import_id,
     parse_unresolved_local_type_id,
@@ -66,14 +66,23 @@ fn build_index(files: &[FileIR], facts: &BTreeMap<String, FileFacts>) -> Index {
             .map(|f| f.package.clone())
             .unwrap_or_default();
 
+        let canonical = canonical_names(file_ir);
         for symbol in &file_ir.symbols {
             if !TYPE_KINDS.contains(&symbol.kind) {
                 continue;
             }
+            // `Outer.Inner` for a nested type, the simple name for a top-level
+            // one. Indexing a nested class under its simple name spells a name
+            // no import can name, and misses every reference through the real
+            // one.
+            let name = canonical
+                .get(&symbol.id)
+                .cloned()
+                .unwrap_or_else(|| symbol.name.clone());
             let fqn = if package.is_empty() {
-                symbol.name.clone()
+                name
             } else {
-                format!("{package}.{}", symbol.name)
+                format!("{package}.{name}")
             };
             // First declaration wins, and files are sorted before analysis, so
             // a repository that genuinely declares one FQN twice resolves the
@@ -229,6 +238,56 @@ pub fn resolve(files: &mut [FileIR], facts: &[FileFacts]) {
         file_ir.unbound_references = unbound;
         file_ir.unbound_outside_repository = outside;
     }
+}
+
+/// The name each type in one file is imported by, keyed by symbol id.
+///
+/// Java's canonical name for a nested class is `Outer.Inner`, and that is what
+/// an `import` names: `import com.google.gson.common.TestTypes.BagOfPrimitives`
+/// is how gson reaches one. Indexing every type under its *simple* name put
+/// that class at `com.google.gson.common.BagOfPrimitives` — a name no import
+/// can spell — so the import missed, and so did all 235 references through it.
+///
+/// The nesting is recorded nowhere in the IR: a nested class's symbol id
+/// carries its simple name and nothing else. It is recovered here from line
+/// ranges instead, which the extractor already emits. A type declared inside
+/// another is spanned by it, and two siblings never span each other, so the
+/// innermost container is the immediate parent.
+///
+/// A local class — `void f() { class Tmp {} }` — comes out as
+/// `Outer.Tmp`. Java gives those no importable name at all, so nothing can
+/// reference one from another file and the entry is inert either way.
+fn canonical_names(file_ir: &FileIR) -> BTreeMap<SymbolId, String> {
+    let types: Vec<&Symbol> = file_ir
+        .symbols
+        .iter()
+        .filter(|s| TYPE_KINDS.contains(&s.kind))
+        .collect();
+
+    let mut out = BTreeMap::new();
+    for symbol in &types {
+        let mut chain = vec![symbol.name.clone()];
+        let mut current: &Symbol = symbol;
+        // Walk outward. Every step moves to a strictly wider span, so this
+        // terminates even if two declarations were to report the same range.
+        while let Some(parent) = types
+            .iter()
+            .filter(|candidate| {
+                candidate.id != current.id
+                    && candidate.line_start <= current.line_start
+                    && current.line_end <= candidate.line_end
+                    && (candidate.line_start < current.line_start
+                        || current.line_end < candidate.line_end)
+            })
+            .max_by_key(|c| (c.line_start, std::cmp::Reverse(c.line_end)))
+        {
+            chain.push(parent.name.clone());
+            current = parent;
+        }
+        chain.reverse();
+        out.insert(symbol.id.clone(), chain.join("."));
+    }
+    out
 }
 
 /// Type names `java.lang` provides, which need no import.
