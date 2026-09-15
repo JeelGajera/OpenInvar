@@ -14,7 +14,7 @@ pub struct ParsedFile {
 fn parse_source(source: &str) -> Result<Tree, String> {
     let mut parser = tree_sitter::Parser::new();
     parser
-        .set_language(&tree_sitter_java::language())
+        .set_language(&tree_sitter_java::LANGUAGE.into())
         .map_err(|e| format!("failed to set Java language: {e}"))?;
     parser
         .parse(source, None)

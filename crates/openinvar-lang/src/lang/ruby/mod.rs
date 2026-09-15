@@ -45,7 +45,7 @@ impl LanguageSpec for Spec {
     }
 
     fn grammar(&self) -> Option<tree_sitter::Language> {
-        Some(tree_sitter_ruby::language())
+        Some(tree_sitter_ruby::LANGUAGE.into())
     }
 
     fn tags_query(&self) -> Option<&'static str> {

@@ -39,9 +39,9 @@ const CPP_MARKERS: &[&str] = &[
 
 fn grammar(is_cpp: bool) -> tree_sitter::Language {
     if is_cpp {
-        tree_sitter_cpp::language()
+        tree_sitter_cpp::LANGUAGE.into()
     } else {
-        tree_sitter_c::language()
+        tree_sitter_c::LANGUAGE.into()
     }
 }
 

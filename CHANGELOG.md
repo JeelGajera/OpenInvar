@@ -12,6 +12,41 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- **tree-sitter 0.22 → 0.27, and every grammar with it.** The runtime and all
+  ten grammar crates move up: TypeScript, C++, Java, Ruby and C# to 0.23, Rust
+  and C to 0.24, JavaScript, Python and Go to 0.25.
+
+  The ecosystem problem that held this back has resolved itself. Grammar crates
+  used to depend on the runtime directly, so a grammar built against one version
+  could not be used with another and the whole set had to move together or not
+  at all. Every one of the ten now depends only on `tree-sitter-language ^0.1`,
+  a small crate whose job is to be stable, so a grammar and a runtime no longer
+  have to agree on a version.
+
+  Two API changes came with it. A grammar exposes `LANGUAGE: LanguageFn` rather
+  than `fn language()`, so fifteen call sites convert with `.into()`. And
+  `QueryMatches` is a streaming iterator rather than an `Iterator` — each match
+  borrows the cursor's buffer, so only one is alive at a time and a `for` loop
+  cannot express it. `tree_sitter` re-exports the trait, so that needed no new
+  dependency.
+
+  **Parse trees are almost entirely unchanged.** Across the whole fixture corpus
+  one golden moved, and on this repository the graph is identical — 6,035 edges
+  before and after. The single difference is that a generic type parameter is
+  now surfaced as a type reference:
+
+  ```rust
+  pub fn label<T: Identify>(&self, subject: &T) -> String
+  ```
+
+  `T` is declared by the function's own signature, but it is reported as an
+  unresolved type — one spurious diagnostic and one unbound reference per
+  generic function that names its own parameter. One occurrence on this
+  repository. That imprecision is not left standing; it is fixed immediately
+  after this.
+
 ## [0.3.0] - 2026-09-15
 
 ### Added

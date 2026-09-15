@@ -111,7 +111,7 @@ impl crate::spec::LanguageSpec for Spec {
     }
 
     fn grammar(&self) -> Option<tree_sitter::Language> {
-        Some(tree_sitter_java::language())
+        Some(tree_sitter_java::LANGUAGE.into())
     }
 
     fn analyze(

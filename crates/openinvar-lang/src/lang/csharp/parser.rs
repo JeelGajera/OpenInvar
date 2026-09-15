@@ -14,7 +14,7 @@ pub struct ParsedFile {
 fn parse_source(source: &str) -> Result<Tree, String> {
     let mut parser = tree_sitter::Parser::new();
     parser
-        .set_language(&tree_sitter_c_sharp::language())
+        .set_language(&tree_sitter_c_sharp::LANGUAGE.into())
         .map_err(|e| format!("failed to set C# language: {e}"))?;
     parser
         .parse(source, None)

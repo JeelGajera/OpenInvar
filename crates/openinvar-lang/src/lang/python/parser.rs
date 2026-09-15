@@ -17,7 +17,7 @@ pub struct ParsedFile {
 pub fn parse_python(source: &str) -> Result<Tree, String> {
     let mut parser = tree_sitter::Parser::new();
     parser
-        .set_language(&tree_sitter_python::language())
+        .set_language(&tree_sitter_python::LANGUAGE.into())
         .map_err(|e| format!("failed to set Python language: {e}"))?;
     parser
         .parse(source, None)
