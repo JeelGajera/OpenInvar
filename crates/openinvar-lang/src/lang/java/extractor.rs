@@ -17,6 +17,8 @@ use openinvar_core::ir::{
 use openinvar_core::symbol_id::{
     make_symbol_id, module_symbol, module_symbol_id, unresolved_local_type_id,
 };
+use std::collections::BTreeSet;
+
 use tree_sitter::Node;
 
 use super::parser::ParsedFile;
@@ -204,8 +206,12 @@ fn collect_type(
     });
 
     // extends / implements
+    //
+    // `class Box<T> extends Holder<T>` names `Holder` and `T`, and only the
+    // first is a type this repository could contain.
+    let generics = generic_parameter_names(node, source);
     if let Some(superclass) = child_of_kind(node, "superclass") {
-        for target in type_identifiers(superclass, source) {
+        for target in type_references(superclass, source, &generics) {
             relationships.push(reference(
                 file,
                 &id,
@@ -220,7 +226,7 @@ fn collect_type(
     // implementing them uses `super_interfaces`. Both mean the same edge here.
     for container in ["super_interfaces", "extends_interfaces"] {
         if let Some(supers) = child_of_kind(node, container) {
-            for target in type_identifiers(supers, source) {
+            for target in type_references(supers, source, &generics) {
                 relationships.push(reference(
                     file,
                     &id,
@@ -264,7 +270,11 @@ fn collect_field(
     symbols: &mut Vec<Symbol>,
     relationships: &mut Vec<Relationship>,
 ) {
-    let declared = declared_type_name(node, source);
+    // A field typed by the class's own `<T>` names no type this repository
+    // could contain. `node.parent()` reaches the class body and then the class,
+    // which is where the parameter was declared.
+    let generics = generic_parameter_names(node, source);
+    let declared = declared_type_name(node, source).filter(|d| !generics.contains(d));
 
     for declarator in children_of_kind(node, "variable_declarator") {
         let Some(name_node) = declarator.child_by_field_name("name") else {
@@ -322,8 +332,10 @@ fn collect_method(
     });
 
     // Return type and parameter types are references the method makes.
+    // A method adds its own `<T>` to whatever its class declared.
+    let generics = generic_parameter_names(node, source);
     if let Some(return_type) = node.child_by_field_name("type") {
-        for target in type_identifiers(return_type, source) {
+        for target in type_references(return_type, source, &generics) {
             relationships.push(reference(
                 file,
                 &id,
@@ -336,7 +348,9 @@ fn collect_method(
     }
     if let Some(params) = child_of_kind(node, "formal_parameters") {
         for param in children_of_kind(params, "formal_parameter") {
-            if let Some(declared) = declared_type_name(param, source) {
+            if let Some(declared) =
+                declared_type_name(param, source).filter(|d| !generics.contains(d))
+            {
                 relationships.push(reference(
                     file,
                     &id,
@@ -352,7 +366,7 @@ fn collect_method(
     // `new Foo()` anywhere in the body.
     if let Some(body) = child_of_kind(node, "block").or_else(|| child_of_kind(node, "constructor_body")) {
         for created in descendants_of_kind(body, "object_creation_expression") {
-            for target in type_identifiers(created, source) {
+            for target in type_references(created, source, &generics) {
                 relationships.push(reference(
                     file,
                     &id,
@@ -388,6 +402,43 @@ fn declared_type_name(node: Node<'_>, source: &str) -> Option<String> {
             .and_then(|e| (e.kind() == "type_identifier").then(|| text(e, source).to_string())),
         _ => None,
     }
+}
+
+/// Type-parameter names in scope at `node`.
+///
+/// `class Box<T>` and `<T> T unwrap()` both declare `T`, and both are in scope
+/// for the method's body, so this walks outward from the node rather than
+/// reading one declaration. A method inside a generic class sees the class's
+/// parameters and its own.
+///
+/// Only the direct `type_identifier` child of each `type_parameter` is a name.
+/// A bound — `<T extends Comparable>` — puts `Comparable` in a `type_bound`
+/// child, and `Comparable` is a real type rather than a placeholder. Nothing
+/// records that reference today, so sweeping the subtree would cost nothing
+/// immediately; it is kept out anyway, so that teaching the extractor to read
+/// bounds later does not run into a filter that silently eats them.
+fn generic_parameter_names(node: Node<'_>, source: &str) -> BTreeSet<String> {
+    let mut out = BTreeSet::new();
+    let mut current = Some(node);
+    while let Some(n) = current {
+        if let Some(params) = n.child_by_field_name("type_parameters") {
+            for param in children_of_kind(params, "type_parameter") {
+                if let Some(name) = child_of_kind(param, "type_identifier") {
+                    out.insert(text(name, source).to_string());
+                }
+            }
+        }
+        current = n.parent();
+    }
+    out
+}
+
+/// Every `type_identifier` under a node that is not a type parameter in scope.
+fn type_references(node: Node<'_>, source: &str, generics: &BTreeSet<String>) -> Vec<String> {
+    type_identifiers(node, source)
+        .into_iter()
+        .filter(|name| !generics.contains(name))
+        .collect()
 }
 
 /// Every `type_identifier` under a node, in source order.

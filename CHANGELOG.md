@@ -12,6 +12,32 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- **A Java generic type parameter is no longer a type reference.** `class Box<T>
+  { T item; }` names `T` twice and neither is a type the repository could
+  contain, but the extractor recorded both as ordinary references.
+
+  The visible cost was spurious unbound references — 291 on `google/gson`. The
+  invisible cost was worse: where another file happens to declare a class of the
+  same name, the resolver **found it and bound**. gson's
+  `MultiParameters<A, B, C, D, E>` has fields `A a; B b; C c;`, and a test file
+  elsewhere declares classes `A`, `B` and `C`. Seven edges bound across that
+  coincidence, each one `Resolution::Resolved` and therefore gate-safe, each one
+  saying a generic parameter depends on an unrelated class in another file.
+  Guessing by name across a repository is the bug this project exists to avoid.
+
+  **This moves R′**, which no change since the criterion was registered has
+  done: the gson figure goes 64.2% to 64.8% and the corpus median 63.2% to
+  63.5%. The improvement is references that should never have been counted, plus
+  seven edges that should never have existed.
+
+  Only the direct `type_identifier` child of a `type_parameter` is treated as a
+  name. A bound — `<T extends Shape>` — names a real type, and although nothing
+  records that reference today, the filter keeps its hands off it so that
+  teaching the extractor to read bounds later does not run into a filter that
+  silently eats them.
+
 ### Added
 
 - **The Java adapter records why a reference did not bind.** Java attempted more
