@@ -12,6 +12,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- **The README's language-support note reflects what the crates now do.** It
+  said Scala and Lua pinned an incompatible `tree-sitter`, and that Swift and
+  PHP resolved to a second copy of it. All four claims are stale: every
+  candidate crate now depends on `tree-sitter-language` rather than on the
+  runtime, so none of them conflict.
+
+  It also stated the requirement as shipping a `tags.scm`, which is not the
+  gate. A language's spec hands over the crate's `TAGS_QUERY` constant and
+  nothing reads the packaged file, so a crate can ship the query and still be
+  unusable — which is exactly Scala's position.
+
+  Replaced with a surveyed table, verified by parsing a sample with each
+  grammar rather than by reading dependency metadata. PHP, Swift and Lua are
+  ready to add; Scala needs one constant exported upstream; Kotlin, SQL and
+  Bash have no tags query to run.
+
 ### Added
 
 - **Adapters record why a reference did not bind.** `unbound_references` counts

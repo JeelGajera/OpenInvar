@@ -789,12 +789,38 @@ Tier 2 today: Ruby, which has its own feature for a narrowed source build and
 is in the released binary.
 
 Still planned as Tier 2: Kotlin, PHP, Swift, Scala, SQL, Lua, Bash. These are
-not held up by OpenInvar's architecture but by the grammar crates: adding one
-needs a crate that both works against the `tree-sitter` version OpenInvar pins
-and ships its own `tags.scm`. Several of the obvious candidates currently fail
-one or the other — Scala and Lua pin an incompatible `tree-sitter`, Swift and
-PHP resolve to a second copy of it, and Kotlin, SQL and Bash ship no tags query
-for the analyzer to run. A `tree-sitter` upgrade unblocks most of them.
+not held up by OpenInvar's architecture but by the grammar crates. Adding one
+needs a crate that works against the `tree-sitter` version OpenInvar pins and
+*exposes* its `tags.scm` as a `TAGS_QUERY` constant. Shipping the file is not
+enough: a language's spec hands over the crate's constant — Ruby's is
+`Some(tree_sitter_ruby::TAGS_QUERY)` — and nothing reads the packaged file.
+
+The version conflict that blocked all seven is gone. Every crate below now
+depends on `tree-sitter-language` rather than on the runtime, so a grammar and
+a runtime no longer have to agree on a version. Surveyed against the index
+after the move to `tree-sitter` 0.27 and verified by parsing a sample with
+each:
+
+| Language | Crate | Parses | `TAGS_QUERY` |
+| --- | --- | --- | --- |
+| PHP | `tree-sitter-php` 0.24 | yes | yes, 12 patterns |
+| Swift | `tree-sitter-swift` 0.7 | yes | yes, 7 patterns |
+| Lua | `tree-sitter-lua` 0.5 | yes | yes, 5 patterns |
+| Scala | `tree-sitter-scala` 0.26 | yes | ships `queries/tags.scm`, exports no constant |
+| Kotlin | `tree-sitter-kotlin-ng` 1.1 | yes | no tags query |
+| SQL | `tree-sitter-sequel` 0.3 | yes | no tags query |
+| Bash | `tree-sitter-bash` 0.25 | yes | no tags query |
+
+So PHP, Swift and Lua are ready to add. Scala needs one constant upstream, or a
+vendored copy of a query its own crate already contains — which trades "adding
+a language is a dependency" for a file to keep in step with a grammar that
+moves. Kotlin, SQL and Bash need a tags query to exist at all before there is
+anything to run.
+
+Kotlin is the one place the crate matters: the original `tree-sitter-kotlin`
+still pins `tree-sitter >=0.21, <0.23` and cannot be used at all, while
+`tree-sitter-kotlin-ng` builds against the current runtime — and neither ships
+a tags query, so the choice is moot until one does.
 
 ## It also answers graph questions
 
