@@ -71,7 +71,7 @@ body:
     attributes:
       label: Version
       description: Output of `openinvar --version`. If built from source, the commit.
-      placeholder: "openinvar 0.2.0"
+      placeholder: "openinvar 0.3.0"
     validations:
       required: true
 

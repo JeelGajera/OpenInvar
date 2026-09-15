@@ -706,7 +706,7 @@ checksum = "384b8ab6d37215f3c5301a95a4accb5d64aa607f1fcb26a11b5303878451b4fe"
 
 [[package]]
 name = "openinvar-cli"
-version = "0.2.0"
+version = "0.3.0"
 dependencies = [
  "clap",
  "notify",
@@ -724,7 +724,7 @@ dependencies = [
 
 [[package]]
 name = "openinvar-core"
-version = "0.2.0"
+version = "0.3.0"
 dependencies = [
  "dashmap",
  "glob",
@@ -741,7 +741,7 @@ dependencies = [
 
 [[package]]
 name = "openinvar-lang"
-version = "0.2.0"
+version = "0.3.0"
 dependencies = [
  "glob",
  "openinvar-core",
@@ -764,7 +764,7 @@ dependencies = [
 
 [[package]]
 name = "openinvar-mcp"
-version = "0.2.0"
+version = "0.3.0"
 dependencies = [
  "openinvar-core",
  "openinvar-lang",
@@ -778,7 +778,7 @@ dependencies = [
 
 [[package]]
 name = "openinvar-store"
-version = "0.2.0"
+version = "0.3.0"
 dependencies = [
  "openinvar-core",
  "rusqlite",

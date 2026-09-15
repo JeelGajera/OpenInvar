@@ -12,6 +12,11 @@ jobs:
     permissions:
       id-token: write
       contents: read
+    env:
+      # Empty unless the repository sets it, which is what selects between the
+      # two paths below. Declared at job level so the auth step's `if:` can
+      # read it.
+      CRATES_IO_TOKEN: ${{ secrets.CRATES_IO_TOKEN }}
     
     steps:
       - uses: actions/checkout@v7
@@ -22,8 +27,22 @@ jobs:
       - name: Setup Cache
         uses: Swatinem/rust-cache@v2
 
-      # Automatically exchanges the GitHub Actions OIDC token for a short-lived crates.io token
+      # Trusted Publishing is the steady state: it exchanges the GitHub Actions
+      # OIDC token for a short-lived crates.io token, and no long-lived secret
+      # exists anywhere.
+      #
+      # It cannot do a crate's *first* publish. A trusted publisher is
+      # configured on a crate that already exists, so the name has to be claimed
+      # once with an ordinary token before OIDC has anything to attach to. That
+      # is what `CRATES_IO_TOKEN` is for: set it as a repository secret for the
+      # first release, delete it once every crate exists, and this falls back to
+      # OIDC automatically whenever it is absent.
+      #
+      # The secret is read from the repository, never passed in by hand. A token
+      # that travels through a chat, an issue or a commit message is disclosed
+      # by the act of sending it, whatever happens to it afterwards.
       - name: Authenticate with crates.io
+        if: env.CRATES_IO_TOKEN == ''
         uses: rust-lang/crates-io-auth-action@v1
         id: auth
 
@@ -42,7 +61,7 @@ jobs:
       # this file at all.
       - name: Publish all crates safely to crates.io
         env:
-          CARGO_REGISTRY_TOKEN: ${{ steps.auth.outputs.token }}
+          CARGO_REGISTRY_TOKEN: ${{ env.CRATES_IO_TOKEN != '' && env.CRATES_IO_TOKEN || steps.auth.outputs.token }}
         run: |
           cargo publish -p openinvar-core
           cargo publish -p openinvar-lang
