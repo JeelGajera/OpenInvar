@@ -22,15 +22,17 @@ is judging.
 
 ## Latest
 
-[**2026-09-14**](results/2026-09-14.md) — OpenInvar 0.2.0, 4 repositories, 32
-revisions, 28 commit pairs. **CONTINUE.**
+[**2026-09-15 (0.3.0)**](results/2026-09-15-0.3.0.md) — OpenInvar 0.3.0, 4
+repositories, 32 revisions, 28 commit pairs. **CONTINUE.**
 
-- **Determinism 32/32 byte-identical**, zero mismatches
+- **Determinism 32/32 byte-identical**, across a `tree-sitter` upgrade of five
+  minor versions and all ten grammars
 - **0 of 28 commit pairs** produced an error-severity finding
-- Slowest revision 0.71s for 313 files and 18,989 edges
-- One criterion turned out to measure a tier classification rather than a
-  resolution rate, and is reported as such rather than scored as the pass it
-  numerically was
+- **R′ unchanged to the decimal in every repository**, which is what the three
+  changes since the last run were meant not to move
+- R′ is now split by *why* a reference failed to bind, and the split says the
+  next work is a Java classifier: Java is 83% of the corpus's unbound
+  references and classifies none of them
 
 ## Running it
 
