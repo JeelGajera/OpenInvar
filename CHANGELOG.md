@@ -501,6 +501,36 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   a rename is worse than missing one. Moves are unaffected, since there the
   name is itself the evidence.
 
+- **No unresolved reference reaches the graph.** TypeScript recorded edges
+  pointing at placeholder ids, and `dispatch` stamped them
+  `Resolution::Resolved` on the way out — a name sitting where a symbol
+  belongs, marked as a fact a gate may act on. `blast-radius` counted those
+  names as dependent symbols, and resolution coverage counted them as resolved.
+
+  ```
+  AccessesProperty -> __UNRESOLVED_LOCAL_TYPE__|Unknowable   [resolved]
+  ```
+
+  The cause was not a missing drop. TypeScript minted its own placeholder ids
+  with a private `__UNRESOLVED_LOCAL_TYPE__` prefix, structurally identical to
+  the shared `unresolved_local_type` but recognised by nothing: `is_placeholder`
+  — the check every layer above uses to tell a bound target from an unbound one
+  — returned `false` for every one of them, so they passed every guard in the
+  codebase. The other six Tier 1 adapters use the shared vocabulary and none of
+  them leaked.
+
+  TypeScript now mints the shared ids, and `dispatch` drops any surviving
+  placeholder before stamping. Enforcing it centrally rather than in each
+  adapter is the point: seven adapters remembering is seven chances to forget,
+  and the one that forgot was the oldest and most used.
+
+  `fixtures/adapter-ts` loses seven such edges from its golden, each of which
+  had been recorded as `"resolution": "resolved"`. Four were framework and
+  cyclic re-export imports (`.astro`, `.vue`, a `./a` ↔ `./b` cycle) and two
+  were local types. Those references still do not resolve — this stops them
+  being *reported* as resolved, which is a different and smaller claim than
+  fixing them.
+
 - **No repository could commit a rules file, so `check` had never gated
   anything anywhere.** Rules were specified to live at
   `.openinvar/rules.toml` — inside the directory every repository gitignores,

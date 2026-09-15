@@ -51,14 +51,14 @@ every run — overall and per language.
 Measured on this repository, with the released binary:
 
 ```
-Resolved           99.8% (5962 of 5974 edge(s))
+Resolved           99.8% (5974 of 5986 edge(s))
   C#               100.0% of 12 edge(s)
   C/C++            100.0% of 32 edge(s)
   Go               100.0% of 40 edge(s)
   Java             100.0% of 14 edge(s)
   Python           100.0% of 71 edge(s)
   Ruby             0.0% of 12 edge(s)
-  Rust             100.0% of 5717 edge(s)
+  Rust             100.0% of 5729 edge(s)
   TypeScript       100.0% of 76 edge(s)
   12 edge(s) are structural: matched by name within one file.
   A gate must not act on them.
