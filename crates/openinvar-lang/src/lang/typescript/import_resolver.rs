@@ -401,6 +401,30 @@ fn resolve_local_import(
         )
     });
 
+    // The module is here and does not declare this name. An import still
+    // created a dependency on the file, and that much is true — so record it,
+    // the way the Rust adapter does for the same case, rather than dropping the
+    // reference and reporting nothing.
+    //
+    // This is what a framework component import looks like. A Vue single-file
+    // component *is* its file: `UserCard.vue` declares no symbol named
+    // `UserCard`, so `import { UserCard } from './UserCard.vue'` could never
+    // find one, and `blast-radius` on that component saw no dependents at all.
+    // The same holds for `.astro`.
+    //
+    // Only for `Imports`. A re-export names a specific symbol it claims to
+    // forward; when that symbol does not exist, forwarding nothing is the
+    // honest answer and a file-level edge would overstate it.
+    let resolved_id = resolved_id.or_else(|| {
+        if relationship.kind != RelationshipKind::Imports {
+            return None;
+        }
+        target_symbols
+            .iter()
+            .find(|s| s.name == "module")
+            .map(|s| s.id.clone())
+    });
+
     let Some(resolved_id) = resolved_id else {
         diagnostics.push(Diagnostic {
             level: DiagnosticLevel::Warning,

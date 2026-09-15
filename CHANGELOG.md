@@ -505,6 +505,32 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **A framework component import now reaches the component.** A Vue or Astro
+  single-file component *is* its file: `UserCard.vue` declares no symbol called
+  `UserCard`, so `import { UserCard } from './UserCard.vue'` could never find a
+  matching declaration. The reference was dropped, and the component ended up
+  with **no dependents recorded anywhere in the graph** — so anything asking
+  what breaks if it changes saw nothing, which is the one answer a blast radius
+  must never give wrongly.
+
+  An import creates a dependency on the file whether or not the name inside it
+  resolves, and that much is true, so it is now recorded — the convention the
+  Rust adapter already followed for the same case:
+
+  > The module exists but does not export this name. Keep the file-level
+  > dependency, which is still true, and say so.
+
+  `App.vue` now records `Imports -> src/components/UserCard.vue::module::module`
+  where it previously recorded nothing. Unbound references across the
+  TypeScript fixtures fall from 7 to 3.
+
+  The line is drawn at re-exports. `export { foo } from './b'` claims to
+  forward one specific name; when that name is declared nowhere — as in the
+  cyclic-barrel fixture, where two files forward `foo` to each other and
+  nothing defines it — forwarding nothing is the honest answer, and a
+  file-level edge would overstate it. Those references stay unresolved and
+  counted, which is correct rather than a remaining gap.
+
 - **A rename now has to be evidenced, so unrelated symbols stop being paired
   as one.** `openinvar diff` reported renames between functions that had
   nothing to do with each other. On the C# Tier 1 change its own PR comment

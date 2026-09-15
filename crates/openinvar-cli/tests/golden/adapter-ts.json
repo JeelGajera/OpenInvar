@@ -92,20 +92,23 @@
     {
       "assertions": {},
       "assertions_counted": true,
-      "diagnostics": [
-        {
-          "category": "Resolution",
-          "file": "astro_component/src/pages/index.astro",
-          "level": "Warning",
-          "line": 2,
-          "message": "unable to resolve symbol 'Layout' from astro_component/src/layouts/Layout.astro"
-        }
-      ],
+      "diagnostics": [],
       "file": "astro_component/src/pages/index.astro",
       "language": "TypeScript",
       "re_exports": [],
       "references_counted": true,
       "relationships": [
+        {
+          "alias": null,
+          "context": "import { Layout } from \"../layouts/Layout.astro\";",
+          "file": "astro_component/src/pages/index.astro",
+          "from": "astro_component/src/pages/index.astro::data::variable",
+          "kind": "Imports",
+          "line": 2,
+          "properties_accessed": [],
+          "resolution": "resolved",
+          "to": "astro_component/src/layouts/Layout.astro::module::module"
+        },
         {
           "alias": null,
           "context": "import { Card } from \"../components/Card\";",
@@ -162,7 +165,7 @@
           "signature": "module"
         }
       ],
-      "unbound_references": 1
+      "unbound_references": 0
     },
     {
       "assertions": {},
@@ -907,20 +910,25 @@
           "level": "Warning",
           "line": null,
           "message": "cyclic re-export detected for 'foo': cyclic_barrel/src/b.ts → cyclic_barrel/src/a.ts"
-        },
-        {
-          "category": "Resolution",
-          "file": "cyclic_barrel/src/app.ts",
-          "level": "Warning",
-          "line": 1,
-          "message": "unable to resolve symbol 'foo' from cyclic_barrel/src/a.ts"
         }
       ],
       "file": "cyclic_barrel/src/app.ts",
       "language": "TypeScript",
       "re_exports": [],
       "references_counted": true,
-      "relationships": [],
+      "relationships": [
+        {
+          "alias": null,
+          "context": "import { foo } from './a';",
+          "file": "cyclic_barrel/src/app.ts",
+          "from": "cyclic_barrel/src/app.ts::main::function",
+          "kind": "Imports",
+          "line": 1,
+          "properties_accessed": [],
+          "resolution": "resolved",
+          "to": "cyclic_barrel/src/a.ts::module::module"
+        }
+      ],
       "symbols": [
         {
           "file": "cyclic_barrel/src/app.ts",
@@ -943,7 +951,7 @@
           "signature": "module"
         }
       ],
-      "unbound_references": 1
+      "unbound_references": 0
     },
     {
       "assertions": {},
@@ -2848,15 +2856,7 @@
     {
       "assertions": {},
       "assertions_counted": true,
-      "diagnostics": [
-        {
-          "category": "Resolution",
-          "file": "vue_component/src/App.vue",
-          "level": "Warning",
-          "line": 9,
-          "message": "unable to resolve symbol 'UserCard' from vue_component/src/components/UserCard.vue"
-        }
-      ],
+      "diagnostics": [],
       "file": "vue_component/src/App.vue",
       "language": "TypeScript",
       "re_exports": [],
@@ -2872,6 +2872,17 @@
           "properties_accessed": [],
           "resolution": "resolved",
           "to": "ext::vue::package"
+        },
+        {
+          "alias": null,
+          "context": "import { UserCard } from \"./components/UserCard.vue\";",
+          "file": "vue_component/src/App.vue",
+          "from": "vue_component/src/App.vue::currentUser::variable",
+          "kind": "Imports",
+          "line": 9,
+          "properties_accessed": [],
+          "resolution": "resolved",
+          "to": "vue_component/src/components/UserCard.vue::module::module"
         },
         {
           "alias": null,
@@ -2907,7 +2918,7 @@
           "signature": "module"
         }
       ],
-      "unbound_references": 1
+      "unbound_references": 0
     },
     {
       "assertions": {},
@@ -3104,9 +3115,9 @@
   "stats": {
     "alias_chains": 9,
     "aliases": 11,
-    "diagnostics": 10,
+    "diagnostics": 7,
     "files_indexed": 55,
-    "relationships": 64,
+    "relationships": 67,
     "symbols": 158
   }
 }
