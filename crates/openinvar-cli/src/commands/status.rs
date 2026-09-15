@@ -142,12 +142,33 @@ pub fn run(path: &str) -> Result<(), Box<dyn std::error::Error>> {
             output::dim_line(&format!(
                 "  {unbound} reference(s) named in source bound to nothing in the graph."
             ));
-            output::dim_line(
-                "  Includes code outside the repository — a type from an unanalysed",
-            );
-            output::dim_line(
-                "  package is indistinguishable from one that should have been found.",
-            );
+
+            // Split rather than caveated. The total alone is an upper bound on
+            // what is missing, and reporting only that left the reader to
+            // guess how much of it was ever the repository's to resolve.
+            let outside: u32 = graph
+                .unbound_outside_repository
+                .iter()
+                .map(|e| *e.value())
+                .sum();
+            let unexplained = unbound.saturating_sub(outside);
+            if outside > 0 {
+                output::dim_line(&format!(
+                    "  {outside} name something outside it — the language's own vocabulary,"
+                ));
+                output::dim_line(
+                    "  or a package whose source was never analysed.",
+                );
+            }
+            output::dim_line(&format!(
+                "  {unexplained} are unexplained — the part worth driving down."
+            ));
+            if outside == 0 {
+                output::dim_line(
+                    "  No adapter here classified any of them, so \"unexplained\" means",
+                );
+                output::dim_line("  \"nothing vouched for it\", not \"known to be a miss\".");
+            }
         }
     }
 

@@ -101,6 +101,7 @@ pub fn extract_file_ir(parsed: &ParsedFile) -> FileIR {
         assertions,
         assertions_counted: crate::assertions::counts_assertions(&Language::Python),
         unbound_references: 0,
+        unbound_outside_repository: 0,
         references_counted: false,
     }
 }

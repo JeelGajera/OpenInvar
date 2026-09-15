@@ -108,11 +108,35 @@ def main():
         print(f"R' reference coverage median {ref_median:.1f}%   [{ref_verdict}]")
         print(
             "     Of the references each adapter attempted to bind, the share it\n"
-            "     bound. An unbound reference is not necessarily a defect: a type\n"
-            "     from a package whose source was never analysed is indistinguishable\n"
-            "     from one that was missed. An upper bound on what is absent, and a\n"
-            "     trend across revisions rather than a comparison between languages."
+            "     bound. A trend across revisions rather than a comparison between\n"
+            "     languages: each extractor creates a different number of placeholders."
         )
+
+        # The remainder, split. "Not necessarily a defect" used to be a caveat
+        # the reader had to apply themselves; the adapters now report which
+        # part of it was never the repository's to resolve, so the half worth
+        # working on can be named instead of guessed at.
+        outside = sum(
+            (r["coverage"]["references"].get("outside_repository") or 0)
+            for r in repos
+            if (r.get("coverage") or {}).get("references")
+        )
+        unexplained = sum(
+            (r["coverage"]["references"].get("unexplained") or 0)
+            for r in repos
+            if (r.get("coverage") or {}).get("references")
+        )
+        remainder = outside + unexplained
+        if remainder:
+            print(
+                f"     Of {remainder} unbound reference(s): {outside} "
+                f"({100 * outside / remainder:.0f}%) name the language's own\n"
+                f"     vocabulary or an unanalysed package, and {unexplained} "
+                f"({100 * unexplained / remainder:.0f}%) are unexplained.\n"
+                "     The unexplained half is the one worth driving down; an adapter\n"
+                "     that does not classify reports none, so this understates what\n"
+                "     is explained rather than overstating it."
+            )
     else:
         print("R' reference coverage no data   [INVESTIGATE]")
         print("     Needs a binary whose `status` reports 'References bound'.")

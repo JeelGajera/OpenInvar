@@ -41,6 +41,22 @@ const GO_BUILTIN_TYPES: &[&str] = &[
     "interface{}",
 ];
 
+/// Callable names the language provides.
+///
+/// The call resolver reaches `len(x)` and, by its own comment, could not say
+/// whether that is a builtin or a local function it missed. Both are unbound;
+/// only one is a gap in the graph. Builtin types are callable as conversions —
+/// `int(x)` — so the check below consults both lists.
+const GO_BUILTIN_CALLABLES: &[&str] = &[
+    "len", "cap", "make", "new", "append", "copy", "delete", "panic", "recover", "print",
+    "println", "close", "complex", "real", "imag", "min", "max", "clear",
+];
+
+/// True if `name` is a builtin callable rather than repository code.
+pub fn is_builtin_callable(name: &str) -> bool {
+    GO_BUILTIN_CALLABLES.contains(&name) || is_builtin_type(name)
+}
+
 pub fn is_builtin_type(name: &str) -> bool {
     GO_BUILTIN_TYPES.contains(&name)
 }

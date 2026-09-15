@@ -22,7 +22,7 @@ use openinvar_core::symbol_id::{
 };
 
 use crate::lang::rust::module_tree::{ModuleTree, Resolved};
-use crate::lang::rust::scope_analyzer::is_builtin_type;
+use crate::lang::rust::scope_analyzer::{is_builtin_type, is_prelude_callable};
 
 pub fn resolve_repo_ir(root: &Path, repo_ir: &mut RepoIR) {
     let tree = ModuleTree::build(root, &repo_ir.files);
@@ -72,6 +72,10 @@ pub fn resolve_repo_ir(root: &Path, repo_ir: &mut RepoIR) {
         // References this file named that nothing here could place. Counted at
         // the point of the decision; what gets emitted is unchanged.
         let mut unbound: u32 = 0;
+        // The share of `unbound` this adapter can show is outside the tree.
+        // Only ever incremented on positive evidence, so the remainder is an
+        // over-estimate of what was missed rather than an under-estimate.
+        let mut outside: u32 = 0;
         let mut drop_import = Vec::new();
 
         for (index, rel) in file.relationships.iter_mut().enumerate() {
@@ -189,6 +193,14 @@ pub fn resolve_repo_ir(root: &Path, repo_ir: &mut RepoIR) {
                     None => {
                         drop_type.push(index);
                         unbound += 1;
+                        // Which of the three this is, is now recorded rather
+                        // than left to the reader: a prelude name is outside
+                        // any repository, while a macro-generated call or a
+                        // path used without a `use` is work this adapter did
+                        // not do.
+                        if is_prelude_callable(&type_name) || is_builtin_type(&type_name) {
+                            outside += 1;
+                        }
                     }
                 }
                 continue;
@@ -246,6 +258,7 @@ pub fn resolve_repo_ir(root: &Path, repo_ir: &mut RepoIR) {
         }
 
         file.unbound_references = unbound;
+        file.unbound_outside_repository = outside;
 
         let mut unresolved: BTreeSet<usize> = drop_import.into_iter().collect();
         unresolved.extend(drop_type);

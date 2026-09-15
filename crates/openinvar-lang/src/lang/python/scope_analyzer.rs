@@ -55,6 +55,28 @@ pub fn is_builtin_type(name: &str) -> bool {
     PY_BUILTIN_TYPES.contains(&name)
 }
 
+/// Callable names the interpreter provides.
+///
+/// The list above is types; a call resolver reaches `print(...)` and needs to
+/// say whether that is a builtin or a local function it missed. Its own comment
+/// said it could not tell. Both are unbound, but only one is a gap in the
+/// graph.
+///
+/// Builtin *types* are callable too — `int(x)`, `list(y)` — so the check below
+/// consults both lists rather than duplicating their entries here.
+const PY_BUILTIN_CALLABLES: &[&str] = &[
+    "print", "len", "range", "enumerate", "zip", "map", "filter", "sorted", "reversed", "sum",
+    "min", "max", "abs", "round", "open", "input", "repr", "hash", "id", "iter", "next", "isinstance",
+    "issubclass", "getattr", "setattr", "hasattr", "delattr", "callable", "format", "vars", "dir",
+    "globals", "locals", "super", "staticmethod", "classmethod", "property", "any", "all", "divmod",
+    "pow", "chr", "ord", "bin", "hex", "oct", "exec", "eval", "compile", "slice", "memoryview",
+];
+
+/// True if `name` is a builtin callable rather than repository code.
+pub fn is_builtin_callable(name: &str) -> bool {
+    PY_BUILTIN_CALLABLES.contains(&name) || is_builtin_type(name)
+}
+
 #[derive(Debug, Clone, Default)]
 pub struct TypeAccess {
     pub properties: BTreeSet<String>,

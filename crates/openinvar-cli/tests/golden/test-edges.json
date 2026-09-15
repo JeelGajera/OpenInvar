@@ -54,6 +54,7 @@
           "signature": "module"
         }
       ],
+      "unbound_outside_repository": 0,
       "unbound_references": 0
     },
     {
@@ -164,6 +165,7 @@
           "signature": "module"
         }
       ],
+      "unbound_outside_repository": 0,
       "unbound_references": 0
     },
     {
@@ -241,6 +243,7 @@
           "signature": "module"
         }
       ],
+      "unbound_outside_repository": 0,
       "unbound_references": 0
     },
     {
@@ -306,6 +309,7 @@
           "signature": "def build():"
         }
       ],
+      "unbound_outside_repository": 0,
       "unbound_references": 0
     },
     {
@@ -373,6 +377,7 @@
           "signature": "def test_build():"
         }
       ],
+      "unbound_outside_repository": 0,
       "unbound_references": 0
     },
     {
@@ -416,6 +421,7 @@
           "signature": "impl Calculator :: pub fn add(&self, a: i32, b: i32) -> i32 {"
         }
       ],
+      "unbound_outside_repository": 0,
       "unbound_references": 0
     },
     {
@@ -474,6 +480,7 @@
           "signature": "fn adds() {"
         }
       ],
+      "unbound_outside_repository": 0,
       "unbound_references": 0
     },
     {
@@ -517,6 +524,7 @@
           "signature": "package testedges/api"
         }
       ],
+      "unbound_outside_repository": 0,
       "unbound_references": 0
     },
     {
@@ -573,6 +581,7 @@
           "signature": "func TestServe(t interface{}) int {"
         }
       ],
+      "unbound_outside_repository": 0,
       "unbound_references": 0
     }
   ],

@@ -99,10 +99,21 @@ references that bound to nothing, which previously left no trace to count.
 
 The thresholds sit well below R's because they measure a different and stricter
 thing. An unbound reference is not necessarily a defect: a type from a package
-whose source was never analysed is indistinguishable, to an adapter, from one
-it should have found and missed. Both are references the graph cannot answer
-questions about, which is what the number is for — so it is an upper bound on
-what is missing, not a defect count.
+whose source was never analysed is a reference the graph cannot answer questions
+about, but no amount of work on the adapter would ever bind it.
+
+That used to be a caveat the reader applied themselves, because an adapter
+reported only a total. Adapters now report how much of it they can place
+outside the repository — a prelude name, a builtin, a language's own
+vocabulary — so the remainder is the part nothing has accounted for. Only the
+remainder is a candidate defect count; the total remains an upper bound.
+
+The split is evidence, not inference: an adapter counts a reference as outside
+only when it can show it, so an adapter that classifies nothing reports none,
+and the unexplained half is an over-estimate rather than an under-estimate. The
+thresholds above are unchanged and still scored on the total, because moving a
+measure to match what a change made of it is exactly what pre-registering it is
+meant to prevent.
 
 Read as a trend rather than an absolute. The figure is comparable across
 revisions of one repository, and only loosely across languages: each extractor

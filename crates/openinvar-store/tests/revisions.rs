@@ -47,6 +47,7 @@ fn graph_with(symbol_name: &str) -> InvarGraph {
         assertions: Default::default(),
         assertions_counted: false,
         unbound_references: 0,
+        unbound_outside_repository: 0,
         references_counted: false,
     };
     replace_file_ir(&mut graph, &file_ir);

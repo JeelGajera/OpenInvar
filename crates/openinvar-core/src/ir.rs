@@ -255,6 +255,24 @@ pub struct FileIR {
     /// for.
     #[serde(default)]
     pub unbound_references: u32,
+    /// How many of `unbound_references` are known to lie outside the tree.
+    ///
+    /// The total above is an upper bound on what is missing, not a defect
+    /// count: a type from a package whose source was never analysed is
+    /// indistinguishable, within that total, from one the adapter should have
+    /// found and missed. This is the part an adapter can vouch for — an import
+    /// that resolved to a module outside the tree, or a name the language
+    /// itself provides — so `unbound_references - unbound_outside_repository`
+    /// is what is left unexplained.
+    ///
+    /// Counted only on positive evidence, never by inference. Where an adapter
+    /// cannot tell, the reference stays in the remainder, so the unexplained
+    /// half is an over-estimate rather than an under-estimate: this never
+    /// claims more of the gap is someone else's than the adapter can show. An
+    /// adapter that does not classify at all reports zero, which says "none of
+    /// it is explained" — not "none of it is external".
+    #[serde(default)]
+    pub unbound_outside_repository: u32,
     /// Whether the adapter that produced this file binds references at all.
     ///
     /// The same distinction `assertions_counted` draws, for the same reason: a

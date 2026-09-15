@@ -12,6 +12,42 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **Adapters record why a reference did not bind.** `unbound_references` counts
+  references an adapter attempted to place and could not, and every call
+  resolver said the same thing in its own comments: *"this arm cannot tell a
+  prelude name from a local function the resolver missed"*. Both landed in one
+  total, so the figure was an upper bound on what is missing rather than a
+  count of it, and the caveat was left for the reader to apply.
+
+  `unbound_outside_repository` is the part an adapter can vouch for — a prelude
+  name, a builtin, a language's own vocabulary. `status` now reports the split
+  instead of the caveat:
+
+  ```
+  References bound   69.6% (6071 of 8724 reference(s))
+    2653 reference(s) named in source bound to nothing in the graph.
+    716 name something outside it — the language's own vocabulary,
+    or a package whose source was never analysed.
+    1937 are unexplained — the part worth driving down.
+  ```
+
+  Counted only on positive evidence, never by inference, so the unexplained
+  half is an over-estimate rather than an under-estimate: the number never
+  claims more of the gap is someone else's than the adapter can show. An
+  adapter that does not classify reports zero, which says "none of it is
+  explained" — not "none of it is external".
+
+  Wired for Rust, Python, Go and C, which have the builtin knowledge to do it.
+  Java, C#, TypeScript and Ruby report zero until they gain the same. Snapshot
+  format 6 carries the split; an older snapshot reads back as having classified
+  none.
+
+  The first measurement is worth recording: on this repository **76% of unbound
+  references are unexplained**, not external noise. The comfortable reading of
+  that number was the wrong one.
+
 ### Fixed
 
 - **A delta no longer reports edges that only moved.** A line is part of an

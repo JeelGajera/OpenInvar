@@ -32,6 +32,33 @@ pub fn is_builtin_type(name: &str) -> bool {
     RUST_BUILTIN_TYPES.contains(&name)
 }
 
+/// Callable names the language or its prelude provides.
+///
+/// The call resolver reaches a name it cannot place and has, until now, had no
+/// way to say whether that is a prelude name or a local function it missed —
+/// its own comment said as much. Both are unbound, but only one is a gap in
+/// the graph, and a coverage figure that cannot separate them reports the
+/// language's own vocabulary as missing work.
+///
+/// Deliberately short and literal. Every entry is in the prelude or is a macro
+/// `std` exports, so a name here is outside any repository by definition; a
+/// name merely *likely* to be external does not belong, because the whole point
+/// of the split is that one side of it is evidence rather than guesswork.
+const RUST_PRELUDE_CALLABLES: &[&str] = &[
+    // Prelude constructors and functions.
+    "Some", "None", "Ok", "Err", "drop", "default",
+    // Macros `std` exports, spelled without the `!` by the extractor.
+    "println", "eprintln", "print", "eprint", "format", "write", "writeln", "vec", "panic",
+    "assert", "assert_eq", "assert_ne", "debug_assert", "debug_assert_eq", "debug_assert_ne",
+    "matches", "todo", "unimplemented", "unreachable", "dbg", "include_str", "include_bytes",
+    "concat", "stringify", "env", "line", "file", "column", "module_path", "cfg",
+];
+
+/// True if `name` is a prelude or `std` macro callable rather than repository code.
+pub fn is_prelude_callable(name: &str) -> bool {
+    RUST_PRELUDE_CALLABLES.contains(&name)
+}
+
 /// Fields and methods observed on each type within one file.
 pub type TypeAccesses = BTreeMap<String, TypeAccess>;
 

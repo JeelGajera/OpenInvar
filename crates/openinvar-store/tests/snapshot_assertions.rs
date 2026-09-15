@@ -53,6 +53,7 @@ fn graph_with_counts(counted: bool, counts: &[(&str, u32)]) -> InvarGraph {
             assertions: counts.iter().map(|(k, v)| (k.to_string(), *v)).collect(),
             assertions_counted: counted,
             unbound_references: 0,
+            unbound_outside_repository: 0,
             references_counted: false,
         },
     );
@@ -139,4 +140,92 @@ fn a_graph_that_counted_nothing_carries_no_counts() {
         "counts appeared for a graph that counted none"
     );
     assert_eq!(restored.assertions_counted.get("a.rs").map(|v| *v), Some(false));
+}
+
+// ── the unbound split ────────────────────────────────────────
+
+/// A graph with unbound counts on two files, one partly classified.
+fn graph_with_unbound(files: &[(&str, u32, u32)]) -> InvarGraph {
+    let mut graph = InvarGraph::new();
+    for (file, total, outside) in files {
+        replace_file_ir(
+            &mut graph,
+            &FileIR {
+                file: file.to_string(),
+                language: Language::Rust,
+                symbols: vec![],
+                relationships: vec![],
+                diagnostics: vec![],
+                re_exports: vec![],
+                assertions: Default::default(),
+                assertions_counted: false,
+                unbound_references: *total,
+                unbound_outside_repository: *outside,
+                references_counted: true,
+            },
+        );
+    }
+    graph
+}
+
+#[test]
+fn the_unbound_split_survives_a_round_trip() {
+    // `status` reads this back out of the store in a later process, so a format
+    // that dropped the split would report every unbound reference as
+    // unexplained — the loudest reading of the number, from a graph that
+    // actually knew better.
+    let graph = graph_with_unbound(&[("a.rs", 10, 4), ("b.rs", 3, 0)]);
+    let restored = round_trip("unbound-split", &graph);
+
+    assert_eq!(restored.unbound_references.get("a.rs").map(|v| *v), Some(10));
+    assert_eq!(
+        restored.unbound_outside_repository.get("a.rs").map(|v| *v),
+        Some(4),
+        "the classified share was lost in the store"
+    );
+    assert_eq!(
+        restored.unbound_outside_repository.get("b.rs").map(|v| *v),
+        Some(0),
+        "a file that classified none came back missing rather than zero"
+    );
+}
+
+#[test]
+fn the_unbound_split_is_encoded_sorted() {
+    // Same reason as the assertion counts above: it comes out of a DashMap, and
+    // CI compares snapshot bytes for equality.
+    let graph = graph_with_unbound(&[("z.rs", 4, 1), ("a.rs", 2, 2), ("m.rs", 6, 3)]);
+    let snapshot = GraphSnapshot::from_graph(&graph).expect("snapshot");
+
+    assert!(
+        snapshot
+            .unbound_outside_repository
+            .windows(2)
+            .all(|w| w[0].0 <= w[1].0),
+        "the unbound split is not sorted by file: {:?}",
+        snapshot.unbound_outside_repository
+    );
+}
+
+#[test]
+fn the_classified_share_never_exceeds_the_total_through_the_store() {
+    // The two counts travel as separate sections of the same snapshot, so
+    // nothing in the format ties them together.
+    let graph = graph_with_unbound(&[("a.rs", 10, 4), ("b.rs", 3, 3), ("c.rs", 7, 0)]);
+    let restored = round_trip("unbound-invariant", &graph);
+
+    for entry in restored.unbound_references.iter() {
+        let outside = restored
+            .unbound_outside_repository
+            .get(entry.key())
+            .map(|v| *v)
+            .unwrap_or(0);
+        assert!(
+            outside <= *entry.value(),
+            "{}: classified {} of {} unbound references",
+            entry.key(),
+            outside,
+            entry.value()
+        );
+    }
 }
