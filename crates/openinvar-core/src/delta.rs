@@ -125,6 +125,67 @@ fn edges(graph: &InvarGraph) -> BTreeSet<EdgeRef> {
     out
 }
 
+/// What an edge is, as opposed to where it sits.
+type EdgeIdentity = (String, String, RelationshipKind, String, Resolution);
+
+fn edge_identity(edge: &EdgeRef) -> EdgeIdentity {
+    (
+        edge.from.clone(),
+        edge.to.clone(),
+        edge.kind.clone(),
+        edge.file.clone(),
+        edge.resolution,
+    )
+}
+
+/// Drop edges that differ between the two graphs only in where they sit.
+///
+/// A line is part of an edge's identity, so inserting a comment above a
+/// function reports every edge below it as removed and immediately re-added —
+/// churn from a change that touched no code. [`EdgeRef`] already excludes
+/// `context` for exactly this reason, and an edge whose line moved while the
+/// relationship held is the same case.
+///
+/// Identity is not simply widened to exclude the line, because **multiplicity
+/// within a file is real**: a function called from six places in one file
+/// records six edges, and collapsing them to one would report nothing at all
+/// when five of those calls are deleted. In this repository 612 relationships
+/// span more than one line and account for 2,068 edges, so that is not a corner
+/// case. What is compared is therefore the *count* per relationship, and only
+/// the surplus on either side survives.
+///
+/// The set difference has already removed every edge identical on both sides,
+/// so within one relationship the two line sets are disjoint. Cancelling is
+/// by count alone, lowest line first, which leaves a genuine addition reported
+/// with a line from its own relationship — exact when the file did not also
+/// shift, and one of that relationship's lines when it did.
+fn cancel_moved_edges(removed: &mut Vec<EdgeRef>, added: &mut Vec<EdgeRef>) {
+    fn group(edges: &mut Vec<EdgeRef>) -> BTreeMap<EdgeIdentity, Vec<EdgeRef>> {
+        let mut out: BTreeMap<EdgeIdentity, Vec<EdgeRef>> = BTreeMap::new();
+        for edge in edges.drain(..) {
+            out.entry(edge_identity(&edge)).or_default().push(edge);
+        }
+        out
+    }
+
+    let mut removed_groups = group(removed);
+    let mut added_groups = group(added);
+
+    for (identity, added_group) in added_groups.iter_mut() {
+        let Some(removed_group) = removed_groups.get_mut(identity) else {
+            continue;
+        };
+        let cancelled = added_group.len().min(removed_group.len());
+        added_group.drain(..cancelled);
+        removed_group.drain(..cancelled);
+    }
+
+    *removed = removed_groups.into_values().flatten().collect();
+    *added = added_groups.into_values().flatten().collect();
+    removed.sort();
+    added.sort();
+}
+
 /// A signature worth matching on.
 ///
 /// An absent or empty signature is not evidence of anything: every symbol
@@ -374,13 +435,17 @@ pub fn compute(before: &InvarGraph, after: &InvarGraph) -> GraphDelta {
     let before_edges = edges(before);
     let after_edges = edges(after);
 
+    let mut added_edges: Vec<EdgeRef> = after_edges.difference(&before_edges).cloned().collect();
+    let mut removed_edges: Vec<EdgeRef> = before_edges.difference(&after_edges).cloned().collect();
+    cancel_moved_edges(&mut removed_edges, &mut added_edges);
+
     let mut delta = GraphDelta {
         added_symbols: added,
         removed_symbols: removed,
         continuities,
         signature_changes,
-        added_edges: after_edges.difference(&before_edges).cloned().collect(),
-        removed_edges: before_edges.difference(&after_edges).cloned().collect(),
+        added_edges,
+        removed_edges,
     };
 
     delta.added_symbols.sort_by(|a, b| a.id.cmp(&b.id));

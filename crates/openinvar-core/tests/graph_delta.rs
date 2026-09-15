@@ -591,3 +591,136 @@ fn a_rename_whose_body_also_changed_records_no_continuity() {
     assert_eq!(d.removed_symbols.len(), 1);
     assert_eq!(d.added_symbols.len(), 1);
 }
+
+// ── edges that only moved ────────────────────────────────────
+
+/// `edge`, but at a chosen line and kind, so a test can move one.
+fn call_at(from: &str, to: &str, file: &str, line: u32) -> Relationship {
+    Relationship {
+        from: from.to_string(),
+        to: to.to_string(),
+        kind: RelationshipKind::Calls,
+        alias: None,
+        properties_accessed: vec![],
+        context: "call".to_string(),
+        file: file.to_string(),
+        line,
+        resolution: Resolution::Resolved,
+    }
+}
+
+fn caller_and_callee() -> Vec<Symbol> {
+    vec![
+        symbol("a.ts", "caller", SymbolKind::Function, 1, Some("fn caller")),
+        symbol("a.ts", "callee", SymbolKind::Function, 90, Some("fn callee")),
+    ]
+}
+
+#[test]
+fn inserting_a_comment_above_an_edge_is_not_a_change() {
+    // The case that motivated this: a change that touched no code reported
+    // every edge below the insertion as removed and immediately re-added.
+    let from = "a.ts::caller::function";
+    let to = "a.ts::callee::function";
+
+    let before = graph_of(vec![("a.ts", caller_and_callee(), vec![call_at(from, to, "a.ts", 10)])]);
+    let after = graph_of(vec![("a.ts", caller_and_callee(), vec![call_at(from, to, "a.ts", 16)])]);
+
+    let delta = delta::compute(&before, &after);
+    assert!(
+        delta.added_edges.is_empty() && delta.removed_edges.is_empty(),
+        "an edge that only moved was reported as churn: +{:?} -{:?}",
+        delta.added_edges,
+        delta.removed_edges
+    );
+    assert!(delta.is_empty(), "the delta as a whole should be empty");
+}
+
+#[test]
+fn a_call_site_added_among_moved_ones_is_still_reported() {
+    // The counterweight. Three calls shift down and a fourth appears; only the
+    // fourth is a change, and cancelling the shift must not swallow it.
+    let from = "a.ts::caller::function";
+    let to = "a.ts::callee::function";
+
+    let before = graph_of(vec![(
+        "a.ts",
+        caller_and_callee(),
+        vec![
+            call_at(from, to, "a.ts", 10),
+            call_at(from, to, "a.ts", 20),
+            call_at(from, to, "a.ts", 30),
+        ],
+    )]);
+    let after = graph_of(vec![(
+        "a.ts",
+        caller_and_callee(),
+        vec![
+            call_at(from, to, "a.ts", 16),
+            call_at(from, to, "a.ts", 26),
+            call_at(from, to, "a.ts", 36),
+            call_at(from, to, "a.ts", 46),
+        ],
+    )]);
+
+    let delta = delta::compute(&before, &after);
+    assert_eq!(delta.added_edges.len(), 1, "the new call site was lost: {:?}", delta.added_edges);
+    assert!(
+        delta.removed_edges.is_empty(),
+        "nothing was actually removed: {:?}",
+        delta.removed_edges
+    );
+}
+
+#[test]
+fn deleting_one_of_several_call_sites_is_reported() {
+    // Multiplicity is why identity was not simply widened to exclude the line.
+    // Six calls become five: if the six collapsed into one relationship, this
+    // delta would be empty and a deleted call would go unreported.
+    let from = "a.ts::caller::function";
+    let to = "a.ts::callee::function";
+    let lines = [10, 20, 30, 40, 50, 60];
+
+    let before = graph_of(vec![(
+        "a.ts",
+        caller_and_callee(),
+        lines.iter().map(|l| call_at(from, to, "a.ts", *l)).collect(),
+    )]);
+    let after = graph_of(vec![(
+        "a.ts",
+        caller_and_callee(),
+        lines[..5].iter().map(|l| call_at(from, to, "a.ts", *l)).collect(),
+    )]);
+
+    let delta = delta::compute(&before, &after);
+    assert_eq!(
+        delta.removed_edges.len(),
+        1,
+        "a deleted call site went unreported: {:?}",
+        delta.removed_edges
+    );
+    assert!(delta.added_edges.is_empty());
+}
+
+#[test]
+fn an_edge_that_moved_to_another_file_is_a_real_change() {
+    // `file` stays part of identity, so a relationship that moved between files
+    // is a genuine add and remove rather than a cancelled shift.
+    let from = "a.ts::caller::function";
+    let to = "a.ts::callee::function";
+
+    let before = graph_of(vec![
+        ("a.ts", caller_and_callee(), vec![call_at(from, to, "a.ts", 10)]),
+        ("b.ts", vec![], vec![]),
+    ]);
+    let after = graph_of(vec![
+        ("a.ts", caller_and_callee(), vec![]),
+        ("b.ts", vec![], vec![call_at(from, to, "b.ts", 10)]),
+    ]);
+
+    let delta = delta::compute(&before, &after);
+    assert_eq!(delta.added_edges.len(), 1, "{:?}", delta.added_edges);
+    assert_eq!(delta.removed_edges.len(), 1, "{:?}", delta.removed_edges);
+    assert_eq!(delta.added_edges[0].file, "b.ts");
+    assert_eq!(delta.removed_edges[0].file, "a.ts");
+}
