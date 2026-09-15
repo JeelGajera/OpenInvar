@@ -37,14 +37,14 @@ function Write-Error-Exit ($msg) {
 }
 
 # ASCII Logo
-Write-Host @"
-   ______                 __                  
-  / ____/________ _____  / /_  __  ______     
- / / __/ ___/ __ \/ __ \/ __ \/ / / / __ \    
-/ /_/ / /  / /_/ / /_/ / / / / /_/ / / / /    
-\____/_/   \__,_/ .___/_/ /_/\__, /_/ /_/     
-               /_/          /____/            
-"@ -ForegroundColor Blue
+Write-Host @'
+   ____                   ____
+  / __ \____  ___  ____  /  _/___ _   ______ ______
+ / / / / __ \/ _ \/ __ \ / // __ \ | / / __ `/ ___/
+/ /_/ / /_/ /  __/ / / // // / / / |/ / /_/ / /
+\____/ .___/\___/_/ /_/___/_/ /_/|___/\__,_/_/
+    /_/
+'@ -ForegroundColor Blue
 
 Write-Step "Initializing installation..."
 Write-Info "Detected Platform: Windows (x86_64)"
