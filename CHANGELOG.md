@@ -465,6 +465,42 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **A rename now has to be evidenced, so unrelated symbols stop being paired
+  as one.** `openinvar diff` reported renames between functions that had
+  nothing to do with each other. On the C# Tier 1 change its own PR comment
+  claimed five, among them:
+
+  ```
+  every_edge_is_structural -> a_method_of_the_enclosing_type_wins_over_a_static_using
+  the_spec_reports_tier_two -> a_type_outside_the_repository_records_no_edge
+  ```
+
+  Nothing was renamed. Those tests were deleted and different ones written. A
+  reviewer reading that report is told deleted tests survived under new names,
+  which is the tool asserting something untrue about the change.
+
+  The cause is that `renames_to` decided a rename by substituting the old name
+  for the new and comparing signatures, and a signature is the declaration line
+  alone. A Rust test records as `fn the_name() {`, so with the name substituted
+  away every no-argument function matches every other one — and a test file is
+  hundreds of them. The predicate was sound; what it assumed was evidence was
+  not.
+
+  A pairing whose *name* changed now also requires the signature to say
+  something besides the name: the residue left when the name is removed must
+  still contain a parameter, a type, a base class, or a literal. One bare token
+  is the declaring keyword and nothing else.
+
+  On the commit that exposed it, "renamed or moved" goes from 6 to 1 — the one
+  remaining being a genuine move, the same name in a new file — and the five
+  test functions are reported as the removals they are.
+
+  The cost, stated rather than discovered: renaming a no-argument function is
+  no longer recognised as a rename and reads as a removal plus an addition.
+  That is the direction this module already chose, in its own words — inventing
+  a rename is worse than missing one. Moves are unaffected, since there the
+  name is itself the evidence.
+
 - **No repository could commit a rules file, so `check` had never gated
   anything anywhere.** Rules were specified to live at
   `.openinvar/rules.toml` — inside the directory every repository gitignores,

@@ -227,17 +227,22 @@ fn an_unsigned_rename_at_a_different_line_stays_a_delete_and_an_add() {
 #[test]
 fn each_symbol_is_paired_at_most_once() {
     // Two removals that both look like one addition must not both claim it.
+    //
+    // The signatures have to carry something past the name for either to be a
+    // candidate at all, so they declare a field: a bare marker would now be
+    // refused for lack of evidence and this would pass without ever exercising
+    // the arity rule it exists for.
     let before = graph_of(vec![(
         "a.ts",
         vec![
-            symbol("a.ts", "Alpha", SymbolKind::Class, 1, Some("shared")),
-            symbol("a.ts", "Gamma", SymbolKind::Class, 1, Some("shared")),
+            symbol("a.ts", "Alpha", SymbolKind::Class, 1, Some("class Alpha { id: string }")),
+            symbol("a.ts", "Gamma", SymbolKind::Class, 1, Some("class Gamma { id: string }")),
         ],
         vec![],
     )]);
     let after = graph_of(vec![(
         "a.ts",
-        vec![symbol("a.ts", "Beta", SymbolKind::Class, 1, Some("shared"))],
+        vec![symbol("a.ts", "Beta", SymbolKind::Class, 1, Some("class Beta { id: string }"))],
         vec![],
     )]);
 
@@ -368,6 +373,186 @@ fn a_replaced_function_on_the_same_line_is_not_a_rename() {
     );
     assert_eq!(d.removed_symbols.len(), 1, "{d:?}");
     assert_eq!(d.added_symbols.len(), 1, "{d:?}");
+}
+
+#[test]
+fn two_unrelated_no_argument_functions_are_not_a_rename() {
+    // Found in OpenInvar's own PR report, which claimed five renames between
+    // deleted structural tests and freshly written resolution ones:
+    //
+    //   every_edge_is_structural -> a_method_of_the_enclosing_type_wins_over_a_static_using
+    //
+    // Nothing was renamed. The recorded signature of a Rust test is its
+    // declaration line, so with the name substituted away `fn a() {` and
+    // `fn b() {` are the same string and every no-argument function pairs with
+    // every other. A test file is hundreds of them.
+    let before = graph_of(vec![(
+        "t.rs",
+        vec![symbol(
+            "t.rs",
+            "every_edge_is_structural",
+            SymbolKind::Function,
+            10,
+            Some("fn every_edge_is_structural() {"),
+        )],
+        vec![],
+    )]);
+    let after = graph_of(vec![(
+        "t.rs",
+        vec![symbol(
+            "t.rs",
+            "a_method_wins_over_a_static_using",
+            SymbolKind::Function,
+            40,
+            Some("fn a_method_wins_over_a_static_using() {"),
+        )],
+        vec![],
+    )]);
+
+    let d = delta::compute(&before, &after);
+    assert!(
+        d.continuities.is_empty(),
+        "two unrelated no-argument functions were paired as a rename: {d:?}"
+    );
+    assert_eq!(d.removed_symbols.len(), 1, "{d:?}");
+    assert_eq!(d.added_symbols.len(), 1, "{d:?}");
+}
+
+#[test]
+fn a_file_of_no_argument_tests_reports_no_renames_at_all() {
+    // The shape the bug actually took: a suite deleted wholesale and a
+    // different one written in its place. Pairing here is not one wrong
+    // answer, it is a page of them, and the count is what a reviewer reads.
+    let named = |names: &[&str]| {
+        names
+            .iter()
+            .enumerate()
+            .map(|(i, n)| {
+                symbol(
+                    "suite.rs",
+                    n,
+                    SymbolKind::Function,
+                    (i as u32 + 1) * 10,
+                    Some(&format!("fn {n}() {{")),
+                )
+            })
+            .collect::<Vec<_>>()
+    };
+    let before = graph_of(vec![(
+        "suite.rs",
+        named(&["the_tier_is_structural", "nothing_resolves", "every_edge_is_structural"]),
+        vec![],
+    )]);
+    let after = graph_of(vec![(
+        "suite.rs",
+        named(&["an_alias_binds", "a_static_using_binds", "an_enclosing_namespace_is_in_scope"]),
+        vec![],
+    )]);
+
+    let d = delta::compute(&before, &after);
+    assert!(
+        d.continuities.is_empty(),
+        "invented {} rename(s) across an unrelated suite: {:?}",
+        d.continuities.len(),
+        d.continuities
+    );
+    assert_eq!(d.removed_symbols.len(), 3, "{d:?}");
+    assert_eq!(d.added_symbols.len(), 3, "{d:?}");
+}
+
+#[test]
+fn a_rename_still_holds_when_the_declaration_carries_evidence() {
+    // The other half of the rule, so the fix above cannot be "never pair
+    // anything". A parameter list and a return type survive the rename and
+    // tie the two declarations together.
+    let before = graph_of(vec![(
+        "p.rs",
+        vec![symbol(
+            "p.rs",
+            "parse_expr",
+            SymbolKind::Function,
+            3,
+            Some("fn parse_expr(source: &str, span: Span) -> Ast {"),
+        )],
+        vec![],
+    )]);
+    let after = graph_of(vec![(
+        "p.rs",
+        vec![symbol(
+            "p.rs",
+            "parse_expression",
+            SymbolKind::Function,
+            3,
+            Some("fn parse_expression(source: &str, span: Span) -> Ast {"),
+        )],
+        vec![],
+    )]);
+
+    let d = delta::compute(&before, &after);
+    assert_eq!(d.continuities.len(), 1, "a real rename was lost: {d:?}");
+    assert_eq!(d.continuities[0].how, Continuation::Renamed);
+    assert_eq!(d.continuities[0].before.name, "parse_expr");
+    assert_eq!(d.continuities[0].after.name, "parse_expression");
+}
+
+#[test]
+fn one_surviving_token_is_enough_evidence_for_a_rename() {
+    // The boundary itself. The residue here is `fn () -> Ast {` — the
+    // declaring keyword plus exactly one thing that outlived the rename. That
+    // is the least evidence the rule accepts, so this fails if the bar is ever
+    // raised, which would quietly turn real renames back into delete/add pairs
+    // while every other test kept passing.
+    let before = graph_of(vec![(
+        "p.rs",
+        vec![symbol("p.rs", "run", SymbolKind::Function, 1, Some("fn run() -> Ast {"))],
+        vec![],
+    )]);
+    let after = graph_of(vec![(
+        "p.rs",
+        vec![symbol("p.rs", "execute", SymbolKind::Function, 1, Some("fn execute() -> Ast {"))],
+        vec![],
+    )]);
+
+    let d = delta::compute(&before, &after);
+    assert_eq!(
+        d.continuities.len(),
+        1,
+        "the minimum evidence a rename can carry was rejected: {d:?}"
+    );
+    assert_eq!(d.continuities[0].how, Continuation::Renamed);
+}
+
+#[test]
+fn a_no_argument_function_that_moved_is_still_a_move() {
+    // The evidence rule applies only where the name changed. A move keeps the
+    // name, and a name is evidence on its own — so tightening renames must not
+    // cost the moves, which is how a file split would otherwise read.
+    let before = graph_of(vec![(
+        "old/mod.rs",
+        vec![symbol(
+            "old/mod.rs",
+            "run",
+            SymbolKind::Function,
+            1,
+            Some("fn run() {"),
+        )],
+        vec![],
+    )]);
+    let after = graph_of(vec![(
+        "new/mod.rs",
+        vec![symbol(
+            "new/mod.rs",
+            "run",
+            SymbolKind::Function,
+            1,
+            Some("fn run() {"),
+        )],
+        vec![],
+    )]);
+
+    let d = delta::compute(&before, &after);
+    assert_eq!(d.continuities.len(), 1, "a move was lost: {d:?}");
+    assert_eq!(d.continuities[0].how, Continuation::Moved);
 }
 
 #[test]

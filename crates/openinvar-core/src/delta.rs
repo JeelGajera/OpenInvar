@@ -159,6 +159,10 @@ fn usable_signature(symbol: &Symbol) -> Option<&str> {
 /// A rename that also edits the body records no continuity, which is the
 /// honest answer: the evidence for "same symbol" is gone, and inventing a
 /// rename is worse than missing one.
+///
+/// The substitution is only evidence when the declaration says something
+/// besides the name — see [`signature_identifies`], which every caller that
+/// pairs on a *changed* name must also satisfy.
 fn renames_to(before: &Symbol, after: &Symbol) -> bool {
     let (Some(before_sig), Some(after_sig)) = (usable_signature(before), usable_signature(after))
     else {
@@ -168,6 +172,78 @@ fn renames_to(before: &Symbol, after: &Symbol) -> bool {
         return false;
     }
     before_sig.replace(&before.name, &after.name) == after_sig
+}
+
+/// Whether a signature distinguishes its symbol from any other of its kind.
+///
+/// [`renames_to`] asks whether two declarations agree once the old name is
+/// substituted for the new. That is only evidence of a rename if a declaration
+/// carries something *besides* the name — and for a great many symbols it does
+/// not. What the extractors record is the declaration line, so a Rust test is
+///
+/// ```text
+/// fn the_test_name() {
+/// ```
+///
+/// and with the name substituted away, every no-argument function matches
+/// every other one. A test file is hundreds of them, so a commit that deletes
+/// some tests and adds others reports a page of renames between functions that
+/// have nothing to do with each other. That is the tool asserting something
+/// untrue about the change, which costs more than the renames it would find.
+///
+/// So the residue — the signature with the name taken out — must still name
+/// something: a parameter, a type, a base class, a literal in the body. A
+/// residue holding one bare token is the declaring keyword and nothing else:
+///
+/// ```text
+/// fn deleted_one()  ->  fn ()             one token, no evidence
+/// fn parse(s: &str) -> Ast  ->  fn (s: &str) -> Ast    four, evidence
+/// ```
+///
+/// The cost is that renaming a no-argument function is no longer recognised as
+/// a rename; it reads as a removal and an addition. That is the honest answer
+/// when nothing in the declaration survives to tie the two together, and it is
+/// the direction this module already chose: inventing a rename is worse than
+/// missing one.
+fn signature_identifies(symbol: &Symbol, signature: &str) -> bool {
+    // A space, not an empty string, so removing the name cannot fuse the
+    // tokens on either side of it into one.
+    let residue = signature.replace(&symbol.name, " ");
+    word_count(&residue) >= 2
+}
+
+/// Maximal runs of identifier or number characters.
+///
+/// Deliberately not a tokenizer: this only has to tell "the declaring keyword
+/// and nothing else" from "the declaring keyword and something". Counting
+/// numbers too is intended — a literal in a recorded body is as distinguishing
+/// as a parameter name.
+fn word_count(text: &str) -> usize {
+    let mut count = 0;
+    let mut inside = false;
+    for ch in text.chars() {
+        let is_word = ch.is_alphanumeric() || ch == '_';
+        if is_word && !inside {
+            count += 1;
+        }
+        inside = is_word;
+    }
+    count
+}
+
+/// Whether the signatures support pairing two symbols whose names differ.
+///
+/// Both halves are required: the declarations must agree once the name is
+/// substituted, *and* each must say more than its own name.
+fn renames_with_evidence(before: &Symbol, after: &Symbol) -> bool {
+    if !renames_to(before, after) {
+        return false;
+    }
+    let (Some(before_sig), Some(after_sig)) = (usable_signature(before), usable_signature(after))
+    else {
+        return false;
+    };
+    signature_identifies(before, before_sig) && signature_identifies(after, after_sig)
 }
 
 /// How a removed and an added symbol relate, if they are the same symbol.
@@ -191,10 +267,13 @@ fn continuation_between(before: &Symbol, after: &Symbol) -> Option<Continuation>
         // substituted for the new: a rename changes the source text, so raw
         // equality never holds, and position alone pairs any two symbols that
         // happen to share a line — which is what replacing one function with
-        // another looks like.
-        (false, true) => renames_to(before, after).then_some(Continuation::Renamed),
+        // another looks like. The signature must also say more than the name
+        // it just gave up, or the match is vacuous.
+        (false, true) => renames_with_evidence(before, after).then_some(Continuation::Renamed),
         // Both changed, so the substituted signature is the only evidence.
-        (false, false) => renames_to(before, after).then_some(Continuation::RenamedAndMoved),
+        (false, false) => {
+            renames_with_evidence(before, after).then_some(Continuation::RenamedAndMoved)
+        }
     }
 }
 
