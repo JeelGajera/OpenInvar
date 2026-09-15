@@ -38,7 +38,7 @@ use std::path::{Path, PathBuf};
 use openinvar_core::ir::{Diagnostic, DiagnosticCategory, DiagnosticLevel, FileIR, Relationship, RelationshipKind, Resolution, Symbol, SymbolKind};
 use openinvar_core::symbol_id::{make_symbol_id, module_symbol, module_symbol_id};
 use rayon::prelude::*;
-use tree_sitter::{Parser, Query, QueryCursor};
+use tree_sitter::{Parser, Query, QueryCursor, StreamingIterator};
 
 use crate::spec::LanguageSpec;
 
@@ -147,15 +147,19 @@ fn analyze_file(
 
     let mut cursor = QueryCursor::new();
     let names = query.capture_names();
-    let matches = cursor.matches(query, tree.root_node(), source.as_bytes());
+    // `QueryMatches` is a streaming iterator rather than an `Iterator`: each
+    // match borrows the cursor's buffer, so only one is alive at a time and a
+    // `for` loop cannot express it. The trait comes from `tree_sitter`'s own
+    // re-export, so this needs no extra dependency.
+    let mut matches = cursor.matches(query, tree.root_node(), source.as_bytes());
 
-    for m in matches {
+    while let Some(m) = matches.next() {
         // A tags.scm pattern pairs one `@name` with one `@definition.*` or
         // `@reference.*` in the same match.
         let mut name: Option<(&str, u32, u32)> = None;
         let mut role: Option<(&str, u32, u32)> = None;
 
-        for capture in m.captures {
+        for capture in m.captures() {
             let capture_name = names[capture.index as usize];
             let text = capture.node.utf8_text(source.as_bytes()).unwrap_or("");
             let start = capture.node.start_position().row as u32 + 1;
@@ -180,7 +184,7 @@ fn analyze_file(
         let is_definition = names
             .iter()
             .any(|n| n.strip_prefix("definition.") == Some(suffix))
-            && m.captures.iter().any(|c| {
+            && m.captures().iter().any(|c| {
                 names[c.index as usize]
                     .strip_prefix("definition.")
                     .is_some()

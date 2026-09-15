@@ -255,7 +255,7 @@ mod tests {
     fn parse(source: &str, language: &Language) -> Tree {
         let mut parser = tree_sitter::Parser::new();
         let ts_language = match language {
-            Language::Rust => tree_sitter_rust::language(),
+            Language::Rust => tree_sitter_rust::LANGUAGE.into(),
             _ => panic!("test only parses Rust directly"),
         };
         parser.set_language(&ts_language).expect("set language");

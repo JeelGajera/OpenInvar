@@ -119,10 +119,10 @@ fn is_likely_minified(source: &str) -> bool {
 fn parse_source(dialect: SourceDialect, source: &str) -> Result<Tree, String> {
     let mut parser = tree_sitter::Parser::new();
     let ts_language = match dialect {
-        SourceDialect::TypeScript => tree_sitter_typescript::language_typescript(),
-        SourceDialect::Tsx => tree_sitter_typescript::language_tsx(),
+        SourceDialect::TypeScript => tree_sitter_typescript::LANGUAGE_TYPESCRIPT.into(),
+        SourceDialect::Tsx => tree_sitter_typescript::LANGUAGE_TSX.into(),
         // tree-sitter-javascript handles both JS and JSX for this crate version.
-        SourceDialect::JavaScript | SourceDialect::Jsx => tree_sitter_javascript::language(),
+        SourceDialect::JavaScript | SourceDialect::Jsx => tree_sitter_javascript::LANGUAGE.into(),
     };
 
     parser

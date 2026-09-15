@@ -143,7 +143,7 @@ mod tests {
     fn parse_rust(source: &str) -> tree_sitter::Tree {
         let mut parser = tree_sitter::Parser::new();
         parser
-            .set_language(&tree_sitter_rust::language())
+            .set_language(&tree_sitter_rust::LANGUAGE.into())
             .expect("rust grammar loads");
         parser.parse(source, None).expect("parser returns a tree")
     }
