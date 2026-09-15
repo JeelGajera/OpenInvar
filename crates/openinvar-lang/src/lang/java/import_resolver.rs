@@ -140,6 +140,15 @@ pub fn resolve(files: &mut [FileIR], facts: &[FileFacts]) {
     }
     let index = Index { supertypes, ..index };
 
+    // Every package some file in this tree declares. Used to tell a reference
+    // that is genuinely outside the repository from one this resolver simply
+    // did not index — see `is_outside_repository`.
+    let repo_packages: BTreeSet<String> = facts
+        .values()
+        .filter(|f| !f.package.is_empty())
+        .map(|f| f.package.clone())
+        .collect();
+
     for file_ir in files.iter_mut() {
         let Some(file_facts) = facts.get(&file_ir.file).cloned() else {
             // No facts means nothing in this file could be bound, so every
@@ -155,6 +164,10 @@ pub fn resolve(files: &mut [FileIR], facts: &[FileFacts]) {
         // difference between "bound it" and "could not". What is emitted does
         // not change: an unresolved reference is still no edge.
         let mut unbound: u32 = 0;
+        // The share of `unbound` this adapter can show is outside the tree.
+        // Only ever incremented on positive evidence, so the remainder is an
+        // over-estimate of what was missed rather than an under-estimate.
+        let mut outside: u32 = 0;
         let mut resolved = Vec::with_capacity(file_ir.relationships.len());
         for mut rel in std::mem::take(&mut file_ir.relationships) {
             if !is_placeholder(&rel.to) {
@@ -169,6 +182,9 @@ pub fn resolve(files: &mut [FileIR], facts: &[FileFacts]) {
                     resolved.push(rel);
                 } else {
                     unbound += 1;
+                    if type_is_outside(simple, &file_facts, &repo_packages) {
+                        outside += 1;
+                    }
                 }
                 continue;
             }
@@ -199,6 +215,10 @@ pub fn resolve(files: &mut [FileIR], facts: &[FileFacts]) {
                             resolved.push(rel);
                         } else {
                             unbound += 1;
+                            if member_is_outside(owner, member, &file_facts, &repo_packages)
+                            {
+                                outside += 1;
+                            }
                         }
                     }
                 }
@@ -207,7 +227,111 @@ pub fn resolve(files: &mut [FileIR], facts: &[FileFacts]) {
         }
         file_ir.relationships = resolved;
         file_ir.unbound_references = unbound;
+        file_ir.unbound_outside_repository = outside;
     }
+}
+
+/// Type names `java.lang` provides, which need no import.
+///
+/// Every entry here is a claim that the name is outside any repository, so a
+/// wrong one silently understates the gap. Confined to `java.lang`, whose
+/// contents are fixed by the language rather than by a dependency: anything
+/// reached through an `import` is classified by [`is_outside_repository`]
+/// instead, on the evidence of the import itself rather than on a list.
+///
+/// Deliberately not exhaustive. A missing entry leaves a reference in the
+/// unexplained half, which is the safe direction.
+const JAVA_LANG_TYPES: &[&str] = &[
+    // Core.
+    "Object", "String", "StringBuilder", "StringBuffer", "CharSequence", "Comparable", "Iterable",
+    "Runnable", "Thread", "Class", "Enum", "Record", "Number", "Boolean", "Byte", "Character",
+    "Short", "Integer", "Long", "Float", "Double", "Void", "Math", "StrictMath", "System",
+    "Runtime", "Process", "ProcessBuilder", "ClassLoader", "Package", "Module", "ThreadLocal",
+    "StackTraceElement", "Cloneable", "AutoCloseable", "Appendable", "Readable",
+    // Throwables.
+    "Throwable", "Exception", "RuntimeException", "Error", "AssertionError",
+    "IllegalArgumentException", "IllegalStateException", "NullPointerException",
+    "IndexOutOfBoundsException", "ArrayIndexOutOfBoundsException",
+    "StringIndexOutOfBoundsException", "ClassCastException", "NumberFormatException",
+    "UnsupportedOperationException", "ArithmeticException", "InterruptedException",
+    "CloneNotSupportedException", "ClassNotFoundException", "NoSuchMethodException",
+    "NoSuchFieldException", "IllegalAccessException", "InstantiationException",
+    "SecurityException", "OutOfMemoryError", "StackOverflowError", "NegativeArraySizeException",
+    "ArrayStoreException", "NoClassDefFoundError", "ExceptionInInitializerError", "LinkageError",
+    "VirtualMachineError", "IllegalMonitorStateException", "IllegalThreadStateException",
+    // Annotations.
+    "Override", "Deprecated", "SuppressWarnings", "SafeVarargs", "FunctionalInterface",
+];
+
+fn is_java_lang_type(simple: &str) -> bool {
+    JAVA_LANG_TYPES.contains(&simple)
+}
+
+/// Whether a fully-qualified name lies outside the analysed tree.
+///
+/// Decided by package rather than by the name itself, and that distinction is
+/// the whole of it. `index.by_fqn` missing an entry means only that nothing was
+/// indexed under that name, which happens for a nested class: gson imports
+/// `com.google.gson.common.TestTypes.BagOfPrimitives`, that exact string is not
+/// a key, and the class is nevertheless in the repository. Classifying on the
+/// missing key would report 235 of gson's own types as somebody else's code.
+///
+/// So a name counts as outside only when *no* dotted prefix of it is a package
+/// some file in this tree declares. `java.io.IOException` qualifies;
+/// `com.google.gson.common.TestTypes.BagOfPrimitives` does not, because
+/// `com.google.gson.common` is declared here — which makes it a reference this
+/// resolver missed, and it stays in the unexplained half where it belongs.
+fn is_outside_repository(fqn: &str, repo_packages: &BTreeSet<String>) -> bool {
+    let parts: Vec<&str> = fqn.split('.').collect();
+    for take in (1..=parts.len()).rev() {
+        if repo_packages.contains(&parts[..take].join(".")) {
+            return false;
+        }
+    }
+    true
+}
+
+/// Whether an unresolved type reference can be shown to be outside the tree.
+///
+/// Two kinds of evidence, and nothing weaker. An explicit import names the
+/// package the type comes from, so the import statement itself settles it. A
+/// name with no import at all can still be `java.lang`, which needs none.
+///
+/// A name reachable only through a wildcard import is deliberately *not*
+/// classified: `import java.util.*` alongside `import com.example.thing.*`
+/// leaves no way to say which one a bare `Thing` came from, and a guess there
+/// would be exactly the name-matching this project exists to avoid.
+fn type_is_outside(simple: &str, facts: &FileFacts, repo_packages: &BTreeSet<String>) -> bool {
+    if let Some((_, fqn)) = facts.imports.iter().find(|(name, _)| name == simple) {
+        return is_outside_repository(fqn, repo_packages);
+    }
+    // No import: `java.lang` is in scope implicitly, and nothing else is.
+    //
+    // Safe despite wildcards, because of where this is reached from. Step 4 of
+    // `resolve_type` has already tried every wildcard package against the
+    // index and found nothing, so no package in this repository offers a type
+    // by this name — a repo class shadowing a `java.lang` one would have bound
+    // and never arrived here.
+    is_java_lang_type(simple)
+}
+
+/// Whether an unresolved member reference can be shown to be outside the tree.
+///
+/// A static import names the type declaring the member, so it settles the
+/// member the way an ordinary import settles a type — this is what places
+/// gson's 1,100-odd `assertThat` calls, which come from Truth. Failing that,
+/// a member reached through a receiver whose *type* is outside is outside too:
+/// `Map.put` cannot be in this repository if `Map` is not.
+fn member_is_outside(
+    owner: &str,
+    member: &str,
+    facts: &FileFacts,
+    repo_packages: &BTreeSet<String>,
+) -> bool {
+    if let Some((_, declaring)) = facts.static_imports.iter().find(|(name, _)| name == member) {
+        return is_outside_repository(declaring, repo_packages);
+    }
+    type_is_outside(owner, facts, repo_packages)
 }
 
 /// Java's resolution order for a simple type name.

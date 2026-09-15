@@ -14,6 +14,35 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **The Java adapter records why a reference did not bind.** Java attempted more
+  references than any other adapter in the evaluation corpus and classified none
+  of them, so R′ read as a pure ceiling for the repository contributing 83% of
+  its unbound total. On `google/gson`, **0.0% explained becomes 86.3%**, and
+  corpus-wide 8.4% becomes 79.7%. R′ itself is unchanged in every repository —
+  this splits the number, it does not move it.
+
+  The evidence is the file's own import statements, not a list of names. An
+  explicit import names the package a type comes from; a static import names the
+  type declaring a member, which is what places gson's 1,100-odd `assertThat`
+  calls. Only `java.lang` needs a list, because it is in scope without an import
+  and its contents are fixed by the language rather than by a dependency.
+
+  **Classification is by package, never by a missing index entry.** The tempting
+  shortcut — "nothing is keyed under this fully-qualified name, so it is
+  somebody else's code" — is wrong in the direction that flatters the figure. A
+  nested class is imported by an FQN the index does not key: gson imports
+  `com.google.gson.common.TestTypes.BagOfPrimitives`, and that shortcut would
+  have reported **235 of gson's own types as external**. A name counts as
+  outside only when no dotted prefix of it is a package some file in the tree
+  declares.
+
+  A name reachable only through a wildcard import is deliberately not
+  classified. With two on-demand imports in scope there is no way to say which
+  one a bare name came from, and a guess there is the name-matching this project
+  exists to avoid.
+
+### Added
+
 - **Lua, as a Tier 2 language.** Symbols and within-file references, analysed
   through the structural analyzer on the `tags.scm` the grammar already ships.
   Its query carries `@reference.call`, so unlike Swift it records edges and the

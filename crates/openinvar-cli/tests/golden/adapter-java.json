@@ -359,7 +359,7 @@
           "signature": "public void handle() {"
         }
       ],
-      "unbound_outside_repository": 0,
+      "unbound_outside_repository": 1,
       "unbound_references": 1
     },
     {
@@ -423,7 +423,7 @@
           "signature": "public String getId() {"
         }
       ],
-      "unbound_outside_repository": 0,
+      "unbound_outside_repository": 2,
       "unbound_references": 2
     },
     {
@@ -467,7 +467,7 @@
           "signature": "public String format(String value) {"
         }
       ],
-      "unbound_outside_repository": 0,
+      "unbound_outside_repository": 1,
       "unbound_references": 1
     },
     {
@@ -511,7 +511,7 @@
           "signature": "public static void log(String message) {"
         }
       ],
-      "unbound_outside_repository": 0,
+      "unbound_outside_repository": 1,
       "unbound_references": 1
     }
   ],
