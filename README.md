@@ -51,23 +51,22 @@ every run — overall and per language.
 Measured on this repository, with the released binary:
 
 ```
-Resolved           99.8% (5695 of 5709 edge(s))
-  C#               0.0% of 2 edge(s)
+Resolved           99.8% (5962 of 5974 edge(s))
+  C#               100.0% of 12 edge(s)
   C/C++            100.0% of 32 edge(s)
   Go               100.0% of 40 edge(s)
   Java             100.0% of 14 edge(s)
-  Python           100.0% of 33 edge(s)
+  Python           100.0% of 71 edge(s)
   Ruby             0.0% of 12 edge(s)
-  Rust             100.0% of 5500 edge(s)
+  Rust             100.0% of 5717 edge(s)
   TypeScript       100.0% of 76 edge(s)
-  14 edge(s) are structural: matched by name within one file.
+  12 edge(s) are structural: matched by name within one file.
   A gate must not act on them.
 ```
 
-The 0.0% rows are Tier 2 languages, and they are the point: those fourteen
-edges are named rather than absorbed into a headline. Java's row read `0.0% of 2
-edge(s)` until it was promoted, which is what a tier change looks like from
-here.
+The 0.0% row is a Tier 2 language, and it is the point: those twelve edges are
+named rather than absorbed into a headline. C#'s row read `0.0% of 2 edge(s)`
+until it was promoted, which is what a tier change looks like from here.
 
 There is one released binary and it carries every language, so this is the
 figure your binary reports. A build narrowed to fewer languages reports a
@@ -555,13 +554,13 @@ Supported now:
 | C | 1 | `.c` `.h` | `#include` resolution, `typedef` aliases |
 | C++ | 1 | `.cpp` `.cc` `.cxx` `.hpp` `.hxx` `.hh` | `using` aliases, base classes, namespace-qualified names |
 | Java | 1 | `.java` | single-type, on-demand and static imports, same-package visibility, declared types, inherited members |
+| C# | 1 | `.cs` | `using` namespaces and aliases, `using static`, enclosing-namespace visibility, partial types across files, declared types, inherited members |
 
 Tier 2, carried by the released binary and reported as tier 2 wherever they appear:
 
 | Language | Tier | Extensions |
 | --- | --- | --- |
 | Ruby | 2 | `.rb` |
-| C# | 2 | `.cs` |
 
 Every Tier 1 adapter resolves import aliases and attributes member access to
 the type a value was declared as, so `payload.user_id` is recorded against
@@ -576,13 +575,13 @@ no cross-file reference of any kind. A tags query reports that a call to `foo`
 happened; it does not say which `foo`, and guessing by name across a repository
 is the bug OpenInvar exists to avoid.
 
-**Tier 2 is a status, not a permanent class.** Java shipped as Tier 2 and is
-now Tier 1: same grammar, same binary, but with import resolution, declared-type
-binding and a supertype walk behind it. The tier says what has been *built* for
-a language, not how much it is valued. Ruby is the honest caveat — autoloading,
-monkey-patching and `method_missing` make a large share of its references
-undecidable statically, so it may stay Tier 2 rather than be promoted on a
-claim the analysis cannot support.
+**Tier 2 is a status, not a permanent class.** Java and C# both shipped as
+Tier 2 and are now Tier 1: same grammars, same binary, but with import
+resolution, declared-type binding and a supertype walk behind them. The tier
+says what has been *built* for a language, not how much it is valued. Ruby is
+the honest caveat — autoloading, monkey-patching and `method_missing` make a
+large share of its references undecidable statically, so it may stay Tier 2
+rather than be promoted on a claim the analysis cannot support.
 
 **Gates do not fire on Tier 2 regions.** Not "are discouraged from" — they do
 not. `check` reports an undecided verdict rather than a pass, `tests` refuses to
@@ -733,8 +732,8 @@ through imports, aliases and declared types. The threshold is applied while
 traversing, not to the results, so nothing is reached by way of an edge below
 it. On a Tier 2 repository that correctly returns nothing.
 
-Tier 2 today: Ruby and C# — each has its own feature for a narrowed source
-build, and all three are in the released binary.
+Tier 2 today: Ruby, which has its own feature for a narrowed source build and
+is in the released binary.
 
 Still planned as Tier 2: Kotlin, PHP, Swift, Scala, SQL, Lua, Bash. These are
 not held up by OpenInvar's architecture but by the grammar crates: adding one
@@ -892,13 +891,13 @@ cargo install openinvar-cli --no-default-features --features tier1
 ```
 
 Features: `typescript` (includes JavaScript), `python`, `rust`, `go`, `c`
-(includes C++) are Tier 1, and `tier1` is the five together. `java`, `ruby` and
-`csharp` are Tier 2. `full` is everything and is the default.
+(includes C++), `java` and `csharp` are Tier 1, and `tier1` is the seven
+together. `ruby` is Tier 2. `full` is everything and is the default.
 
 `openinvar status` and `--help` report what your build can analyse, and a build
 skips files in languages it does not carry rather than failing on them — which
 also means a narrowed build reports coverage over fewer files. A `tier1` build
-reports 100% on this repository where the released binary reports 99.7%, not
+reports 100% on this repository where the released binary reports 99.8%, not
 because it resolves more but because it never looks at the Tier 2 files.
 
 ## Build & Test

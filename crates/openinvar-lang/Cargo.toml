@@ -19,10 +19,10 @@ keywords.workspace = true
 # in fact the Tier 1 set, while the README said otherwise and quoted the `full`
 # coverage figure. One default that matches what ships is the fix.
 default = ["full"]
-full = ["tier1", "java", "ruby", "csharp"]
+full = ["tier1", "ruby"]
 # The languages whose imports, aliases and declared types are resolved. Gates
 # act on these; `--no-default-features --features tier1` is the slim build.
-tier1 = ["typescript", "python", "rust", "go", "c"]
+tier1 = ["typescript", "python", "rust", "go", "c", "java", "csharp"]
 
 # Each language pulls in its own grammars and nothing else, so a slim build
 # leaves the rest out of the binary entirely. `supported_languages()` is built

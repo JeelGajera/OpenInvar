@@ -28,6 +28,8 @@ pub enum DispatchError {
     C(String),
     #[cfg(feature = "java")]
     Java(String),
+    #[cfg(feature = "csharp")]
+    CSharp(String),
     /// A Tier 2 language, analysed structurally.
     Structural(String),
 }
@@ -47,6 +49,8 @@ impl std::fmt::Display for DispatchError {
             Self::C(e) => write!(f, "C/C++ adapter error: {e}"),
             #[cfg(feature = "java")]
             Self::Java(e) => write!(f, "Java adapter error: {e}"),
+            #[cfg(feature = "csharp")]
+            Self::CSharp(e) => write!(f, "C# adapter error: {e}"),
             Self::Structural(e) => write!(f, "structural analysis error: {e}"),
         }
     }
@@ -95,6 +99,8 @@ fn adapter_group(language: &Language) -> Option<Language> {
         Language::C | Language::Cpp => Some(Language::C),
         #[cfg(feature = "java")]
         Language::Java => Some(Language::Java),
+        #[cfg(feature = "csharp")]
+        Language::CSharp => Some(Language::CSharp),
         // A language whose feature is off is skipped, so a slim build ignores
         // files it cannot analyse rather than failing on them.
         //
@@ -226,6 +232,12 @@ fn run_adapter(
         Language::Java => {
             crate::lang::java::analyze_files(root, files)
                 .map_err(|e| DispatchError::Java(e.to_string()))?
+                .files
+        }
+        #[cfg(feature = "csharp")]
+        Language::CSharp => {
+            crate::lang::csharp::analyze_files(root, files)
+                .map_err(|e| DispatchError::CSharp(e.to_string()))?
                 .files
         }
         // `adapter_group` never yields anything else.
