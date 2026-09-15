@@ -14,6 +14,11 @@
             "edges": 388,
             "percent": 100.0
           }
+        },
+        "references": {
+          "attempted": 764,
+          "bound": 388,
+          "percent": 50.8
         }
       },
       "files": 23,
@@ -80,82 +85,82 @@
       "revisions": [
         {
           "determinism": {
-            "bytes": 332213,
+            "bytes": 333065,
             "ok": true,
             "reason": ""
           },
           "ok": true,
-          "seconds": 0.07,
+          "seconds": 0.05,
           "sha": "87e062162e051d54bb553aacae3f0c6c4c213e59"
         },
         {
           "determinism": {
-            "bytes": 332213,
+            "bytes": 333065,
             "ok": true,
             "reason": ""
           },
           "ok": true,
-          "seconds": 0.07,
+          "seconds": 0.04,
           "sha": "6a24abf0835cef62e3d882287c97307dd3ecb403"
         },
         {
           "determinism": {
-            "bytes": 332213,
+            "bytes": 333065,
             "ok": true,
             "reason": ""
           },
           "ok": true,
-          "seconds": 0.07,
+          "seconds": 0.04,
           "sha": "f405739f3a15a3f00680c793e1e1fa7e57d26ba4"
         },
         {
           "determinism": {
-            "bytes": 332213,
+            "bytes": 333065,
             "ok": true,
             "reason": ""
           },
           "ok": true,
-          "seconds": 0.07,
+          "seconds": 0.04,
           "sha": "037d7a58f6ad184abb3afc4db81d37c43a5696ec"
         },
         {
           "determinism": {
-            "bytes": 332537,
+            "bytes": 333389,
             "ok": true,
             "reason": ""
           },
           "ok": true,
-          "seconds": 0.08,
+          "seconds": 0.04,
           "sha": "b88266cfed8b287f8c35b2015808b09b056f61af"
         },
         {
           "determinism": {
-            "bytes": 332537,
+            "bytes": 333389,
             "ok": true,
             "reason": ""
           },
           "ok": true,
-          "seconds": 0.07,
+          "seconds": 0.04,
           "sha": "3b939b6714616dc32193c12019861c7c518c5edb"
         },
         {
           "determinism": {
-            "bytes": 332537,
+            "bytes": 333389,
             "ok": true,
             "reason": ""
           },
           "ok": true,
-          "seconds": 0.07,
+          "seconds": 0.05,
           "sha": "7d1e24e3506d4ffa1badf6c9ea357779877adaf0"
         },
         {
           "determinism": {
-            "bytes": 332537,
+            "bytes": 333389,
             "ok": true,
             "reason": ""
           },
           "ok": true,
-          "seconds": 0.07,
+          "seconds": 0.04,
           "sha": "8034743dd9d7f7583bd9a670271483d176130911"
         }
       ],
@@ -173,6 +178,11 @@
             "edges": 1870,
             "percent": 100.0
           }
+        },
+        "references": {
+          "attempted": 2836,
+          "bound": 1870,
+          "percent": 65.9
         }
       },
       "files": 66,
@@ -239,82 +249,82 @@
       "revisions": [
         {
           "determinism": {
-            "bytes": 940336,
+            "bytes": 942697,
             "ok": true,
             "reason": ""
           },
           "ok": true,
-          "seconds": 0.14,
+          "seconds": 0.09,
           "sha": "88b30ab89da2d0d0abb153818746c5a2d30eccec"
         },
         {
           "determinism": {
-            "bytes": 940336,
+            "bytes": 942697,
             "ok": true,
             "reason": ""
           },
           "ok": true,
-          "seconds": 0.16,
+          "seconds": 0.09,
           "sha": "10d4b48a79be3d4e89e6c45cb59f4d32a3d2ae19"
         },
         {
           "determinism": {
-            "bytes": 940336,
+            "bytes": 942697,
             "ok": true,
             "reason": ""
           },
           "ok": true,
-          "seconds": 0.14,
+          "seconds": 0.09,
           "sha": "61968e893eee2f27696c2fbc8e34fa5c4afaf7c4"
         },
         {
           "determinism": {
-            "bytes": 940336,
+            "bytes": 942697,
             "ok": true,
             "reason": ""
           },
           "ok": true,
-          "seconds": 0.14,
+          "seconds": 0.09,
           "sha": "85c12c2201a7d2bb8d2a731d41cfd8557a025c90"
         },
         {
           "determinism": {
-            "bytes": 940336,
+            "bytes": 942697,
             "ok": true,
             "reason": ""
           },
           "ok": true,
-          "seconds": 0.14,
+          "seconds": 0.09,
           "sha": "f2878bab8c96afd6e36968af96343b35dbb82a82"
         },
         {
           "determinism": {
-            "bytes": 941251,
+            "bytes": 943612,
             "ok": true,
             "reason": ""
           },
           "ok": true,
-          "seconds": 0.14,
+          "seconds": 0.09,
           "sha": "746ef07158728502482cea9f880a6f4b21ef29a9"
         },
         {
           "determinism": {
-            "bytes": 948229,
+            "bytes": 950590,
             "ok": true,
             "reason": ""
           },
           "ok": true,
-          "seconds": 0.14,
+          "seconds": 0.09,
           "sha": "ad460ea8f249db69c943a365fb84f3a59042d54e"
         },
         {
           "determinism": {
-            "bytes": 948229,
+            "bytes": 950590,
             "ok": true,
             "reason": ""
           },
           "ok": true,
-          "seconds": 0.16,
+          "seconds": 0.09,
           "sha": "adbc8813901bba65827259daa8e22ff94ec1f30e"
         }
       ],
@@ -332,6 +342,11 @@
             "edges": 1476,
             "percent": 100.0
           }
+        },
+        "references": {
+          "attempted": 2371,
+          "bound": 1476,
+          "percent": 62.3
         }
       },
       "files": 177,
@@ -398,82 +413,82 @@
       "revisions": [
         {
           "determinism": {
-            "bytes": 1501925,
+            "bytes": 1507153,
             "ok": true,
             "reason": ""
           },
           "ok": true,
-          "seconds": 0.22,
+          "seconds": 0.13,
           "sha": "271effb3d96da5575eb527216ce3552bd7628fab"
         },
         {
           "determinism": {
-            "bytes": 1500933,
+            "bytes": 1506161,
             "ok": true,
             "reason": ""
           },
           "ok": true,
-          "seconds": 0.17,
+          "seconds": 0.11,
           "sha": "fa99fbd7b96883c60275203b62914d3ce6d51010"
         },
         {
           "determinism": {
-            "bytes": 1501925,
+            "bytes": 1507153,
             "ok": true,
             "reason": ""
           },
           "ok": true,
-          "seconds": 0.17,
+          "seconds": 0.11,
           "sha": "00aca23ee9135eedc651c6929c7bc1d39e522431"
         },
         {
           "determinism": {
-            "bytes": 1501925,
+            "bytes": 1507153,
             "ok": true,
             "reason": ""
           },
           "ok": true,
-          "seconds": 0.18,
+          "seconds": 0.11,
           "sha": "87f7a316f482d88d7ef45660da12cdcc5a5c14f6"
         },
         {
           "determinism": {
-            "bytes": 1513828,
+            "bytes": 1519705,
             "ok": true,
             "reason": ""
           },
           "ok": true,
-          "seconds": 0.19,
+          "seconds": 0.12,
           "sha": "b8a4486d52083981babc1642449420db6b09662e"
         },
         {
           "determinism": {
-            "bytes": 1513828,
+            "bytes": 1519705,
             "ok": true,
             "reason": ""
           },
           "ok": true,
-          "seconds": 0.19,
+          "seconds": 0.13,
           "sha": "7ecc8d7ee4a2e5c0732d6551baeb7597b7a73ade"
         },
         {
           "determinism": {
-            "bytes": 1513828,
+            "bytes": 1519705,
             "ok": true,
             "reason": ""
           },
           "ok": true,
-          "seconds": 0.2,
+          "seconds": 0.14,
           "sha": "7944461a80b780d060899c8835acab3c273a04a6"
         },
         {
           "determinism": {
-            "bytes": 1513828,
+            "bytes": 1519705,
             "ok": true,
             "reason": ""
           },
           "ok": true,
-          "seconds": 0.18,
+          "seconds": 0.13,
           "sha": "6aabf099bfdd4c1e75fe8d0e0d4241372b988ab1"
         }
       ],
@@ -491,6 +506,11 @@
             "edges": 18989,
             "percent": 100.0
           }
+        },
+        "references": {
+          "attempted": 29590,
+          "bound": 18989,
+          "percent": 64.2
         }
       },
       "files": 313,
@@ -557,82 +577,82 @@
       "revisions": [
         {
           "determinism": {
-            "bytes": 12295937,
+            "bytes": 12313297,
             "ok": true,
             "reason": ""
           },
           "ok": true,
-          "seconds": 0.65,
+          "seconds": 0.41,
           "sha": "ed99017a3b7ff41a08b96f3b972e7599743abe99"
         },
         {
           "determinism": {
-            "bytes": 12295937,
+            "bytes": 12313297,
             "ok": true,
             "reason": ""
           },
           "ok": true,
-          "seconds": 0.59,
+          "seconds": 0.35,
           "sha": "7ce9b523a3be6efb31a6904dc75a25ad51beb8cc"
         },
         {
           "determinism": {
-            "bytes": 12295937,
+            "bytes": 12313297,
             "ok": true,
             "reason": ""
           },
           "ok": true,
-          "seconds": 0.65,
+          "seconds": 0.38,
           "sha": "a7b4b483345cb12aefa61ee71ca5dcc5e6423ff9"
         },
         {
           "determinism": {
-            "bytes": 12295937,
+            "bytes": 12313297,
             "ok": true,
             "reason": ""
           },
           "ok": true,
-          "seconds": 0.64,
+          "seconds": 0.38,
           "sha": "804f21918e093b28615e72d043b160c05ab40803"
         },
         {
           "determinism": {
-            "bytes": 12295937,
+            "bytes": 12313297,
             "ok": true,
             "reason": ""
           },
           "ok": true,
-          "seconds": 0.62,
+          "seconds": 0.38,
           "sha": "3f3a1abac6b38f529a07b024c27c5e951b6723bc"
         },
         {
           "determinism": {
-            "bytes": 12295937,
+            "bytes": 12313297,
             "ok": true,
             "reason": ""
           },
           "ok": true,
-          "seconds": 0.65,
+          "seconds": 0.36,
           "sha": "455ca70ab72bac69ccdb87d960ee0dc9f29b48c9"
         },
         {
           "determinism": {
-            "bytes": 12295937,
+            "bytes": 12313297,
             "ok": true,
             "reason": ""
           },
           "ok": true,
-          "seconds": 0.71,
+          "seconds": 0.38,
           "sha": "15ca7360379cf3c1502b59981569050489f2d73e"
         },
         {
           "determinism": {
-            "bytes": 12396487,
+            "bytes": 12413847,
             "ok": true,
             "reason": ""
           },
           "ok": true,
-          "seconds": 0.71,
+          "seconds": 0.38,
           "sha": "8fe077819b2c92a1cbe17557c4655e2c33967711"
         }
       ],

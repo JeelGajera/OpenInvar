@@ -102,6 +102,25 @@ languages: each extractor creates a different number of placeholders for the
 same code, so finer-grained extraction reports a lower percentage for identical
 source.
 
+Measured across the evaluation corpus — four ordinary repositories nobody here
+wrote — it lands in a narrow band:
+
+| Repository | Language | References bound | Edge-level figure |
+|---|---|---:|---:|
+| rust-lang/log | Rust | 50.8% | 100.0% |
+| pallets/click | Python | 62.3% | 100.0% |
+| google/gson | Java | 64.2% | 100.0% |
+| spf13/cobra | Go | 65.9% | 100.0% |
+
+The right-hand column is why the left one exists. `log` is the low scorer and
+the reason is visible: it is a 23-file crate made largely of `impl` blocks for
+standard traits, and every unresolved type it reports by name is one of them —
+`From`, `Display`, `PartialEq`, `Formatter`. Those are references to code
+outside the repository, not things the analysis fumbled.
+
+Full run in [`eval/results/`](eval/results), including where the figure fell
+short of its own pre-registered threshold.
+
 There is one released binary and it carries every language, so this is the
 figure your binary reports. A build narrowed to fewer languages reports a
 *higher* number on the same repository — not because it resolves more, but
