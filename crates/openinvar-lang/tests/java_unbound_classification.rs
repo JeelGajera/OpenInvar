@@ -99,9 +99,6 @@ fn a_name_from_a_package_this_tree_declares_is_not_claimed_as_outside() {
             ),
             (
                 "src/com/example/Use.java",
-                // A field rather than a return type: a non-generic return type
-                // records no reference at all, which is a separate gap and not
-                // this test's subject.
                 "package com.example;\n\
                  import com.example.common.NotDeclaredAnywhere;\n\
                  public class Use {\n\

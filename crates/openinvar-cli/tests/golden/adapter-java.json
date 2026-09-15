@@ -122,6 +122,17 @@
         },
         {
           "alias": null,
+          "context": "return type",
+          "file": "basic/src/main/java/com/example/Report.java",
+          "from": "basic/src/main/java/com/example/Report.java::Report::getSubject::method",
+          "kind": "UsesType",
+          "line": 28,
+          "properties_accessed": [],
+          "resolution": "resolved",
+          "to": "basic/src/main/java/com/example/model/User.java::User::class"
+        },
+        {
+          "alias": null,
           "context": "call",
           "file": "basic/src/main/java/com/example/Report.java",
           "from": "basic/src/main/java/com/example/Report.java::Report::render::method",
@@ -184,7 +195,7 @@
           "id": "basic/src/main/java/com/example/Report.java::Report::class",
           "kind": "Class",
           "language": "Java",
-          "line_end": 23,
+          "line_end": 31,
           "line_start": 12,
           "name": "Report",
           "signature": "public class Report extends Elsewhere {"
@@ -208,10 +219,20 @@
           "line_start": 15,
           "name": "render",
           "signature": "public String render(Formatter formatter) {"
+        },
+        {
+          "file": "basic/src/main/java/com/example/Report.java",
+          "id": "basic/src/main/java/com/example/Report.java::Report::getSubject::method",
+          "kind": "Method",
+          "language": "Java",
+          "line_end": 30,
+          "line_start": 28,
+          "name": "getSubject",
+          "signature": "public User getSubject() {"
         }
       ],
-      "unbound_outside_repository": 0,
-      "unbound_references": 0
+      "unbound_outside_repository": 1,
+      "unbound_references": 1
     },
     {
       "assertions": {},
@@ -359,8 +380,8 @@
           "signature": "public void handle() {"
         }
       ],
-      "unbound_outside_repository": 1,
-      "unbound_references": 1
+      "unbound_outside_repository": 3,
+      "unbound_references": 3
     },
     {
       "assertions": {},
@@ -423,8 +444,8 @@
           "signature": "public String getId() {"
         }
       ],
-      "unbound_outside_repository": 2,
-      "unbound_references": 2
+      "unbound_outside_repository": 3,
+      "unbound_references": 3
     },
     {
       "assertions": {},
@@ -467,8 +488,8 @@
           "signature": "public String format(String value) {"
         }
       ],
-      "unbound_outside_repository": 1,
-      "unbound_references": 1
+      "unbound_outside_repository": 2,
+      "unbound_references": 2
     },
     {
       "assertions": {},
@@ -525,7 +546,7 @@
     "aliases": 0,
     "diagnostics": 0,
     "files_indexed": 6,
-    "relationships": 14,
-    "symbols": 27
+    "relationships": 15,
+    "symbols": 28
   }
 }

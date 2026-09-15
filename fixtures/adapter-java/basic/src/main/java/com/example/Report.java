@@ -20,4 +20,12 @@ public class Report extends Elsewhere {
         run();
         return subject.name;
     }
+
+    // A plain return type, unwrapped by a generic or an array. This recorded
+    // no edge to User at all, while a `List<User>` in the same position
+    // recorded one: the walk that collected type names skipped the node it
+    // started from, and for an unwrapped type that node is the name.
+    public User getSubject() {
+        return subject;
+    }
 }
