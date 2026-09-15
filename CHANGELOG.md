@@ -14,6 +14,33 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **A delta no longer reports edges that only moved.** A line is part of an
+  edge's identity, so inserting a comment above a function reported every edge
+  below it as removed and immediately re-added — churn from a change that
+  touched no code. `EdgeRef` already excludes `context` for exactly this reason,
+  and an edge whose line moved while the relationship held is the same case.
+
+  Identity is not simply widened to exclude the line, because multiplicity
+  within a file is real: a function called from six places records six edges,
+  and collapsing them to one would report nothing at all when five of those
+  calls are deleted. In this repository 612 relationships span more than one
+  line and account for 2,068 edges, so that is not a corner case. What is
+  compared is the count per relationship, and only the surplus on either side
+  survives.
+
+  Measured on one real change to this repository — adding a function near the
+  top of `delta.rs`, which shifts everything below it:
+
+  | | Edges added | Edges removed |
+  |---|---:|---:|
+  | before | 32 | 18 |
+  | after | 14 | 0 |
+
+  The 14 are the genuinely new edges; the other 18 were the same edges
+  reappearing one line lower.
+
+### Fixed
+
 - **A Rust generic type parameter is no longer reported as a missing type.**
   `fn label<T: Identify>(&self, subject: &T)` declares `T` in its own
   signature, and the scope analyser has always collected those names to filter
