@@ -16,7 +16,7 @@ keywords.workspace = true
 # no system dependency. That is the point — the vendored C++ database this
 # replaced would not compile on GCC 15, which pinned every build to gcc-13.
 rusqlite = { version = "0.32", features = ["bundled"] }
-openinvar-core = { path = "../openinvar-core", version = "0.2.0", default-features = false }
+openinvar-core = { path = "../openinvar-core", version = "0.3.0", default-features = false }
 
 [dev-dependencies]
 # The layout tests stamp `user_version` directly, to assert what this crate

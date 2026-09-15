@@ -12,7 +12,7 @@ inputs:
     default: '.'
   version:
     description: >
-      Which binary to use. A release tag such as "v0.2.0", "latest" for the
+      Which binary to use. A release tag such as "v0.3.0", "latest" for the
       newest release, or "source" to build from the checked-out tree. Building
       from source takes minutes; a release download takes seconds.
     required: false

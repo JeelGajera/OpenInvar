@@ -14,7 +14,7 @@ resolver = "2"
 
 [workspace.package]
 description = "Deterministic integrity checks for AI-written code — structural violations, test tampering, contract erosion. No model in the loop."
-version = "0.2.0"
+version = "0.3.0"
 edition = "2021"
 rust-version = "1.75"
 license = "Apache-2.0"
