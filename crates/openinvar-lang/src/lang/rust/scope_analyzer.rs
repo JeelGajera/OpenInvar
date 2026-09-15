@@ -156,12 +156,21 @@ fn generic_parameter_names(func: Node<'_>, source: &[u8]) -> BTreeSet<String> {
         let mut cursor = params.walk();
         for param in params.named_children(&mut cursor) {
             let name = match param.kind() {
-                "type_identifier" => node_text(param, source),
-                // `T: Bound` and `T = Default`
-                "constrained_type_parameter" | "optional_type_parameter" => param
-                    .child_by_field_name("left")
-                    .or_else(|| param.named_child(0))
+                // One node covers `T`, `T: Bound` and `T = Default` since
+                // tree-sitter-rust 0.24, with the name in a required field.
+                // Before that the grammar had three shapes — a bare
+                // `type_identifier`, `constrained_type_parameter` and
+                // `optional_type_parameter` — and matching only those meant
+                // this collected nothing at all on the newer grammar. It fails
+                // quietly: an empty set filters nothing, so `subject: &T` bound
+                // to `T` and every generic function reported its own parameter
+                // as a missing type.
+                "type_parameter" => param
+                    .child_by_field_name("name")
                     .and_then(|n| node_text(n, source)),
+                // Still emitted for `const N: usize` and `'a`, neither of which
+                // names a type, so neither belongs in this set.
+                "const_parameter" | "lifetime_parameter" => None,
                 _ => None,
             };
             if let Some(name) = name {

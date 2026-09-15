@@ -720,15 +720,7 @@
     {
       "assertions": {},
       "assertions_counted": true,
-      "diagnostics": [
-        {
-          "category": "Resolution",
-          "file": "language_features/src/services/reporting.rs",
-          "level": "Warning",
-          "line": 13,
-          "message": "unable to resolve type 'T' referenced in language_features/src/services/reporting.rs"
-        }
-      ],
+      "diagnostics": [],
       "file": "language_features/src/services/reporting.rs",
       "language": "Rust",
       "re_exports": [],
@@ -853,7 +845,7 @@
           "signature": "impl Reporter :: pub fn label<T: Identify>(&self, subject: &T) -> String {"
         }
       ],
-      "unbound_references": 1
+      "unbound_references": 0
     },
     {
       "assertions": {},
@@ -1316,7 +1308,7 @@
   "stats": {
     "alias_chains": 4,
     "aliases": 4,
-    "diagnostics": 1,
+    "diagnostics": 0,
     "files_indexed": 23,
     "relationships": 36,
     "symbols": 56

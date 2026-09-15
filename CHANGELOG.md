@@ -12,6 +12,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- **A Rust generic type parameter is no longer reported as a missing type.**
+  `fn label<T: Identify>(&self, subject: &T)` declares `T` in its own
+  signature, and the scope analyser has always collected those names to filter
+  them out. It read the parse tree for node kinds, and tree-sitter-rust 0.24
+  replaced three of them — a bare `type_identifier`, `constrained_type_parameter`
+  and `optional_type_parameter` — with one `type_parameter` carrying the name in
+  a required field.
+
+  It failed **silently**, which is the part worth noting. An empty set filters
+  nothing, so nothing errored: every generic function simply began reporting its
+  own parameter as a type that could not be found, and the only visible trace
+  was one extra warning in one golden.
+
+  With this, the tree-sitter bump is behaviour-neutral. The fixture goldens are
+  byte-identical to before it, and on this repository every figure matches the
+  released 0.3.0 binary exactly — 6,034 edges, 2,625 unbound references, 129
+  diagnostics.
+
+
 ### Changed
 
 - **tree-sitter 0.22 → 0.27, and every grammar with it.** The runtime and all
