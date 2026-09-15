@@ -14,6 +14,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Lua, as a Tier 2 language.** Symbols and within-file references, analysed
+  through the structural analyzer on the `tags.scm` the grammar already ships.
+  Its query carries `@reference.call`, so unlike Swift it records edges and the
+  tier's usual description holds in full.
+
+  This is the first of the three to need a new `Language` variant. Its store id
+  is appended rather than slotted in: those bytes are persisted in every
+  snapshot, so renumbering would silently reinterpret every language in an
+  existing store.
+
+  The module says why promoting Lua would be hard rather than implying the tier
+  is a matter of time. A module is whatever table `require` returns, assembled
+  at runtime; methods are fields that happen to hold functions and can be added
+  to any table at any point; and metatables let a failed lookup consult another
+  table instead. A resolver reporting certainty there would mostly be reporting
+  a guess about what a table held when it ran.
+
 - **Swift, as a Tier 2 language — symbols only.** Analysed through the
   structural analyzer on the `tags.scm` the grammar already ships, like every
   Tier 2 language.

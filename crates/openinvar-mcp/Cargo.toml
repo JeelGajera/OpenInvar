@@ -16,7 +16,7 @@ keywords.workspace = true
 # binary. Without this the CLI could pull every grammar back in through its
 # dependency on the MCP server.
 default = ["full"]
-full = ["tier1", "ruby", "php", "swift"]
+full = ["tier1", "ruby", "php", "swift", "lua"]
 tier1 = ["typescript", "python", "rust", "go", "c", "java", "csharp"]
 typescript = ["openinvar-lang/typescript"]
 python = ["openinvar-lang/python"]
@@ -27,6 +27,7 @@ java = ["openinvar-lang/java"]
 ruby = ["openinvar-lang/ruby"]
 php = ["openinvar-lang/php"]
 swift = ["openinvar-lang/swift"]
+lua = ["openinvar-lang/lua"]
 csharp = ["openinvar-lang/csharp"]
 
 [dependencies]

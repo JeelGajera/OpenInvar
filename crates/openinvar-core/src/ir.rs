@@ -53,6 +53,7 @@ pub enum Language {
     Kotlin,
     Swift,
     Sql,
+    Lua,
 }
 
 /// How an edge's target was determined, and therefore what it is worth.
