@@ -14,6 +14,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **A Java nested class is indexed under the name an import can spell.** Java's
+  canonical name for a nested class is `Outer.Inner`, and that is what an
+  import names. The index was built from each type's *simple* name, so
+  `TestTypes.Bag` went in as `com.example.common.Bag` — a name no import can
+  write and none of its references could match.
+
+  On `google/gson` that cost **280 edges**: `BagOfPrimitives` is nested in
+  `TestTypes`, imported as `com.google.gson.common.TestTypes.BagOfPrimitives`,
+  and every reference through it missed. gson's R′ goes 64.8% to **65.7%**,
+  above its pass line, and the corpus median 63.5% to 64.0%.
+
+  The entry that *was* written is unreachable by any valid Java import, so this
+  removes a phantom as well as adding the real name — an index answering to
+  `com.example.common.Bag` would resolve an import that does not compile.
+
+  The nesting is recorded nowhere in the IR, so it is recovered from the line
+  ranges the extractor already emits: a type declared inside another is spanned
+  by it, and two siblings never span each other. gson has `BagOfPrimitives`
+  both nested and as a separate top-level class under `metrics`; 110 references
+  go to the first and 10 to the second, and a test pins that they stay apart.
+
 - **A Java generic type parameter is no longer a type reference.** `class Box<T>
   { T item; }` names `T` twice and neither is a type the repository could
   contain, but the extractor recorded both as ordinary references.

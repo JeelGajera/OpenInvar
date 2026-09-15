@@ -8,9 +8,11 @@
 //! import statements rather than a list of names. That choice is what these
 //! pin, because the tempting shortcut — "the index has no entry for this
 //! fully-qualified name, so it is somebody else's code" — is wrong in a way
-//! that flatters the number. A nested class is imported by an FQN the index
-//! does not key, and on gson that shortcut would have reported 235 of the
-//! project's own types as external.
+//! that flatters the number. When this was written, gson's nested classes were
+//! keyed under a name no import could spell, and the shortcut would have
+//! reported 235 of the project's own types as external. The indexing is fixed
+//! and those now resolve, which removes that particular example and none of the
+//! reasoning: a missing entry still means only that nothing was indexed.
 
 #![cfg(feature = "java")]
 
@@ -72,35 +74,38 @@ fn a_type_imported_from_a_package_this_tree_does_not_declare_is_outside() {
 }
 
 #[test]
-fn a_nested_class_this_tree_declares_is_not_claimed_as_outside() {
-    // The case that rules out classifying on a missing index entry, and the
-    // reason this file exists.
+fn a_name_from_a_package_this_tree_declares_is_not_claimed_as_outside() {
+    // The case that rules out classifying on a missing index entry.
     //
-    // `TestTypes.Bag` is imported by its nested FQN. Nothing is keyed under
-    // that exact string, so an implementation asking "is this name in the
-    // index?" would answer no and call it external — while the class is right
-    // there in the next file. Asking instead whether any prefix of the name is
-    // a package this tree declares gets it right: `com.example.common` is
-    // declared here, so this is a reference the resolver missed, and it belongs
-    // in the unexplained half.
+    // This used to import a nested class, because a nested class was the
+    // reference that missed: nothing was keyed under its canonical name. That
+    // is fixed now and the nested import resolves, so the fixture moved to a
+    // name that genuinely is not there — the property under test was never
+    // about nesting, it was about where a missing entry licenses you to point.
+    //
+    // `com.example.common` is a package this tree declares. A name not found
+    // inside it is a reference this resolver could not place, not somebody
+    // else's code, and calling it external would make the figure look better
+    // than the work.
     let files = analyze(
-        "nested-class",
+        "missing-from-local-package",
         &[
             (
                 "src/com/example/common/TestTypes.java",
                 "package com.example.common;\n\
                  public class TestTypes {\n\
-                 \x20   public static class Bag {\n\
-                 \x20       public int value;\n\
-                 \x20   }\n\
+                 \x20   public int value() { return 1; }\n\
                  }\n",
             ),
             (
                 "src/com/example/Use.java",
+                // A field rather than a return type: a non-generic return type
+                // records no reference at all, which is a separate gap and not
+                // this test's subject.
                 "package com.example;\n\
-                 import com.example.common.TestTypes.Bag;\n\
+                 import com.example.common.NotDeclaredAnywhere;\n\
                  public class Use {\n\
-                 \x20   public Bag make() { return new Bag(); }\n\
+                 \x20   private NotDeclaredAnywhere held;\n\
                  }\n",
             ),
         ],
@@ -109,12 +114,13 @@ fn a_nested_class_this_tree_declares_is_not_claimed_as_outside() {
     let (total, outside) = split(&files);
     assert!(
         total > 0,
-        "the nested class bound after all, so this no longer tests anything"
+        "a name declared nowhere bound after all, so this tests nothing"
     );
     assert_eq!(
         outside, 0,
-        "a class declared in this very tree was attributed outside it, which is \
-         the one error that makes the figure look better than the work"
+        "a name from a package this very tree declares was attributed outside \
+         it, which is the one error that makes the figure look better than the \
+         work"
     );
 }
 
