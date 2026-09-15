@@ -23,7 +23,7 @@ use openinvar_lang::dispatch::supported_language_names;
 
 /// Every language the project ships, by the name `status` prints.
 #[cfg(feature = "full")]
-const EVERY_LANGUAGE: [&str; 9] = [
+const EVERY_LANGUAGE: [&str; 10] = [
     "TypeScript",
     "Python",
     "Rust",
@@ -33,6 +33,7 @@ const EVERY_LANGUAGE: [&str; 9] = [
     "Ruby",
     "C#",
     "PHP",
+    "Swift",
 ];
 
 #[test]
@@ -83,8 +84,8 @@ fn the_tier_one_languages_are_reported_as_resolved() {
         let expected = match support.name {
             // Java was promoted: it has an import resolver, a scope analyzer
             // binding receivers to declared types, and a supertype walk, so a
-            // gate may act on it. Ruby and PHP have none of that yet.
-            "Ruby" | "PHP" => Tier::Structural,
+            // gate may act on it. Ruby, PHP and Swift have none of that yet.
+            "Ruby" | "PHP" | "Swift" => Tier::Structural,
             _ => Tier::Resolved,
         };
         assert_eq!(

@@ -21,7 +21,7 @@ path = "src/main.rs"
 # features are what a source install and the per-language CI job use, and only
 # the release artifact collapsed.
 default = ["full"]
-full = ["tier1", "ruby", "php"]
+full = ["tier1", "ruby", "php", "swift"]
 tier1 = ["typescript", "python", "rust", "go", "c", "java", "csharp"]
 typescript = ["openinvar-lang/typescript", "openinvar-mcp/typescript"]
 python = ["openinvar-lang/python", "openinvar-mcp/python"]
@@ -31,6 +31,7 @@ c = ["openinvar-lang/c", "openinvar-mcp/c"]
 java = ["openinvar-lang/java", "openinvar-mcp/java"]
 ruby = ["openinvar-lang/ruby", "openinvar-mcp/ruby"]
 php = ["openinvar-lang/php", "openinvar-mcp/php"]
+swift = ["openinvar-lang/swift", "openinvar-mcp/swift"]
 csharp = ["openinvar-lang/csharp", "openinvar-mcp/csharp"]
 
 [dependencies]

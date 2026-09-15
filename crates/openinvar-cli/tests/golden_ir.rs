@@ -48,7 +48,7 @@ const CORPUS: &[&str] = &[
 /// depends on how the binary was configured is not a golden. Tier 2 behaviour
 /// is covered directly in `openinvar-lang/tests/<language>_structural.rs`, where
 /// the feature is a precondition rather than a variable.
-const STRUCTURAL_FIXTURES: &[&str] = &["adapter-ruby", "adapter-php"];
+const STRUCTURAL_FIXTURES: &[&str] = &["adapter-ruby", "adapter-php", "adapter-swift"];
 
 fn repo_root() -> PathBuf {
     PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../..")

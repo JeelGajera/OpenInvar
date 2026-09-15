@@ -19,7 +19,7 @@ keywords.workspace = true
 # in fact the Tier 1 set, while the README said otherwise and quoted the `full`
 # coverage figure. One default that matches what ships is the fix.
 default = ["full"]
-full = ["tier1", "ruby", "php"]
+full = ["tier1", "ruby", "php", "swift"]
 # The languages whose imports, aliases and declared types are resolved. Gates
 # act on these; `--no-default-features --features tier1` is the slim build.
 tier1 = ["typescript", "python", "rust", "go", "c", "java", "csharp"]
@@ -44,6 +44,7 @@ csharp = ["dep:tree-sitter-c-sharp"]
 # promoted, so it now covers only the languages it is true of.
 ruby = ["dep:tree-sitter-ruby"]
 php = ["dep:tree-sitter-php"]
+swift = ["dep:tree-sitter-swift"]
 
 [dependencies]
 tree-sitter = "0.27"
@@ -61,6 +62,7 @@ tree-sitter-java = { version = "0.23", optional = true }
 tree-sitter-ruby = { version = "0.23", optional = true }
 tree-sitter-c-sharp = { version = "0.23", optional = true }
 tree-sitter-php = { version = "0.24", optional = true }
+tree-sitter-swift = { version = "0.7", optional = true }
 
 # TypeScript-only: tsconfig parsing and its path-alias walk.
 walkdir = { version = "2", optional = true }
