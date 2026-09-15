@@ -51,6 +51,14 @@ pub struct InvarGraph {
     /// counted from the graph's edges afterwards — it has to be carried here
     /// from the analysis that saw it.
     pub unbound_references: DashMap<String, u32>,
+    /// Of those, the ones the adapter could show lie outside the tree.
+    ///
+    /// Keyed by file like the counts it refines. The remainder — the count
+    /// above minus this — is the part nothing has explained, which is the half
+    /// worth driving down. Carried separately rather than replacing the total
+    /// so that an adapter which does not classify still reports a usable
+    /// number, and so the two can never disagree about how many there were.
+    pub unbound_outside_repository: DashMap<String, u32>,
 }
 
 impl Default for InvarGraph {
@@ -72,6 +80,7 @@ impl InvarGraph {
             assertions: DashMap::new(),
             assertions_counted: DashMap::new(),
             unbound_references: DashMap::new(),
+            unbound_outside_repository: DashMap::new(),
         }
     }
 

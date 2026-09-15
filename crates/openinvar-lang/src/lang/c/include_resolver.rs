@@ -244,6 +244,8 @@ pub fn resolve_repo_ir(_root: &std::path::Path, repo_ir: &mut RepoIR) {
         // References this file named that nothing here could place. Counted at
         // the point of the decision; what gets emitted is unchanged.
         let mut unbound: u32 = 0;
+        // The share of `unbound` this adapter can show is outside the tree.
+        let mut outside: u32 = 0;
         let mut diagnostics = Vec::new();
 
         // Aliases must be resolved before the accesses that use them, and the
@@ -301,6 +303,11 @@ pub fn resolve_repo_ir(_root: &std::path::Path, repo_ir: &mut RepoIR) {
                     None => {
                         drop.insert(position);
                         unbound += 1;
+                        // Which of the two it is, is now recorded rather than
+                        // left to the reader.
+                        if crate::lang::c::scope_analyzer::is_stdlib_callable(&type_name) {
+                            outside += 1;
+                        }
                     }
                 }
                 continue;
@@ -352,6 +359,7 @@ pub fn resolve_repo_ir(_root: &std::path::Path, repo_ir: &mut RepoIR) {
         file.diagnostics.extend(diagnostics);
 
         file.unbound_references = unbound;
+        file.unbound_outside_repository = outside;
 
         if !drop.is_empty() {
             let mut position = 0usize;

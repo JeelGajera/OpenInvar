@@ -42,7 +42,13 @@ const SCHEMA_VERSION: i32 = 1;
 /// `Structural` — the weaker value — so a graph written before this existed is
 /// never treated as gate-safe on the strength of a field it does not have.
 /// Re-analysing rewrites it at the current version.
-const SNAPSHOT_VERSION: u8 = 5;
+///
+/// A snapshot before version 6 carries no split of the unbound counts, and is
+/// read back as having classified none of them. That reads as "nothing here
+/// vouched for any of these" rather than as "none of them are external", which
+/// is the same direction every other default above leans: an old snapshot
+/// understates what is explained rather than overstating it.
+const SNAPSHOT_VERSION: u8 = 6;
 
 #[derive(Debug)]
 pub enum StoreError {
@@ -112,6 +118,8 @@ pub struct GraphSnapshot {
     pub assertions_counted: Vec<(String, bool)>,
     /// References each file's adapter could not place, by file.
     pub unbound_references: Vec<(String, u32)>,
+    /// Of those, the ones the adapter could show lie outside the tree, by file.
+    pub unbound_outside_repository: Vec<(String, u32)>,
 }
 
 pub struct GraphStore {
@@ -488,6 +496,13 @@ impl GraphSnapshot {
             .collect();
         unbound_references.sort_by(|a, b| a.0.cmp(&b.0));
 
+        let mut unbound_outside_repository: Vec<(String, u32)> = graph
+            .unbound_outside_repository
+            .iter()
+            .map(|e| (e.key().clone(), *e.value()))
+            .collect();
+        unbound_outside_repository.sort_by(|a, b| a.0.cmp(&b.0));
+
         Ok(Self {
             symbols,
             relationships,
@@ -496,6 +511,7 @@ impl GraphSnapshot {
             assertions,
             assertions_counted,
             unbound_references,
+            unbound_outside_repository,
         })
     }
 
@@ -524,6 +540,9 @@ impl GraphSnapshot {
 
         for (file, count) in self.unbound_references {
             graph.unbound_references.insert(file, count);
+        }
+        for (file, count) in self.unbound_outside_repository {
+            graph.unbound_outside_repository.insert(file, count);
         }
         for (file, counted) in self.assertions_counted {
             graph.assertions_counted.insert(file, counted);
@@ -602,6 +621,12 @@ impl GraphSnapshot {
 
         write_u32(&mut out, self.unbound_references.len() as u32);
         for (file, count) in &self.unbound_references {
+            write_string(&mut out, file)?;
+            write_u32(&mut out, *count);
+        }
+
+        write_u32(&mut out, self.unbound_outside_repository.len() as u32);
+        for (file, count) in &self.unbound_outside_repository {
             write_string(&mut out, file)?;
             write_u32(&mut out, *count);
         }
@@ -735,6 +760,19 @@ impl GraphSnapshot {
             }
         }
 
+        // Version 6 split those counts by why the reference did not bind. An
+        // older snapshot has no split, which reads as "none of them were
+        // classified" — not as "none of them were external".
+        let mut unbound_outside_repository = Vec::new();
+        if version >= 6 {
+            let count = cursor.read_u32()? as usize;
+            unbound_outside_repository.reserve(count);
+            for _ in 0..count {
+                let file = cursor.read_string()?;
+                unbound_outside_repository.push((file, cursor.read_u32()?));
+            }
+        }
+
         if !cursor.is_at_end() {
             return Err(StoreError::Serialization(
                 "trailing bytes found in snapshot".to_string(),
@@ -749,6 +787,7 @@ impl GraphSnapshot {
             assertions,
             assertions_counted,
             unbound_references,
+            unbound_outside_repository,
         })
     }
 }

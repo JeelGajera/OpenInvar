@@ -72,6 +72,7 @@
           "signature": "def map(self, data: ResponseModel) -> dict:"
         }
       ],
+      "unbound_outside_repository": 0,
       "unbound_references": 0
     },
     {
@@ -145,6 +146,7 @@
           "signature": "email: str"
         }
       ],
+      "unbound_outside_repository": 0,
       "unbound_references": 0
     },
     {
@@ -168,6 +170,7 @@
           "signature": null
         }
       ],
+      "unbound_outside_repository": 0,
       "unbound_references": 0
     },
     {
@@ -272,6 +275,7 @@
           "signature": "def run():"
         }
       ],
+      "unbound_outside_repository": 2,
       "unbound_references": 2
     },
     {
@@ -335,6 +339,7 @@
           "signature": "def unused_helper():"
         }
       ],
+      "unbound_outside_repository": 0,
       "unbound_references": 0
     },
     {
@@ -477,6 +482,7 @@
           "signature": "def make_route(dependency=Depends(normalize_email)):"
         }
       ],
+      "unbound_outside_repository": 0,
       "unbound_references": 0
     },
     {
@@ -522,6 +528,7 @@
           "signature": "def run(value):"
         }
       ],
+      "unbound_outside_repository": 0,
       "unbound_references": 1
     },
     {
@@ -577,6 +584,7 @@
           "signature": null
         }
       ],
+      "unbound_outside_repository": 0,
       "unbound_references": 0
     },
     {
@@ -633,6 +641,7 @@
           "signature": "class Order(models.Model):"
         }
       ],
+      "unbound_outside_repository": 0,
       "unbound_references": 0
     },
     {
@@ -812,6 +821,7 @@
           "signature": "def normalize_email(value: str) -> str:"
         }
       ],
+      "unbound_outside_repository": 0,
       "unbound_references": 0
     }
   ],

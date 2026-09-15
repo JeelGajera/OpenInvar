@@ -119,6 +119,7 @@ pub fn extract(parsed: &ParsedFile) -> (FileIR, FileFacts) {
             assertions: Default::default(),
             assertions_counted: false,
             unbound_references: 0,
+            unbound_outside_repository: 0,
             references_counted: false,
         },
         facts,

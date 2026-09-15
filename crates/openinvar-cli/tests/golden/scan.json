@@ -41,6 +41,7 @@
           "signature": "module"
         }
       ],
+      "unbound_outside_repository": 0,
       "unbound_references": 0
     },
     {
@@ -84,6 +85,7 @@
           "signature": "module"
         }
       ],
+      "unbound_outside_repository": 0,
       "unbound_references": 0
     },
     {
@@ -127,6 +129,7 @@
           "signature": "module"
         }
       ],
+      "unbound_outside_repository": 0,
       "unbound_references": 0
     },
     {
@@ -160,6 +163,7 @@
           "signature": "module"
         }
       ],
+      "unbound_outside_repository": 0,
       "unbound_references": 0
     },
     {
@@ -193,6 +197,7 @@
           "signature": "module"
         }
       ],
+      "unbound_outside_repository": 0,
       "unbound_references": 0
     },
     {
@@ -226,6 +231,7 @@
           "signature": "module"
         }
       ],
+      "unbound_outside_repository": 0,
       "unbound_references": 0
     }
   ],

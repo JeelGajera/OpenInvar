@@ -64,6 +64,7 @@
           "signature": "public void Run()"
         }
       ],
+      "unbound_outside_repository": 0,
       "unbound_references": 0
     },
     {
@@ -117,6 +118,7 @@
           "signature": "public string Name { get; set; }"
         }
       ],
+      "unbound_outside_repository": 0,
       "unbound_references": 0
     },
     {
@@ -160,6 +162,7 @@
           "signature": "public string Summarise()"
         }
       ],
+      "unbound_outside_repository": 0,
       "unbound_references": 0
     },
     {
@@ -282,6 +285,7 @@
           "signature": "public string Render(Fmt formatter)"
         }
       ],
+      "unbound_outside_repository": 0,
       "unbound_references": 0
     },
     {
@@ -430,6 +434,7 @@
           "signature": "public void Handle()"
         }
       ],
+      "unbound_outside_repository": 0,
       "unbound_references": 0
     },
     {
@@ -473,6 +478,7 @@
           "signature": "public string Format(string value) { return value; }"
         }
       ],
+      "unbound_outside_repository": 0,
       "unbound_references": 0
     },
     {
@@ -516,6 +522,7 @@
           "signature": "public static void Log(string message) { }"
         }
       ],
+      "unbound_outside_repository": 0,
       "unbound_references": 0
     }
   ],

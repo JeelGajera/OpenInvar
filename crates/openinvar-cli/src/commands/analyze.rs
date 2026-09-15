@@ -467,6 +467,9 @@ pub fn build_graph(repo_ir: &RepoIR) -> (InvarGraph, AnalyzeStats) {
             graph
                 .unbound_references
                 .insert(file_ir.file.clone(), file_ir.unbound_references);
+            graph
+                .unbound_outside_repository
+                .insert(file_ir.file.clone(), file_ir.unbound_outside_repository);
         }
 
         resolver.ingest_relationships(&graph, &file_ir.relationships);

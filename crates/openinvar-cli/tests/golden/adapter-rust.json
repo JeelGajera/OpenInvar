@@ -21,6 +21,7 @@
           "signature": null
         }
       ],
+      "unbound_outside_repository": 0,
       "unbound_references": 0
     },
     {
@@ -95,6 +96,7 @@
           "signature": "impl ViewModelMapper :: pub fn map(&self, data: &ResponseModel) {"
         }
       ],
+      "unbound_outside_repository": 0,
       "unbound_references": 0
     },
     {
@@ -118,6 +120,7 @@
           "signature": null
         }
       ],
+      "unbound_outside_repository": 0,
       "unbound_references": 0
     },
     {
@@ -151,6 +154,7 @@
           "signature": "pub struct UserPayload {"
         }
       ],
+      "unbound_outside_repository": 0,
       "unbound_references": 0
     },
     {
@@ -299,6 +303,7 @@
           "signature": "pub fn run() -> String {"
         }
       ],
+      "unbound_outside_repository": 1,
       "unbound_references": 2
     },
     {
@@ -322,6 +327,7 @@
           "signature": null
         }
       ],
+      "unbound_outside_repository": 0,
       "unbound_references": 0
     },
     {
@@ -449,6 +455,7 @@
           "signature": "pub fn unused_helper() {}"
         }
       ],
+      "unbound_outside_repository": 1,
       "unbound_references": 1
     },
     {
@@ -472,6 +479,7 @@
           "signature": null
         }
       ],
+      "unbound_outside_repository": 0,
       "unbound_references": 0
     },
     {
@@ -507,6 +515,7 @@
           "signature": null
         }
       ],
+      "unbound_outside_repository": 0,
       "unbound_references": 0
     },
     {
@@ -540,6 +549,7 @@
           "signature": "pub struct Order {"
         }
       ],
+      "unbound_outside_repository": 0,
       "unbound_references": 0
     },
     {
@@ -692,6 +702,7 @@
           "signature": "Suspended"
         }
       ],
+      "unbound_outside_repository": 0,
       "unbound_references": 0
     },
     {
@@ -715,6 +726,7 @@
           "signature": null
         }
       ],
+      "unbound_outside_repository": 0,
       "unbound_references": 0
     },
     {
@@ -845,6 +857,7 @@
           "signature": "impl Reporter :: pub fn label<T: Identify>(&self, subject: &T) -> String {"
         }
       ],
+      "unbound_outside_repository": 0,
       "unbound_references": 0
     },
     {
@@ -868,6 +881,7 @@
           "signature": null
         }
       ],
+      "unbound_outside_repository": 0,
       "unbound_references": 0
     },
     {
@@ -913,6 +927,7 @@
           "signature": "fn main() {"
         }
       ],
+      "unbound_outside_repository": 0,
       "unbound_references": 0
     },
     {
@@ -1057,6 +1072,7 @@
           "signature": "impl Service :: pub fn kernel_id(&self, k: Kernel) -> u32 {"
         }
       ],
+      "unbound_outside_repository": 0,
       "unbound_references": 0
     },
     {
@@ -1080,6 +1096,7 @@
           "signature": null
         }
       ],
+      "unbound_outside_repository": 0,
       "unbound_references": 0
     },
     {
@@ -1115,6 +1132,7 @@
           "signature": null
         }
       ],
+      "unbound_outside_repository": 0,
       "unbound_references": 0
     },
     {
@@ -1148,6 +1166,7 @@
           "signature": "pub struct UserPayload {"
         }
       ],
+      "unbound_outside_repository": 0,
       "unbound_references": 0
     },
     {
@@ -1208,6 +1227,7 @@
           "signature": "pub fn describe(store: LegacyStore) -> String {"
         }
       ],
+      "unbound_outside_repository": 0,
       "unbound_references": 0
     },
     {
@@ -1231,6 +1251,7 @@
           "signature": null
         }
       ],
+      "unbound_outside_repository": 0,
       "unbound_references": 0
     },
     {
@@ -1264,6 +1285,7 @@
           "signature": "pub struct LegacyStore {"
         }
       ],
+      "unbound_outside_repository": 0,
       "unbound_references": 0
     },
     {
@@ -1297,6 +1319,7 @@
           "signature": "pub struct Kernel {"
         }
       ],
+      "unbound_outside_repository": 0,
       "unbound_references": 0
     }
   ],

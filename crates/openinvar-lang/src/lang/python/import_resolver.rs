@@ -22,7 +22,7 @@ use openinvar_core::symbol_id::{
     parse_unresolved_import_id, parse_unresolved_local_type_id, IMPORT_ALL,
 };
 
-use crate::lang::python::scope_analyzer::is_builtin_type;
+use crate::lang::python::scope_analyzer::{is_builtin_callable, is_builtin_type};
 
 /// How far `__init__.py` re-export chains are followed.
 const MAX_REEXPORT_DEPTH: usize = 8;
@@ -81,6 +81,8 @@ pub fn resolve_repo_ir(_root: &Path, repo_ir: &mut RepoIR) {
         // References this file named that nothing here could place. Counted at
         // the point of the decision; what gets emitted is unchanged.
         let mut unbound: u32 = 0;
+        // The share of `unbound` this adapter can show is outside the tree.
+        let mut outside: u32 = 0;
 
         for (position, rel) in file.relationships.iter_mut().enumerate() {
             if rel.kind != RelationshipKind::Imports {
@@ -210,6 +212,11 @@ pub fn resolve_repo_ir(_root: &Path, repo_ir: &mut RepoIR) {
                     None => {
                         drop.insert(position);
                         unbound += 1;
+                        // Which of the two it is, is now recorded rather than
+                        // left to the reader.
+                        if is_builtin_callable(&type_name) {
+                            outside += 1;
+                        }
                     }
                 }
                 continue;
@@ -263,6 +270,7 @@ pub fn resolve_repo_ir(_root: &Path, repo_ir: &mut RepoIR) {
             });
         }
         file.unbound_references = unbound;
+        file.unbound_outside_repository = outside;
     }
 }
 

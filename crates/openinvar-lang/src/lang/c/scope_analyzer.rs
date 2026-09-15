@@ -57,6 +57,30 @@ const C_BUILTIN_TYPES: &[&str] = &[
     "istream",
 ];
 
+/// Functions the C standard library provides.
+///
+/// The call resolver reaches a callee it cannot place and, by its own comment,
+/// could not say whether that is libc or a local function whose header was not
+/// found. Both are unbound; only one is a gap in the graph.
+///
+/// Deliberately the common core rather than an attempt at all of libc: an entry
+/// here is a claim that the name is outside any repository, so a wrong one
+/// silently understates the gap. A missing one only leaves a reference in the
+/// unexplained half, which is the safe direction.
+const C_STDLIB_CALLABLES: &[&str] = &[
+    "printf", "fprintf", "sprintf", "snprintf", "scanf", "sscanf", "fscanf", "puts", "putchar",
+    "getchar", "fopen", "fclose", "fread", "fwrite", "fseek", "ftell", "fgets", "fputs",
+    "malloc", "calloc", "realloc", "free", "memcpy", "memmove", "memset", "memcmp",
+    "strlen", "strcpy", "strncpy", "strcat", "strncat", "strcmp", "strncmp", "strchr", "strrchr",
+    "strstr", "strdup", "strtok", "atoi", "atol", "atof", "strtol", "strtod",
+    "abs", "labs", "exit", "abort", "assert", "qsort", "bsearch", "rand", "srand", "time", "clock",
+];
+
+/// True if `name` is a standard-library function rather than repository code.
+pub fn is_stdlib_callable(name: &str) -> bool {
+    C_STDLIB_CALLABLES.contains(&name) || is_builtin_type(name)
+}
+
 pub fn is_builtin_type(name: &str) -> bool {
     C_BUILTIN_TYPES.contains(&name)
 }

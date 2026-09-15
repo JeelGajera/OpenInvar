@@ -55,6 +55,7 @@ fn graph_of(pairs: &[(&str, &str)], resolution: Resolution) -> InvarGraph {
                 assertions: Default::default(),
                 assertions_counted: false,
                 unbound_references: 0,
+                unbound_outside_repository: 0,
                 references_counted: false,
             },
         );
@@ -155,6 +156,7 @@ fn a_cycle_found_on_resolved_edges_still_reports_even_beside_weak_ones() {
             assertions: Default::default(),
             assertions_counted: false,
             unbound_references: 0,
+            unbound_outside_repository: 0,
             references_counted: false,
         },
     );

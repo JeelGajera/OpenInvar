@@ -69,6 +69,7 @@ fn revision(signature: &str, assertions: u32, covers: bool, counted: bool) -> In
             assertions: Default::default(),
             assertions_counted: counted,
             unbound_references: 0,
+            unbound_outside_repository: 0,
             references_counted: false,
         },
     );
@@ -89,6 +90,7 @@ fn revision(signature: &str, assertions: u32, covers: bool, counted: bool) -> In
             assertions: counts,
             assertions_counted: counted,
             unbound_references: 0,
+            unbound_outside_repository: 0,
             references_counted: false,
         },
     );

@@ -104,6 +104,7 @@
           "signature": "package github.com/test/app/mappers/deep"
         }
       ],
+      "unbound_outside_repository": 0,
       "unbound_references": 0
     },
     {
@@ -147,6 +148,7 @@
           "signature": "package github.com/test/app/models"
         }
       ],
+      "unbound_outside_repository": 0,
       "unbound_references": 0
     },
     {
@@ -295,6 +297,7 @@
           "signature": "package example.com/callgraph/app"
         }
       ],
+      "unbound_outside_repository": 1,
       "unbound_references": 2
     },
     {
@@ -414,6 +417,7 @@
           "signature": "package example.com/callgraph/models"
         }
       ],
+      "unbound_outside_repository": 0,
       "unbound_references": 0
     },
     {
@@ -597,6 +601,7 @@
           "signature": "package github.com/test/features/handlers"
         }
       ],
+      "unbound_outside_repository": 0,
       "unbound_references": 1
     },
     {
@@ -640,6 +645,7 @@
           "signature": "package github.com/test/features/models"
         }
       ],
+      "unbound_outside_repository": 0,
       "unbound_references": 0
     },
     {
@@ -695,6 +701,7 @@
           "signature": "UserPayload struct {"
         }
       ],
+      "unbound_outside_repository": 0,
       "unbound_references": 0
     },
     {
@@ -761,6 +768,7 @@
           "signature": "package github.com/test/features/store"
         }
       ],
+      "unbound_outside_repository": 0,
       "unbound_references": 0
     },
     {
@@ -905,6 +913,7 @@
           "signature": "func (m *MemoryStore) Close() error {"
         }
       ],
+      "unbound_outside_repository": 0,
       "unbound_references": 0
     }
   ],

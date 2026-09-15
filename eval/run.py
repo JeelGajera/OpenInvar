@@ -116,6 +116,17 @@ def coverage_of(binary, repo):
                 "attempted": int(m.group(3)),
             }
             continue
+        # The unbound remainder, split by whether an adapter could show the
+        # reference was never the repository's to resolve. Without this, R'
+        # cannot tell a prelude name from work the adapter did not do.
+        m = re.search(r"(\d+) name something outside it", line)
+        if m and references is not None:
+            references["outside_repository"] = int(m.group(1))
+            continue
+        m = re.search(r"(\d+) are unexplained", line)
+        if m and references is not None:
+            references["unexplained"] = int(m.group(1))
+            continue
         m = re.search(r"Resolved\s+([\d.]+)%\s+\((\d+) of (\d+)", line)
         if m:
             overall = {

@@ -61,6 +61,7 @@
           "signature": "b_field: str"
         }
       ],
+      "unbound_outside_repository": 0,
       "unbound_references": 0
     },
     {
@@ -157,6 +158,7 @@
           "signature": "def use_beta(anything: Beta) -> str:"
         }
       ],
+      "unbound_outside_repository": 0,
       "unbound_references": 0
     },
     {
@@ -190,6 +192,7 @@
           "signature": "pub struct Alpha { pub a_field: String }"
         }
       ],
+      "unbound_outside_repository": 0,
       "unbound_references": 0
     },
     {
@@ -223,6 +226,7 @@
           "signature": "pub struct Beta { pub b_field: String }"
         }
       ],
+      "unbound_outside_repository": 0,
       "unbound_references": 0
     },
     {
@@ -319,6 +323,7 @@
           "signature": "pub fn use_beta(anything: &Beta) -> usize { anything.b_field.len() }"
         }
       ],
+      "unbound_outside_repository": 0,
       "unbound_references": 0
     },
     {
@@ -342,6 +347,7 @@
           "signature": null
         }
       ],
+      "unbound_outside_repository": 0,
       "unbound_references": 0
     },
     {
@@ -395,6 +401,7 @@
           "signature": "package github.com/test/regression/models"
         }
       ],
+      "unbound_outside_repository": 0,
       "unbound_references": 0
     },
     {
@@ -511,6 +518,7 @@
           "signature": "package github.com/test/regression/svc"
         }
       ],
+      "unbound_outside_repository": 0,
       "unbound_references": 0
     },
     {
@@ -554,6 +562,7 @@
           "signature": "struct Beta { char *b_field; }"
         }
       ],
+      "unbound_outside_repository": 0,
       "unbound_references": 0
     },
     {
@@ -635,6 +644,7 @@
           "signature": "char *use_beta(Beta *anything) { return anything->b_field; }"
         }
       ],
+      "unbound_outside_repository": 0,
       "unbound_references": 0
     }
   ],

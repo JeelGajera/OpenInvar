@@ -60,6 +60,7 @@ fn build(files: &[(&str, Vec<Symbol>)], edges: &[Relationship]) -> InvarGraph {
                 assertions: Default::default(),
                 assertions_counted: false,
                 unbound_references: 0,
+                unbound_outside_repository: 0,
                 references_counted: false,
             },
         );
