@@ -442,6 +442,7 @@ pub fn detect_language_from_extension(ext: &str) -> Option<Language> {
         "kt" | "kts" => Some(Language::Kotlin),
         "swift" => Some(Language::Swift),
         "sql" => Some(Language::Sql),
+        "lua" => Some(Language::Lua),
         _ => None,
     }
 }

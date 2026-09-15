@@ -933,6 +933,9 @@ fn language_to_u8(language: &Language) -> u8 {
         Language::Kotlin => 12,
         Language::Swift => 13,
         Language::Sql => 14,
+        // Appended. These are persisted in every snapshot, so a renumber
+        // would silently reinterpret every language in an existing store.
+        Language::Lua => 15,
     }
 }
 
@@ -952,6 +955,7 @@ fn u8_to_language(input: u8) -> Result<Language, StoreError> {
         12 => Ok(Language::Kotlin),
         13 => Ok(Language::Swift),
         14 => Ok(Language::Sql),
+        15 => Ok(Language::Lua),
         other => Err(StoreError::Serialization(format!(
             "unknown language code: {other}"
         ))),

@@ -79,6 +79,7 @@ fn language_rank(language: &Language) -> u8 {
         Language::Kotlin => 11,
         Language::Swift => 12,
         Language::Sql => 13,
+        Language::Lua => 14,
     }
 }
 

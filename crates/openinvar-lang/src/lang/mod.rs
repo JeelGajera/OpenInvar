@@ -31,6 +31,8 @@ pub mod rust;
 #[cfg(feature = "typescript")]
 pub mod typescript;
 
+#[cfg(feature = "lua")]
+pub mod lua;
 #[cfg(feature = "php")]
 pub mod php;
 #[cfg(feature = "ruby")]
