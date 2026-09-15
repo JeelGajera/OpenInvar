@@ -29,12 +29,12 @@ step() { printf "${BOLD}${CYAN}»${RESET} ${BOLD}%s${RESET}\n" "$1"; }
 
 printf "${BLUE}${BOLD}"
 cat << "EOF"
-   ______                 __                  
-  / ____/________ _____  / /_  __  ______     
- / / __/ ___/ __ `/ __ \/ __ \/ / / / __ \    
-/ /_/ / /  / /_/ / /_/ / / / / /_/ / / / /    
-\____/_/   \__,_/ .___/_/ /_/\__, /_/ /_/     
-               /_/          /____/            
+   ____                   ____
+  / __ \____  ___  ____  /  _/___ _   ______ ______
+ / / / / __ \/ _ \/ __ \ / // __ \ | / / __ `/ ___/
+/ /_/ / /_/ /  __/ / / // // / / / |/ / /_/ / /
+\____/ .___/\___/_/ /_/___/_/ /_/|___/\__,_/_/
+    /_/
 EOF
 printf "${RESET}\n"
 
@@ -129,7 +129,9 @@ if [[ ":$PATH:" != *":$(dirname "${INSTALL_TARGET}"):"* ]]; then
     printf "\n  ${MAGENTA}export PATH=\"$(dirname "${INSTALL_TARGET}"):\$PATH\"${RESET}\n\n"
 else
     printf "\n"
-    success "${BOLD}OpenInvar is ready!${RESET} Run '${BOLD}openinvar --help${RESET}' to get started.\n"
+    # No trailing \n: `success` prints through %s, which does not interpret
+    # escapes, so one here reaches the terminal as the two characters.
+    success "${BOLD}OpenInvar is ready!${RESET} Run '${BOLD}openinvar --help${RESET}' to get started."
 fi
 
 printf "${BLUE}==========================================${RESET}\n"
