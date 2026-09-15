@@ -7,6 +7,7 @@
       "file": "basic/Elsewhere.cs",
       "language": "CSharp",
       "re_exports": [],
+      "references_counted": true,
       "relationships": [
         {
           "alias": null,
@@ -62,7 +63,8 @@
           "name": "Run",
           "signature": "public void Run()"
         }
-      ]
+      ],
+      "unbound_references": 0
     },
     {
       "assertions": {},
@@ -71,6 +73,7 @@
       "file": "basic/Models/User.cs",
       "language": "CSharp",
       "re_exports": [],
+      "references_counted": true,
       "relationships": [],
       "symbols": [
         {
@@ -113,7 +116,8 @@
           "name": "Name",
           "signature": "public string Name { get; set; }"
         }
-      ]
+      ],
+      "unbound_references": 0
     },
     {
       "assertions": {},
@@ -122,6 +126,7 @@
       "file": "basic/Report.Extra.cs",
       "language": "CSharp",
       "re_exports": [],
+      "references_counted": true,
       "relationships": [],
       "symbols": [
         {
@@ -154,7 +159,8 @@
           "name": "Summarise",
           "signature": "public string Summarise()"
         }
-      ]
+      ],
+      "unbound_references": 0
     },
     {
       "assertions": {},
@@ -163,6 +169,7 @@
       "file": "basic/Report.cs",
       "language": "CSharp",
       "re_exports": [],
+      "references_counted": true,
       "relationships": [
         {
           "alias": null,
@@ -274,7 +281,8 @@
           "name": "Render",
           "signature": "public string Render(Fmt formatter)"
         }
-      ]
+      ],
+      "unbound_references": 0
     },
     {
       "assertions": {},
@@ -283,6 +291,7 @@
       "file": "basic/UserService.cs",
       "language": "CSharp",
       "re_exports": [],
+      "references_counted": true,
       "relationships": [
         {
           "alias": null,
@@ -420,7 +429,8 @@
           "name": "Handle",
           "signature": "public void Handle()"
         }
-      ]
+      ],
+      "unbound_references": 0
     },
     {
       "assertions": {},
@@ -429,6 +439,7 @@
       "file": "basic/Util/Formatter.cs",
       "language": "CSharp",
       "re_exports": [],
+      "references_counted": true,
       "relationships": [],
       "symbols": [
         {
@@ -461,7 +472,8 @@
           "name": "Format",
           "signature": "public string Format(string value) { return value; }"
         }
-      ]
+      ],
+      "unbound_references": 0
     },
     {
       "assertions": {},
@@ -470,6 +482,7 @@
       "file": "basic/Util/Helpers.cs",
       "language": "CSharp",
       "re_exports": [],
+      "references_counted": true,
       "relationships": [],
       "symbols": [
         {
@@ -502,7 +515,8 @@
           "name": "Log",
           "signature": "public static void Log(string message) { }"
         }
-      ]
+      ],
+      "unbound_references": 0
     }
   ],
   "language_stats": {

@@ -7,6 +7,7 @@
       "file": "default_excludes/src/env/index.ts",
       "language": "TypeScript",
       "re_exports": [],
+      "references_counted": true,
       "relationships": [],
       "symbols": [
         {
@@ -39,7 +40,8 @@
           "name": "module",
           "signature": "module"
         }
-      ]
+      ],
+      "unbound_references": 0
     },
     {
       "assertions": {},
@@ -48,6 +50,7 @@
       "file": "default_excludes/src/gen/index.ts",
       "language": "TypeScript",
       "re_exports": [],
+      "references_counted": true,
       "relationships": [],
       "symbols": [
         {
@@ -80,7 +83,8 @@
           "name": "module",
           "signature": "module"
         }
-      ]
+      ],
+      "unbound_references": 0
     },
     {
       "assertions": {},
@@ -89,6 +93,7 @@
       "file": "default_excludes/src/ok/index.ts",
       "language": "TypeScript",
       "re_exports": [],
+      "references_counted": true,
       "relationships": [],
       "symbols": [
         {
@@ -121,7 +126,8 @@
           "name": "module",
           "signature": "module"
         }
-      ]
+      ],
+      "unbound_references": 0
     },
     {
       "assertions": {},
@@ -130,6 +136,7 @@
       "file": "monorepo/projects/api/administration/src/AdminService.ts",
       "language": "TypeScript",
       "re_exports": [],
+      "references_counted": true,
       "relationships": [],
       "symbols": [
         {
@@ -152,7 +159,8 @@
           "name": "module",
           "signature": "module"
         }
-      ]
+      ],
+      "unbound_references": 0
     },
     {
       "assertions": {},
@@ -161,6 +169,7 @@
       "file": "monorepo/projects/frontend/web-portal/src/App.ts",
       "language": "TypeScript",
       "re_exports": [],
+      "references_counted": true,
       "relationships": [],
       "symbols": [
         {
@@ -183,7 +192,8 @@
           "name": "module",
           "signature": "module"
         }
-      ]
+      ],
+      "unbound_references": 0
     },
     {
       "assertions": {},
@@ -192,6 +202,7 @@
       "file": "monorepo/projects/frontend/web-portal/src/Component.ts",
       "language": "TypeScript",
       "re_exports": [],
+      "references_counted": true,
       "relationships": [],
       "symbols": [
         {
@@ -214,7 +225,8 @@
           "name": "module",
           "signature": "module"
         }
-      ]
+      ],
+      "unbound_references": 0
     }
   ],
   "language_stats": {

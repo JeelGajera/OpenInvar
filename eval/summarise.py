@@ -19,6 +19,10 @@ PRECISION_PASS = 0.10
 PRECISION_STOP = 0.25
 RESOLUTION_PASS = 90.0
 RESOLUTION_STOP = 75.0
+# R' — see eval/criteria.md. Lower than R's because it measures a stricter
+# thing: references named in source, not edges that reached the graph.
+REFERENCES_PASS = 65.0
+REFERENCES_STOP = 50.0
 SECONDS_PASS = 60.0
 SECONDS_STOP = 180.0
 
@@ -85,6 +89,33 @@ def main():
         )
     else:
         print("R  resolution         no data   [INVESTIGATE]")
+
+    # -- R': reference-level coverage --------------------------
+    #
+    # What R was believed to be. This denominator counts references named in
+    # source, including the ones that bound to nothing -- which produce no edge,
+    # and so could not be counted at all until the adapters reported them.
+    ref_percents = [
+        r["coverage"]["references"]["percent"]
+        for r in repos
+        if (r.get("coverage") or {}).get("references")
+    ]
+    if ref_percents:
+        ref_median = statistics.median(ref_percents)
+        ref_verdict = verdict(
+            ref_median, REFERENCES_PASS, REFERENCES_STOP, higher_is_better=True
+        )
+        print(f"R' reference coverage median {ref_median:.1f}%   [{ref_verdict}]")
+        print(
+            "     Of the references each adapter attempted to bind, the share it\n"
+            "     bound. An unbound reference is not necessarily a defect: a type\n"
+            "     from a package whose source was never analysed is indistinguishable\n"
+            "     from one that was missed. An upper bound on what is absent, and a\n"
+            "     trend across revisions rather than a comparison between languages."
+        )
+    else:
+        print("R' reference coverage no data   [INVESTIGATE]")
+        print("     Needs a binary whose `status` reports 'References bound'.")
 
     # ── T: performance ───────────────────────────────────────
     if seconds:

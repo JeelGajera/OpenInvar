@@ -14,6 +14,46 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Reference-level coverage — the share of references that actually bound.**
+  `status` reported resolution coverage as though it measured how much of a
+  repository OpenInvar understood. It does not. It is the share of *recorded
+  edges* that resolved, and an edge exists only once something bound it — so a
+  reference the analysis could not place left nothing to count, never entered
+  the denominator, and failing to bind more references made the number go
+  **up**. The project's own evaluation found this and registered a replacement
+  before measuring anything with it; this implements it.
+
+  Every Tier 1 adapter now counts the references it could not place, at the
+  point where it already decides to drop them. `status` reports both figures:
+
+  ```
+  Resolved           99.8% (5980 of 5992 edge(s))
+  References bound   69.6% (5980 of 8597 reference(s))
+    2617 reference(s) named in source bound to nothing in the graph.
+  ```
+
+  Measured on this repository. The gap between 99.8% and 69.6% is what was
+  invisible.
+
+  **Nothing about the analysis changed** — the graph is byte-identical and the
+  golden diff is two new fields per file and no altered edge. That was the
+  hard part: an earlier attempt had the adapters stop discarding unresolved
+  references so one central counter could see them, which changed seven
+  adapters' output and broke eleven tests asserting real properties, among them
+  "a builtin call records no edge". The count is now taken where each adapter
+  already makes its decision, and a test asserts the analysis is unaffected.
+
+  An unbound reference is not automatically a defect: a type from a package
+  whose source was never analysed is indistinguishable, to an adapter, from one
+  it should have found and missed. Where an adapter can positively identify a
+  reference as living outside the repository — a language builtin, a
+  third-party package — it is not counted. Where it cannot tell, it is counted,
+  because a measure that excluded what it could not classify would be reporting
+  its own confidence rather than its coverage.
+
+  Snapshot format version 5 carries the counts; a version 4 snapshot reads as
+  "this graph does not know" rather than as zero.
+
 - **C# is now Tier 1.** The last of the two languages that shipped structural,
   and the harder one. Its module said plainly that nothing in it resolved an
   import, followed an alias, or bound a declared type; all three are here now,

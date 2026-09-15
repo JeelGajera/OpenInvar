@@ -7,6 +7,7 @@
       "file": "alias_import_bug/mappers/deep/view_model_mapper.go",
       "language": "Go",
       "re_exports": [],
+      "references_counted": true,
       "relationships": [
         {
           "alias": "models",
@@ -102,7 +103,8 @@
           "name": "deep",
           "signature": "package github.com/test/app/mappers/deep"
         }
-      ]
+      ],
+      "unbound_references": 0
     },
     {
       "assertions": {},
@@ -111,6 +113,7 @@
       "file": "alias_import_bug/models/user_payload.go",
       "language": "Go",
       "re_exports": [],
+      "references_counted": true,
       "relationships": [],
       "symbols": [
         {
@@ -143,7 +146,8 @@
           "name": "models",
           "signature": "package github.com/test/app/models"
         }
-      ]
+      ],
+      "unbound_references": 0
     },
     {
       "assertions": {},
@@ -152,6 +156,7 @@
       "file": "call_edges/app/run.go",
       "language": "Go",
       "re_exports": [],
+      "references_counted": true,
       "relationships": [
         {
           "alias": null,
@@ -289,7 +294,8 @@
           "name": "app",
           "signature": "package example.com/callgraph/app"
         }
-      ]
+      ],
+      "unbound_references": 2
     },
     {
       "assertions": {},
@@ -298,6 +304,7 @@
       "file": "call_edges/models/user.go",
       "language": "Go",
       "re_exports": [],
+      "references_counted": true,
       "relationships": [
         {
           "alias": "User",
@@ -406,7 +413,8 @@
           "name": "models",
           "signature": "package example.com/callgraph/models"
         }
-      ]
+      ],
+      "unbound_references": 0
     },
     {
       "assertions": {},
@@ -415,6 +423,7 @@
       "file": "language_features/handlers/user.go",
       "language": "Go",
       "re_exports": [],
+      "references_counted": true,
       "relationships": [
         {
           "alias": null,
@@ -587,7 +596,8 @@
           "name": "handlers",
           "signature": "package github.com/test/features/handlers"
         }
-      ]
+      ],
+      "unbound_references": 1
     },
     {
       "assertions": {},
@@ -596,6 +606,7 @@
       "file": "language_features/models/order.go",
       "language": "Go",
       "re_exports": [],
+      "references_counted": true,
       "relationships": [],
       "symbols": [
         {
@@ -628,7 +639,8 @@
           "name": "models",
           "signature": "package github.com/test/features/models"
         }
-      ]
+      ],
+      "unbound_references": 0
     },
     {
       "assertions": {},
@@ -637,6 +649,7 @@
       "file": "language_features/models/user.go",
       "language": "Go",
       "re_exports": [],
+      "references_counted": true,
       "relationships": [
         {
           "alias": "Base",
@@ -681,7 +694,8 @@
           "name": "UserPayload",
           "signature": "UserPayload struct {"
         }
-      ]
+      ],
+      "unbound_references": 0
     },
     {
       "assertions": {},
@@ -690,6 +704,7 @@
       "file": "language_features/store/helpers.go",
       "language": "Go",
       "re_exports": [],
+      "references_counted": true,
       "relationships": [
         {
           "alias": "MemoryStore",
@@ -745,7 +760,8 @@
           "name": "store",
           "signature": "package github.com/test/features/store"
         }
-      ]
+      ],
+      "unbound_references": 0
     },
     {
       "assertions": {},
@@ -754,6 +770,7 @@
       "file": "language_features/store/store.go",
       "language": "Go",
       "re_exports": [],
+      "references_counted": true,
       "relationships": [
         {
           "alias": null,
@@ -887,7 +904,8 @@
           "name": "Close",
           "signature": "func (m *MemoryStore) Close() error {"
         }
-      ]
+      ],
+      "unbound_references": 0
     }
   ],
   "language_stats": {

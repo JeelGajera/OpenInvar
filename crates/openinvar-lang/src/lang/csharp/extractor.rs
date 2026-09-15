@@ -118,6 +118,8 @@ pub fn extract(parsed: &ParsedFile) -> (FileIR, FileFacts) {
             re_exports: Vec::new(),
             assertions: Default::default(),
             assertions_counted: false,
+            unbound_references: 0,
+            references_counted: false,
         },
         facts,
     )

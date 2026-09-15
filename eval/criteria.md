@@ -75,6 +75,40 @@ is the point of publishing it.
 Below 75% the tool would be declining to decide on most of a repository, which
 is honest but not useful.
 
+**Superseded by R′ below.** The first run found that this criterion does not
+measure what it was written to measure: `dispatch` stamps every Tier 1 edge
+`Resolved`, and an edge only exists once something bound it, so a repository
+with no Tier 2 files reports 100% by construction. It is a tier classification,
+not a resolution rate. R is left as written — moving a threshold to match an
+outcome is what pre-registering it is meant to prevent — and is not scored
+again.
+
+### R′ — Reference-level coverage · investigate below threshold
+
+> Of the references an adapter attempted to bind, the share it bound.
+
+Registered after the first run and before any measurement was taken with it.
+This is the figure R was believed to be: the denominator now includes the
+references that bound to nothing, which previously left no trace to count.
+
+| | |
+|---|---|
+| Pass | median per-repository references bound ≥ 65% |
+| Investigate | 50–65% |
+| **Stop** | **< 50%** |
+
+The thresholds sit well below R's because they measure a different and stricter
+thing. An unbound reference is not necessarily a defect: a type from a package
+whose source was never analysed is indistinguishable, to an adapter, from one
+it should have found and missed. Both are references the graph cannot answer
+questions about, which is what the number is for — so it is an upper bound on
+what is missing, not a defect count.
+
+Read as a trend rather than an absolute. The figure is comparable across
+revisions of one repository, and only loosely across languages: each extractor
+creates a different number of placeholders for the same source, so a language
+with finer-grained extraction reports a lower percentage for identical code.
+
 ### T — Performance · investigate above threshold
 
 > Fast queries, and a gate you can run at commit time.

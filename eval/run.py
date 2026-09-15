@@ -102,8 +102,20 @@ def coverage_of(binary, repo):
 
     plain = re.sub(r"\x1b\[[0-9;]*m", "", out)
     overall = None
+    references = None
     per_language = {}
     for line in plain.splitlines():
+        m = re.search(r"References bound\s+([\d.]+)%\s+\((\d+) of (\d+)", line)
+        if m:
+            # Criterion R', and a different question from the line below it:
+            # this denominator counts references named in source, including the
+            # ones that bound to nothing and so produced no edge to count.
+            references = {
+                "percent": float(m.group(1)),
+                "bound": int(m.group(2)),
+                "attempted": int(m.group(3)),
+            }
+            continue
         m = re.search(r"Resolved\s+([\d.]+)%\s+\((\d+) of (\d+)", line)
         if m:
             overall = {
@@ -118,7 +130,11 @@ def coverage_of(binary, repo):
                 "percent": float(m.group(2)),
                 "edges": int(m.group(3)),
             }
-    return {"overall": overall, "per_language": per_language}
+    return {
+        "overall": overall,
+        "references": references,
+        "per_language": per_language,
+    }
 
 
 def audit_pair(binary, repo, before, after):

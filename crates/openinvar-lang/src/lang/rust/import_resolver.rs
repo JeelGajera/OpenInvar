@@ -69,6 +69,9 @@ pub fn resolve_repo_ir(root: &Path, repo_ir: &mut RepoIR) {
         //
         // Populates the table that pass 2 resolves type names against.
         let mut local_names: HashMap<String, String> = HashMap::new();
+        // References this file named that nothing here could place. Counted at
+        // the point of the decision; what gets emitted is unchanged.
+        let mut unbound: u32 = 0;
         let mut drop_import = Vec::new();
 
         for (index, rel) in file.relationships.iter_mut().enumerate() {
@@ -107,7 +110,10 @@ pub fn resolve_repo_ir(root: &Path, repo_ir: &mut RepoIR) {
                             rel.to = module_id.clone();
                             local_names.insert(local, module_id);
                         }
-                        _ => drop_import.push(index),
+                        _ => {
+                            drop_import.push(index);
+                            unbound += 1;
+                        }
                     }
                     file.diagnostics.push(Diagnostic {
                         level: DiagnosticLevel::Warning,
@@ -122,6 +128,7 @@ pub fn resolve_repo_ir(root: &Path, repo_ir: &mut RepoIR) {
                 }
                 Resolved::Unknown => {
                     drop_import.push(index);
+                    unbound += 1;
                     file.diagnostics.push(Diagnostic {
                         level: DiagnosticLevel::Warning,
                         category: DiagnosticCategory::Resolution,
@@ -176,7 +183,13 @@ pub fn resolve_repo_ir(root: &Path, repo_ir: &mut RepoIR) {
                     // or a fully-qualified path used without a `use`. None of
                     // them name a symbol in the graph, and no diagnostic is
                     // raised because there is nothing here a user could fix.
-                    None => drop_type.push(index),
+                    // Counted: this arm cannot tell a prelude name from a
+                    // local function the resolver missed, and excluding what it
+                    // cannot classify would measure confidence, not coverage.
+                    None => {
+                        drop_type.push(index);
+                        unbound += 1;
+                    }
                 }
                 continue;
             }
@@ -199,7 +212,11 @@ pub fn resolve_repo_ir(root: &Path, repo_ir: &mut RepoIR) {
                 None => {
                     drop_type.push(index);
                     // Standard-library types are genuine references to code
-                    // outside the repository, not resolution failures.
+                    // outside the repository, not resolution failures — so they
+                    // are not counted as unbound either.
+                    if !is_builtin_type(&type_name) {
+                        unbound += 1;
+                    }
                     if !is_builtin_type(&type_name) {
                         file.diagnostics.push(Diagnostic {
                             level: DiagnosticLevel::Warning,
@@ -227,6 +244,8 @@ pub fn resolve_repo_ir(root: &Path, repo_ir: &mut RepoIR) {
                 rel.properties_accessed = props.iter().cloned().collect();
             }
         }
+
+        file.unbound_references = unbound;
 
         let mut unresolved: BTreeSet<usize> = drop_import.into_iter().collect();
         unresolved.extend(drop_type);

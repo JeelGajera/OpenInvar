@@ -68,6 +68,8 @@ fn revision(signature: &str, assertions: u32, covers: bool, counted: bool) -> In
             re_exports: vec![],
             assertions: Default::default(),
             assertions_counted: counted,
+            unbound_references: 0,
+            references_counted: false,
         },
     );
 
@@ -86,6 +88,8 @@ fn revision(signature: &str, assertions: u32, covers: bool, counted: bool) -> In
             re_exports: vec![],
             assertions: counts,
             assertions_counted: counted,
+            unbound_references: 0,
+            references_counted: false,
         },
     );
 

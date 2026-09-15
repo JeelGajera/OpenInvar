@@ -7,6 +7,7 @@
       "file": "basic/src/main/java/com/example/Elsewhere.java",
       "language": "Java",
       "re_exports": [],
+      "references_counted": true,
       "relationships": [
         {
           "alias": null,
@@ -62,7 +63,8 @@
           "name": "run",
           "signature": "public void run() {"
         }
-      ]
+      ],
+      "unbound_references": 0
     },
     {
       "assertions": {},
@@ -71,6 +73,7 @@
       "file": "basic/src/main/java/com/example/Report.java",
       "language": "Java",
       "re_exports": [],
+      "references_counted": true,
       "relationships": [
         {
           "alias": null,
@@ -205,7 +208,8 @@
           "name": "render",
           "signature": "public String render(Formatter formatter) {"
         }
-      ]
+      ],
+      "unbound_references": 0
     },
     {
       "assertions": {},
@@ -214,6 +218,7 @@
       "file": "basic/src/main/java/com/example/UserService.java",
       "language": "Java",
       "re_exports": [],
+      "references_counted": true,
       "relationships": [
         {
           "alias": null,
@@ -351,7 +356,8 @@
           "name": "handle",
           "signature": "public void handle() {"
         }
-      ]
+      ],
+      "unbound_references": 1
     },
     {
       "assertions": {},
@@ -360,6 +366,7 @@
       "file": "basic/src/main/java/com/example/model/User.java",
       "language": "Java",
       "re_exports": [],
+      "references_counted": true,
       "relationships": [],
       "symbols": [
         {
@@ -412,7 +419,8 @@
           "name": "getId",
           "signature": "public String getId() {"
         }
-      ]
+      ],
+      "unbound_references": 2
     },
     {
       "assertions": {},
@@ -421,6 +429,7 @@
       "file": "basic/src/main/java/com/example/util/Formatter.java",
       "language": "Java",
       "re_exports": [],
+      "references_counted": true,
       "relationships": [],
       "symbols": [
         {
@@ -453,7 +462,8 @@
           "name": "format",
           "signature": "public String format(String value) {"
         }
-      ]
+      ],
+      "unbound_references": 1
     },
     {
       "assertions": {},
@@ -462,6 +472,7 @@
       "file": "basic/src/main/java/com/example/util/Helpers.java",
       "language": "Java",
       "re_exports": [],
+      "references_counted": true,
       "relationships": [],
       "symbols": [
         {
@@ -494,7 +505,8 @@
           "name": "log",
           "signature": "public static void log(String message) {"
         }
-      ]
+      ],
+      "unbound_references": 1
     }
   ],
   "language_stats": {

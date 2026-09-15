@@ -234,6 +234,35 @@ pub struct FileIR {
     /// empty `assertions` map is ambiguous — no assertions, or none visible.
     #[serde(default)]
     pub assertions_counted: bool,
+    /// References this file's adapter tried to bind and could not.
+    ///
+    /// The adapters all work the same way: extract a reference against a
+    /// placeholder id, then replace the placeholder once the target is known.
+    /// A placeholder that is still there when the adapter finishes is a
+    /// reference the adapter could not place, and `dispatch` counts them as it
+    /// drops them — so this is the part of the source the graph does *not*
+    /// describe.
+    ///
+    /// Recorded because the resolution figure alone cannot see it. That figure
+    /// is the share of *recorded edges* that resolved, and an edge only exists
+    /// once something bound it, so a reference that failed leaves no trace to
+    /// count and the percentage rises. This is the missing denominator.
+    ///
+    /// It includes references to code outside the repository — a type from a
+    /// package whose source was never analysed is indistinguishable, to the
+    /// adapter, from one it should have found and missed. Both are references
+    /// the graph cannot answer questions about, which is what the number is
+    /// for.
+    #[serde(default)]
+    pub unbound_references: u32,
+    /// Whether the adapter that produced this file binds references at all.
+    ///
+    /// The same distinction `assertions_counted` draws, for the same reason: a
+    /// Tier 2 file never attempts to bind anything, so zero unbound references
+    /// is true of it and says nothing. Without this, "bound everything" and
+    /// "never tried" are one value.
+    #[serde(default)]
+    pub references_counted: bool,
 }
 
 /// The complete IR output from a full repo or incremental update.

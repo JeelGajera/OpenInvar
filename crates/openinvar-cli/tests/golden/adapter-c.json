@@ -7,6 +7,7 @@
       "file": "alias_import_bug_c/include/user_payload.h",
       "language": "C",
       "re_exports": [],
+      "references_counted": true,
       "relationships": [],
       "symbols": [
         {
@@ -29,7 +30,8 @@
           "name": "UserPayload",
           "signature": "struct UserPayload {"
         }
-      ]
+      ],
+      "unbound_references": 0
     },
     {
       "assertions": {},
@@ -38,6 +40,7 @@
       "file": "alias_import_bug_c/src/view_model_mapper.c",
       "language": "C",
       "re_exports": [],
+      "references_counted": true,
       "relationships": [
         {
           "alias": null,
@@ -102,7 +105,8 @@
           "name": "map",
           "signature": "void map(ResponseModel *data) {"
         }
-      ]
+      ],
+      "unbound_references": 0
     },
     {
       "assertions": {},
@@ -111,6 +115,7 @@
       "file": "alias_import_bug_cpp/include/user_payload.hpp",
       "language": "Cpp",
       "re_exports": [],
+      "references_counted": true,
       "relationships": [],
       "symbols": [
         {
@@ -133,7 +138,8 @@
           "name": "UserPayload",
           "signature": "class UserPayload {"
         }
-      ]
+      ],
+      "unbound_references": 0
     },
     {
       "assertions": {},
@@ -142,6 +148,7 @@
       "file": "alias_import_bug_cpp/src/view_model_mapper.cpp",
       "language": "Cpp",
       "re_exports": [],
+      "references_counted": true,
       "relationships": [
         {
           "alias": null,
@@ -206,7 +213,8 @@
           "name": "map",
           "signature": "void map(ResponseModel *data) {"
         }
-      ]
+      ],
+      "unbound_references": 0
     },
     {
       "assertions": {},
@@ -215,6 +223,7 @@
       "file": "call_edges/include/geometry.h",
       "language": "C",
       "re_exports": [],
+      "references_counted": true,
       "relationships": [],
       "symbols": [
         {
@@ -237,7 +246,8 @@
           "name": "Point",
           "signature": "struct Point {"
         }
-      ]
+      ],
+      "unbound_references": 0
     },
     {
       "assertions": {},
@@ -246,6 +256,7 @@
       "file": "call_edges/include/shapes.hpp",
       "language": "Cpp",
       "re_exports": [],
+      "references_counted": true,
       "relationships": [],
       "symbols": [
         {
@@ -278,7 +289,8 @@
           "name": "area",
           "signature": "inline int area(int radius) {"
         }
-      ]
+      ],
+      "unbound_references": 0
     },
     {
       "assertions": {},
@@ -295,6 +307,7 @@
       "file": "call_edges/src/draw.cpp",
       "language": "Cpp",
       "re_exports": [],
+      "references_counted": true,
       "relationships": [
         {
           "alias": null,
@@ -329,7 +342,8 @@
           "name": "draw",
           "signature": "int draw(int radius) {"
         }
-      ]
+      ],
+      "unbound_references": 4
     },
     {
       "assertions": {},
@@ -338,6 +352,7 @@
       "file": "call_edges/src/geometry.c",
       "language": "C",
       "re_exports": [],
+      "references_counted": true,
       "relationships": [
         {
           "alias": null,
@@ -396,7 +411,8 @@
           "name": "unused_helper",
           "signature": "int unused_helper(void) {"
         }
-      ]
+      ],
+      "unbound_references": 0
     },
     {
       "assertions": {},
@@ -405,6 +421,7 @@
       "file": "call_edges/src/render.c",
       "language": "C",
       "re_exports": [],
+      "references_counted": true,
       "relationships": [
         {
           "alias": null,
@@ -495,7 +512,8 @@
           "name": "render",
           "signature": "int render(struct Point origin, struct Point target) {"
         }
-      ]
+      ],
+      "unbound_references": 1
     },
     {
       "assertions": {},
@@ -504,6 +522,7 @@
       "file": "language_features/include/shapes.hpp",
       "language": "Cpp",
       "re_exports": [],
+      "references_counted": true,
       "relationships": [
         {
           "alias": "Shape",
@@ -548,7 +567,8 @@
           "name": "Circle",
           "signature": "class Circle : public Shape {"
         }
-      ]
+      ],
+      "unbound_references": 0
     },
     {
       "assertions": {},
@@ -557,6 +577,7 @@
       "file": "language_features/include/user_payload.h",
       "language": "C",
       "re_exports": [],
+      "references_counted": true,
       "relationships": [],
       "symbols": [
         {
@@ -589,7 +610,8 @@
           "name": "Order",
           "signature": "struct Order {"
         }
-      ]
+      ],
+      "unbound_references": 0
     },
     {
       "assertions": {},
@@ -598,6 +620,7 @@
       "file": "language_features/src/mapper.c",
       "language": "C",
       "re_exports": [],
+      "references_counted": true,
       "relationships": [
         {
           "alias": null,
@@ -695,7 +718,8 @@
           "name": "describe",
           "signature": "void describe(ResponseModel *payload, Order *order) {"
         }
-      ]
+      ],
+      "unbound_references": 3
     },
     {
       "assertions": {},
@@ -704,6 +728,7 @@
       "file": "language_features/src/render.cpp",
       "language": "Cpp",
       "re_exports": [],
+      "references_counted": true,
       "relationships": [
         {
           "alias": null,
@@ -766,7 +791,8 @@
           "name": "render",
           "signature": "double render(Figure *figure) {"
         }
-      ]
+      ],
+      "unbound_references": 0
     },
     {
       "assertions": {},
@@ -775,6 +801,7 @@
       "file": "prototype_linking/api.h",
       "language": "C",
       "re_exports": [],
+      "references_counted": true,
       "relationships": [],
       "symbols": [
         {
@@ -787,7 +814,8 @@
           "name": "module",
           "signature": null
         }
-      ]
+      ],
+      "unbound_references": 0
     },
     {
       "assertions": {},
@@ -796,6 +824,7 @@
       "file": "prototype_linking/caller.c",
       "language": "C",
       "re_exports": [],
+      "references_counted": true,
       "relationships": [
         {
           "alias": null,
@@ -862,7 +891,8 @@
           "name": "run",
           "signature": "int run(void) {"
         }
-      ]
+      ],
+      "unbound_references": 2
     },
     {
       "assertions": {},
@@ -871,6 +901,7 @@
       "file": "prototype_linking/detached.c",
       "language": "C",
       "re_exports": [],
+      "references_counted": true,
       "relationships": [],
       "symbols": [
         {
@@ -893,7 +924,8 @@
           "name": "orphan",
           "signature": "int orphan(void) {"
         }
-      ]
+      ],
+      "unbound_references": 0
     },
     {
       "assertions": {},
@@ -902,6 +934,7 @@
       "file": "prototype_linking/fallback.c",
       "language": "C",
       "re_exports": [],
+      "references_counted": true,
       "relationships": [
         {
           "alias": null,
@@ -936,7 +969,8 @@
           "name": "dispatch",
           "signature": "int dispatch(void) {"
         }
-      ]
+      ],
+      "unbound_references": 0
     },
     {
       "assertions": {},
@@ -945,6 +979,7 @@
       "file": "prototype_linking/handler.c",
       "language": "C",
       "re_exports": [],
+      "references_counted": true,
       "relationships": [
         {
           "alias": null,
@@ -989,7 +1024,8 @@
           "name": "dispatch",
           "signature": "int dispatch(void) {"
         }
-      ]
+      ],
+      "unbound_references": 0
     }
   ],
   "language_stats": {

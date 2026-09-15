@@ -43,6 +43,14 @@ pub struct InvarGraph {
     /// for the same reason tier is: it is a property of the language adapter,
     /// which this crate deliberately does not depend on.
     pub assertions_counted: DashMap<String, bool>,
+    /// References each file named that its adapter could not place.
+    ///
+    /// Keyed by file, like `assertions_counted`, and present only for files a
+    /// Tier 1 adapter analysed. This is the denominator resolution coverage
+    /// does not have: an unbound reference produces no edge, so it cannot be
+    /// counted from the graph's edges afterwards — it has to be carried here
+    /// from the analysis that saw it.
+    pub unbound_references: DashMap<String, u32>,
 }
 
 impl Default for InvarGraph {
@@ -63,6 +71,7 @@ impl InvarGraph {
             file_reexports: DashMap::new(),
             assertions: DashMap::new(),
             assertions_counted: DashMap::new(),
+            unbound_references: DashMap::new(),
         }
     }
 

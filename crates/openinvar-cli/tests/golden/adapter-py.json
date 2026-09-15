@@ -7,6 +7,7 @@
       "file": "alias_import_bug/mappers/deep/view_model_mapper.py",
       "language": "Python",
       "re_exports": [],
+      "references_counted": true,
       "relationships": [
         {
           "alias": "ResponseModel",
@@ -70,7 +71,8 @@
           "name": "map",
           "signature": "def map(self, data: ResponseModel) -> dict:"
         }
-      ]
+      ],
+      "unbound_references": 0
     },
     {
       "assertions": {},
@@ -79,6 +81,7 @@
       "file": "alias_import_bug/models/user_payload.py",
       "language": "Python",
       "re_exports": [],
+      "references_counted": true,
       "relationships": [],
       "symbols": [
         {
@@ -141,7 +144,8 @@
           "name": "email",
           "signature": "email: str"
         }
-      ]
+      ],
+      "unbound_references": 0
     },
     {
       "assertions": {},
@@ -150,6 +154,7 @@
       "file": "call_edges/app/__init__.py",
       "language": "Python",
       "re_exports": [],
+      "references_counted": true,
       "relationships": [],
       "symbols": [
         {
@@ -162,7 +167,8 @@
           "name": "module",
           "signature": null
         }
-      ]
+      ],
+      "unbound_references": 0
     },
     {
       "assertions": {},
@@ -171,6 +177,7 @@
       "file": "call_edges/app/consumer.py",
       "language": "Python",
       "re_exports": [],
+      "references_counted": true,
       "relationships": [
         {
           "alias": null,
@@ -264,7 +271,8 @@
           "name": "run",
           "signature": "def run():"
         }
-      ]
+      ],
+      "unbound_references": 2
     },
     {
       "assertions": {},
@@ -273,6 +281,7 @@
       "file": "call_edges/app/services.py",
       "language": "Python",
       "re_exports": [],
+      "references_counted": true,
       "relationships": [],
       "symbols": [
         {
@@ -325,7 +334,8 @@
           "name": "unused_helper",
           "signature": "def unused_helper():"
         }
-      ]
+      ],
+      "unbound_references": 0
     },
     {
       "assertions": {},
@@ -334,6 +344,7 @@
       "file": "language_features/api/routes.py",
       "language": "Python",
       "re_exports": [],
+      "references_counted": true,
       "relationships": [
         {
           "alias": null,
@@ -465,7 +476,8 @@
           "name": "make_route",
           "signature": "def make_route(dependency=Depends(normalize_email)):"
         }
-      ]
+      ],
+      "unbound_references": 0
     },
     {
       "assertions": {},
@@ -474,6 +486,7 @@
       "file": "language_features/legacy/star.py",
       "language": "Python",
       "re_exports": [],
+      "references_counted": true,
       "relationships": [
         {
           "alias": null,
@@ -508,7 +521,8 @@
           "name": "run",
           "signature": "def run(value):"
         }
-      ]
+      ],
+      "unbound_references": 1
     },
     {
       "assertions": {},
@@ -526,6 +540,7 @@
           "source_module": "."
         }
       ],
+      "references_counted": true,
       "relationships": [
         {
           "alias": null,
@@ -561,7 +576,8 @@
           "name": "module",
           "signature": null
         }
-      ]
+      ],
+      "unbound_references": 0
     },
     {
       "assertions": {},
@@ -570,6 +586,7 @@
       "file": "language_features/models/order.py",
       "language": "Python",
       "re_exports": [],
+      "references_counted": true,
       "relationships": [
         {
           "alias": null,
@@ -615,7 +632,8 @@
           "name": "Order",
           "signature": "class Order(models.Model):"
         }
-      ]
+      ],
+      "unbound_references": 0
     },
     {
       "assertions": {},
@@ -624,6 +642,7 @@
       "file": "language_features/models/user.py",
       "language": "Python",
       "re_exports": [],
+      "references_counted": true,
       "relationships": [
         {
           "alias": null,
@@ -792,7 +811,8 @@
           "name": "normalize_email",
           "signature": "def normalize_email(value: str) -> str:"
         }
-      ]
+      ],
+      "unbound_references": 0
     }
   ],
   "language_stats": {

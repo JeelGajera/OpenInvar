@@ -7,6 +7,7 @@
       "file": "py/models/types.py",
       "language": "Python",
       "re_exports": [],
+      "references_counted": true,
       "relationships": [],
       "symbols": [
         {
@@ -59,7 +60,8 @@
           "name": "b_field",
           "signature": "b_field: str"
         }
-      ]
+      ],
+      "unbound_references": 0
     },
     {
       "assertions": {},
@@ -68,6 +70,7 @@
       "file": "py/svc/svc.py",
       "language": "Python",
       "re_exports": [],
+      "references_counted": true,
       "relationships": [
         {
           "alias": null,
@@ -153,7 +156,8 @@
           "name": "use_beta",
           "signature": "def use_beta(anything: Beta) -> str:"
         }
-      ]
+      ],
+      "unbound_references": 0
     },
     {
       "assertions": {},
@@ -162,6 +166,7 @@
       "file": "rust/src/alpha.rs",
       "language": "Rust",
       "re_exports": [],
+      "references_counted": true,
       "relationships": [],
       "symbols": [
         {
@@ -184,7 +189,8 @@
           "name": "Alpha",
           "signature": "pub struct Alpha { pub a_field: String }"
         }
-      ]
+      ],
+      "unbound_references": 0
     },
     {
       "assertions": {},
@@ -193,6 +199,7 @@
       "file": "rust/src/beta.rs",
       "language": "Rust",
       "re_exports": [],
+      "references_counted": true,
       "relationships": [],
       "symbols": [
         {
@@ -215,7 +222,8 @@
           "name": "Beta",
           "signature": "pub struct Beta { pub b_field: String }"
         }
-      ]
+      ],
+      "unbound_references": 0
     },
     {
       "assertions": {},
@@ -224,6 +232,7 @@
       "file": "rust/src/consumer.rs",
       "language": "Rust",
       "re_exports": [],
+      "references_counted": true,
       "relationships": [
         {
           "alias": null,
@@ -309,7 +318,8 @@
           "name": "use_beta",
           "signature": "pub fn use_beta(anything: &Beta) -> usize { anything.b_field.len() }"
         }
-      ]
+      ],
+      "unbound_references": 0
     },
     {
       "assertions": {},
@@ -318,6 +328,7 @@
       "file": "rust/src/lib.rs",
       "language": "Rust",
       "re_exports": [],
+      "references_counted": true,
       "relationships": [],
       "symbols": [
         {
@@ -330,7 +341,8 @@
           "name": "module",
           "signature": null
         }
-      ]
+      ],
+      "unbound_references": 0
     },
     {
       "assertions": {},
@@ -339,6 +351,7 @@
       "file": "go/models/alpha.go",
       "language": "Go",
       "re_exports": [],
+      "references_counted": true,
       "relationships": [],
       "symbols": [
         {
@@ -381,7 +394,8 @@
           "name": "models",
           "signature": "package github.com/test/regression/models"
         }
-      ]
+      ],
+      "unbound_references": 0
     },
     {
       "assertions": {},
@@ -390,6 +404,7 @@
       "file": "go/svc/svc.go",
       "language": "Go",
       "re_exports": [],
+      "references_counted": true,
       "relationships": [
         {
           "alias": null,
@@ -495,7 +510,8 @@
           "name": "svc",
           "signature": "package github.com/test/regression/svc"
         }
-      ]
+      ],
+      "unbound_references": 0
     },
     {
       "assertions": {},
@@ -504,6 +520,7 @@
       "file": "c/include/types.h",
       "language": "C",
       "re_exports": [],
+      "references_counted": true,
       "relationships": [],
       "symbols": [
         {
@@ -536,7 +553,8 @@
           "name": "Beta",
           "signature": "struct Beta { char *b_field; }"
         }
-      ]
+      ],
+      "unbound_references": 0
     },
     {
       "assertions": {},
@@ -545,6 +563,7 @@
       "file": "c/src/svc.c",
       "language": "C",
       "re_exports": [],
+      "references_counted": true,
       "relationships": [
         {
           "alias": null,
@@ -615,7 +634,8 @@
           "name": "use_beta",
           "signature": "char *use_beta(Beta *anything) { return anything->b_field; }"
         }
-      ]
+      ],
+      "unbound_references": 0
     }
   ],
   "language_stats": {

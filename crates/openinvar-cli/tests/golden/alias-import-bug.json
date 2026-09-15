@@ -7,6 +7,7 @@
       "file": "src/mappers/deep/view_model_mapper.ts",
       "language": "TypeScript",
       "re_exports": [],
+      "references_counted": true,
       "relationships": [
         {
           "alias": "ResponseModel",
@@ -85,7 +86,8 @@
           "name": "module",
           "signature": "module"
         }
-      ]
+      ],
+      "unbound_references": 0
     },
     {
       "assertions": {},
@@ -94,6 +96,7 @@
       "file": "src/models/user_payload.ts",
       "language": "TypeScript",
       "re_exports": [],
+      "references_counted": true,
       "relationships": [],
       "symbols": [
         {
@@ -156,7 +159,8 @@
           "name": "module",
           "signature": "module"
         }
-      ]
+      ],
+      "unbound_references": 0
     }
   ],
   "language_stats": {

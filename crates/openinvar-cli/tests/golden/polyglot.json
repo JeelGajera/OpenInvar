@@ -7,6 +7,7 @@
       "file": "js_frontend/app.ts",
       "language": "TypeScript",
       "re_exports": [],
+      "references_counted": true,
       "relationships": [],
       "symbols": [
         {
@@ -29,7 +30,8 @@
           "name": "module",
           "signature": "module"
         }
-      ]
+      ],
+      "unbound_references": 0
     },
     {
       "assertions": {},
@@ -38,6 +40,7 @@
       "file": "python_service/service.py",
       "language": "Python",
       "re_exports": [],
+      "references_counted": true,
       "relationships": [
         {
           "alias": null,
@@ -62,7 +65,8 @@
           "name": "module",
           "signature": null
         }
-      ]
+      ],
+      "unbound_references": 0
     },
     {
       "assertions": {},
@@ -71,6 +75,7 @@
       "file": "rust_core/lib.rs",
       "language": "Rust",
       "re_exports": [],
+      "references_counted": true,
       "relationships": [],
       "symbols": [
         {
@@ -93,7 +98,8 @@
           "name": "core",
           "signature": "pub fn core() {}"
         }
-      ]
+      ],
+      "unbound_references": 0
     },
     {
       "assertions": {},
@@ -102,6 +108,7 @@
       "file": "go_api/handler.go",
       "language": "Go",
       "re_exports": [],
+      "references_counted": true,
       "relationships": [],
       "symbols": [
         {
@@ -114,7 +121,8 @@
           "name": "module",
           "signature": null
         }
-      ]
+      ],
+      "unbound_references": 0
     }
   ],
   "language_stats": {
