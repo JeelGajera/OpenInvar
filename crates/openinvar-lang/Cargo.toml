@@ -19,7 +19,7 @@ keywords.workspace = true
 # in fact the Tier 1 set, while the README said otherwise and quoted the `full`
 # coverage figure. One default that matches what ships is the fix.
 default = ["full"]
-full = ["tier1", "ruby"]
+full = ["tier1", "ruby", "php"]
 # The languages whose imports, aliases and declared types are resolved. Gates
 # act on these; `--no-default-features --features tier1` is the slim build.
 tier1 = ["typescript", "python", "rust", "go", "c", "java", "csharp"]
@@ -32,13 +32,18 @@ python = ["dep:tree-sitter-python"]
 rust = ["dep:tree-sitter-rust", "dep:toml", "dep:glob"]
 go = ["dep:tree-sitter-go"]
 c = ["dep:tree-sitter-c", "dep:tree-sitter-cpp"]
+java = ["dep:tree-sitter-java"]
+csharp = ["dep:tree-sitter-c-sharp"]
 # Tier 2: analysed through the structural analyzer using the grammar's own
 # tags.scm. Carried by a default build, and reported as tier 2 everywhere it
 # appears — a gate never draws a conclusion from a structural region, so
 # shipping these costs a user nothing but gives them symbol lookup.
-java = ["dep:tree-sitter-java"]
+#
+# The comment used to sit above `java` and `csharp` as well, from when both
+# were Tier 2. They are in `tier1` above and have been since they were
+# promoted, so it now covers only the languages it is true of.
 ruby = ["dep:tree-sitter-ruby"]
-csharp = ["dep:tree-sitter-c-sharp"]
+php = ["dep:tree-sitter-php"]
 
 [dependencies]
 tree-sitter = "0.27"
@@ -55,6 +60,7 @@ tree-sitter-cpp = { version = "0.23", optional = true }
 tree-sitter-java = { version = "0.23", optional = true }
 tree-sitter-ruby = { version = "0.23", optional = true }
 tree-sitter-c-sharp = { version = "0.23", optional = true }
+tree-sitter-php = { version = "0.24", optional = true }
 
 # TypeScript-only: tsconfig parsing and its path-alias walk.
 walkdir = { version = "2", optional = true }
