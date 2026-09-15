@@ -255,6 +255,8 @@ fn analyze_file(
         // false for every Tier 2 language.
         assertions: Default::default(),
         assertions_counted: false,
+        unbound_references: 0,
+        references_counted: false,
     })
 }
 
@@ -283,6 +285,8 @@ fn empty_with_diagnostic(
         // false for every Tier 2 language.
         assertions: Default::default(),
         assertions_counted: false,
+        unbound_references: 0,
+        references_counted: false,
     }
 }
 

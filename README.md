@@ -68,6 +68,40 @@ The 0.0% row is a Tier 2 language, and it is the point: those twelve edges are
 named rather than absorbed into a headline. C#'s row read `0.0% of 2 edge(s)`
 until it was promoted, which is what a tier change looks like from here.
 
+### Reference coverage, which is the stricter number
+
+The figure above answers "can a gate act on what is in the graph". It does not
+answer "how much of the source is in the graph", and on its own it reads as
+though it does. An edge exists only once something bound it, so a reference the
+analysis could not place leaves nothing to count — it never enters the
+denominator, and failing to bind *more* references makes the percentage go
+**up**.
+
+So `status` reports both:
+
+```
+Resolved           99.8% (5980 of 5992 edge(s))
+References bound   69.6% (5980 of 8597 reference(s))
+  2617 reference(s) named in source bound to nothing in the graph.
+```
+
+Measured on this repository. The second number is the one that says how much of
+the code OpenInvar actually describes, and publishing it is the point: a tool
+that gates CI should not be the only party who knows where its blind spots are.
+
+**An unbound reference is not automatically a defect.** A type from a package
+whose source was never analysed is indistinguishable, to an adapter, from one it
+should have found and missed — both are references the graph cannot answer
+questions about, which is what the number is for. Read it as an upper bound on
+what is absent. Rust's share is large here largely because prelude names, macro
+bodies and fully-qualified paths used without a `use` are all documented limits
+below.
+
+It is comparable across revisions of one repository and only loosely between
+languages: each extractor creates a different number of placeholders for the
+same code, so finer-grained extraction reports a lower percentage for identical
+source.
+
 There is one released binary and it carries every language, so this is the
 figure your binary reports. A build narrowed to fewer languages reports a
 *higher* number on the same repository — not because it resolves more, but

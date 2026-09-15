@@ -268,10 +268,32 @@ fn run_adapter(
     // Enforced here rather than in each adapter because seven adapters
     // remembering is seven chances to forget, and the one that forgot was the
     // oldest and most used.
+    // The drop is also the measurement. A placeholder that survived the
+    // adapter is a reference it could not place, and this is the only point
+    // where every language's failures are visible in one shape — which is what
+    // makes the number comparable across them.
+    //
+    // It is worth being precise about why the resolution figure cannot say
+    // this. That figure is the share of *recorded edges* that resolved, and an
+    // edge exists only once something bound it. A reference that failed leaves
+    // no edge, so it never enters the denominator, so failing to bind more
+    // references raises the percentage. Counting here supplies the denominator
+    // that was missing.
     for file_ir in &mut files_ir {
+        let before = file_ir.relationships.len();
         file_ir
             .relationships
             .retain(|rel| !is_placeholder(&rel.to));
+
+        // Added to what the adapter already reported, not replacing it. An
+        // adapter counts where it drops a reference it could not place, which
+        // is the only place that knows the difference between "bound it" and
+        // "could not"; this counts anything that reached here still unbound,
+        // which is the adapter having missed a case. Both are references the
+        // graph does not describe, and neither should go uncounted.
+        file_ir.unbound_references += (before - file_ir.relationships.len()) as u32;
+        file_ir.references_counted = true;
+
         for rel in &mut file_ir.relationships {
             rel.resolution = Resolution::Resolved;
         }

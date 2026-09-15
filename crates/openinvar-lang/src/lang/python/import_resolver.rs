@@ -78,6 +78,9 @@ pub fn resolve_repo_ir(_root: &Path, repo_ir: &mut RepoIR) {
 
         let mut local_names: HashMap<String, String> = HashMap::new();
         let mut drop = BTreeSet::new();
+        // References this file named that nothing here could place. Counted at
+        // the point of the decision; what gets emitted is unchanged.
+        let mut unbound: u32 = 0;
 
         for (position, rel) in file.relationships.iter_mut().enumerate() {
             if rel.kind != RelationshipKind::Imports {
@@ -133,6 +136,7 @@ pub fn resolve_repo_ir(_root: &Path, repo_ir: &mut RepoIR) {
                         }
                         None => {
                             drop.insert(position);
+                            unbound += 1;
                         }
                     }
                     file.diagnostics.push(Diagnostic {
@@ -198,8 +202,14 @@ pub fn resolve_repo_ir(_root: &Path, repo_ir: &mut RepoIR) {
                     // binds to no symbol. No diagnostic: unlike an unresolved
                     // type, there is nothing here a user could fix, and
                     // `print()` in every file would drown the real warnings.
+                    //
+                    // Counted, though. This arm cannot tell `print()` from a
+                    // local function the resolver missed, and a count that
+                    // excluded what it cannot classify would be measuring its
+                    // own confidence rather than its coverage.
                     None => {
                         drop.insert(position);
+                        unbound += 1;
                     }
                 }
                 continue;
@@ -217,6 +227,11 @@ pub fn resolve_repo_ir(_root: &Path, repo_ir: &mut RepoIR) {
                 }
                 None => {
                     drop.insert(position);
+                    // A builtin is positively identified as not a repository
+                    // symbol, so it is not a reference anything failed to bind.
+                    if !is_builtin_type(&type_name) {
+                        unbound += 1;
+                    }
                     if !is_builtin_type(&type_name) {
                         file.diagnostics.push(Diagnostic {
                             level: DiagnosticLevel::Warning,
@@ -247,6 +262,7 @@ pub fn resolve_repo_ir(_root: &Path, repo_ir: &mut RepoIR) {
                 keep
             });
         }
+        file.unbound_references = unbound;
     }
 }
 

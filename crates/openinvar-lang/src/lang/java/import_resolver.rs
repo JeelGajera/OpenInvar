@@ -142,10 +142,19 @@ pub fn resolve(files: &mut [FileIR], facts: &[FileFacts]) {
 
     for file_ir in files.iter_mut() {
         let Some(file_facts) = facts.get(&file_ir.file).cloned() else {
+            // No facts means nothing in this file could be bound, so every
+            // placeholder in it is a reference that went unplaced.
+            let before = file_ir.relationships.len();
             file_ir.relationships.retain(|rel| !is_placeholder(&rel.to));
+            file_ir.unbound_references = (before - file_ir.relationships.len()) as u32;
             continue;
         };
 
+        // References this file named and this resolver could not place. Counted
+        // where they are dropped, which is the only place that knows the
+        // difference between "bound it" and "could not". What is emitted does
+        // not change: an unresolved reference is still no edge.
+        let mut unbound: u32 = 0;
         let mut resolved = Vec::with_capacity(file_ir.relationships.len());
         for mut rel in std::mem::take(&mut file_ir.relationships) {
             if !is_placeholder(&rel.to) {
@@ -158,6 +167,8 @@ pub fn resolve(files: &mut [FileIR], facts: &[FileFacts]) {
                 if let Some(target) = resolve_type(simple, &file_facts, &index) {
                     rel.to = target;
                     resolved.push(rel);
+                } else {
+                    unbound += 1;
                 }
                 continue;
             }
@@ -186,6 +197,8 @@ pub fn resolve(files: &mut [FileIR], facts: &[FileFacts]) {
                         {
                             rel.to = target;
                             resolved.push(rel);
+                        } else {
+                            unbound += 1;
                         }
                     }
                 }
@@ -193,6 +206,7 @@ pub fn resolve(files: &mut [FileIR], facts: &[FileFacts]) {
             }
         }
         file_ir.relationships = resolved;
+        file_ir.unbound_references = unbound;
     }
 }
 

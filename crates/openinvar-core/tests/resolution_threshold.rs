@@ -49,6 +49,8 @@ fn file_ir(file: &str, symbols: Vec<Symbol>, relationships: Vec<Relationship>) -
         re_exports: vec![],
         assertions: Default::default(),
         assertions_counted: false,
+        unbound_references: 0,
+        references_counted: false,
     }
 }
 

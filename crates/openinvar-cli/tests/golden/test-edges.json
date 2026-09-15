@@ -7,6 +7,7 @@
       "file": "src/helper.test.ts",
       "language": "TypeScript",
       "re_exports": [],
+      "references_counted": true,
       "relationships": [
         {
           "alias": null,
@@ -52,7 +53,8 @@
           "name": "module",
           "signature": "module"
         }
-      ]
+      ],
+      "unbound_references": 0
     },
     {
       "assertions": {},
@@ -61,6 +63,7 @@
       "file": "src/payload.test.ts",
       "language": "TypeScript",
       "re_exports": [],
+      "references_counted": true,
       "relationships": [
         {
           "alias": null,
@@ -160,7 +163,8 @@
           "name": "module",
           "signature": "module"
         }
-      ]
+      ],
+      "unbound_references": 0
     },
     {
       "assertions": {},
@@ -169,6 +173,7 @@
       "file": "src/payload.ts",
       "language": "TypeScript",
       "re_exports": [],
+      "references_counted": true,
       "relationships": [
         {
           "alias": "Payload",
@@ -235,7 +240,8 @@
           "name": "module",
           "signature": "module"
         }
-      ]
+      ],
+      "unbound_references": 0
     },
     {
       "assertions": {},
@@ -244,6 +250,7 @@
       "file": "service.py",
       "language": "Python",
       "re_exports": [],
+      "references_counted": true,
       "relationships": [
         {
           "alias": "Service",
@@ -298,7 +305,8 @@
           "name": "build",
           "signature": "def build():"
         }
-      ]
+      ],
+      "unbound_references": 0
     },
     {
       "assertions": {},
@@ -307,6 +315,7 @@
       "file": "test_service.py",
       "language": "Python",
       "re_exports": [],
+      "references_counted": true,
       "relationships": [
         {
           "alias": null,
@@ -363,7 +372,8 @@
           "name": "test_build",
           "signature": "def test_build():"
         }
-      ]
+      ],
+      "unbound_references": 0
     },
     {
       "assertions": {},
@@ -372,6 +382,7 @@
       "file": "rustlib/src/lib.rs",
       "language": "Rust",
       "re_exports": [],
+      "references_counted": true,
       "relationships": [],
       "symbols": [
         {
@@ -404,7 +415,8 @@
           "name": "add",
           "signature": "impl Calculator :: pub fn add(&self, a: i32, b: i32) -> i32 {"
         }
-      ]
+      ],
+      "unbound_references": 0
     },
     {
       "assertions": {
@@ -415,6 +427,7 @@
       "file": "rustlib/tests/calc_test.rs",
       "language": "Rust",
       "re_exports": [],
+      "references_counted": true,
       "relationships": [
         {
           "alias": null,
@@ -460,7 +473,8 @@
           "name": "adds",
           "signature": "fn adds() {"
         }
-      ]
+      ],
+      "unbound_references": 0
     },
     {
       "assertions": {},
@@ -469,6 +483,7 @@
       "file": "api/handler.go",
       "language": "Go",
       "re_exports": [],
+      "references_counted": true,
       "relationships": [],
       "symbols": [
         {
@@ -501,7 +516,8 @@
           "name": "api",
           "signature": "package testedges/api"
         }
-      ]
+      ],
+      "unbound_references": 0
     },
     {
       "assertions": {},
@@ -510,6 +526,7 @@
       "file": "api/handler_test.go",
       "language": "Go",
       "re_exports": [],
+      "references_counted": true,
       "relationships": [
         {
           "alias": "Serve",
@@ -555,7 +572,8 @@
           "name": "TestServe",
           "signature": "func TestServe(t interface{}) int {"
         }
-      ]
+      ],
+      "unbound_references": 0
     }
   ],
   "language_stats": {

@@ -52,6 +52,8 @@ fn graph_with_counts(counted: bool, counts: &[(&str, u32)]) -> InvarGraph {
             re_exports: vec![],
             assertions: counts.iter().map(|(k, v)| (k.to_string(), *v)).collect(),
             assertions_counted: counted,
+            unbound_references: 0,
+            references_counted: false,
         },
     );
     graph

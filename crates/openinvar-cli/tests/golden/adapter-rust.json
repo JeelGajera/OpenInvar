@@ -7,6 +7,7 @@
       "file": "alias_import_bug/src/lib.rs",
       "language": "Rust",
       "re_exports": [],
+      "references_counted": true,
       "relationships": [],
       "symbols": [
         {
@@ -19,7 +20,8 @@
           "name": "module",
           "signature": null
         }
-      ]
+      ],
+      "unbound_references": 0
     },
     {
       "assertions": {},
@@ -28,6 +30,7 @@
       "file": "alias_import_bug/src/mappers/view_model_mapper.rs",
       "language": "Rust",
       "re_exports": [],
+      "references_counted": true,
       "relationships": [
         {
           "alias": "ResponseModel",
@@ -91,7 +94,8 @@
           "name": "map",
           "signature": "impl ViewModelMapper :: pub fn map(&self, data: &ResponseModel) {"
         }
-      ]
+      ],
+      "unbound_references": 0
     },
     {
       "assertions": {},
@@ -100,6 +104,7 @@
       "file": "alias_import_bug/src/models/mod.rs",
       "language": "Rust",
       "re_exports": [],
+      "references_counted": true,
       "relationships": [],
       "symbols": [
         {
@@ -112,7 +117,8 @@
           "name": "module",
           "signature": null
         }
-      ]
+      ],
+      "unbound_references": 0
     },
     {
       "assertions": {},
@@ -121,6 +127,7 @@
       "file": "alias_import_bug/src/models/user_payload.rs",
       "language": "Rust",
       "re_exports": [],
+      "references_counted": true,
       "relationships": [],
       "symbols": [
         {
@@ -143,7 +150,8 @@
           "name": "UserPayload",
           "signature": "pub struct UserPayload {"
         }
-      ]
+      ],
+      "unbound_references": 0
     },
     {
       "assertions": {},
@@ -152,6 +160,7 @@
       "file": "call_edges/src/consumer.rs",
       "language": "Rust",
       "re_exports": [],
+      "references_counted": true,
       "relationships": [
         {
           "alias": "fmt",
@@ -289,7 +298,8 @@
           "name": "run",
           "signature": "pub fn run() -> String {"
         }
-      ]
+      ],
+      "unbound_references": 2
     },
     {
       "assertions": {},
@@ -298,6 +308,7 @@
       "file": "call_edges/src/lib.rs",
       "language": "Rust",
       "re_exports": [],
+      "references_counted": true,
       "relationships": [],
       "symbols": [
         {
@@ -310,7 +321,8 @@
           "name": "module",
           "signature": null
         }
-      ]
+      ],
+      "unbound_references": 0
     },
     {
       "assertions": {},
@@ -319,6 +331,7 @@
       "file": "call_edges/src/services.rs",
       "language": "Rust",
       "re_exports": [],
+      "references_counted": true,
       "relationships": [
         {
           "alias": "UserService",
@@ -435,7 +448,8 @@
           "name": "unused_helper",
           "signature": "pub fn unused_helper() {}"
         }
-      ]
+      ],
+      "unbound_references": 1
     },
     {
       "assertions": {},
@@ -444,6 +458,7 @@
       "file": "language_features/src/lib.rs",
       "language": "Rust",
       "re_exports": [],
+      "references_counted": true,
       "relationships": [],
       "symbols": [
         {
@@ -456,7 +471,8 @@
           "name": "module",
           "signature": null
         }
-      ]
+      ],
+      "unbound_references": 0
     },
     {
       "assertions": {},
@@ -465,6 +481,7 @@
       "file": "language_features/src/models/mod.rs",
       "language": "Rust",
       "re_exports": [],
+      "references_counted": true,
       "relationships": [
         {
           "alias": null,
@@ -489,7 +506,8 @@
           "name": "module",
           "signature": null
         }
-      ]
+      ],
+      "unbound_references": 0
     },
     {
       "assertions": {},
@@ -498,6 +516,7 @@
       "file": "language_features/src/models/order.rs",
       "language": "Rust",
       "re_exports": [],
+      "references_counted": true,
       "relationships": [],
       "symbols": [
         {
@@ -520,7 +539,8 @@
           "name": "Order",
           "signature": "pub struct Order {"
         }
-      ]
+      ],
+      "unbound_references": 0
     },
     {
       "assertions": {},
@@ -529,6 +549,7 @@
       "file": "language_features/src/models/user.rs",
       "language": "Rust",
       "re_exports": [],
+      "references_counted": true,
       "relationships": [
         {
           "alias": null,
@@ -670,7 +691,8 @@
           "name": "Suspended",
           "signature": "Suspended"
         }
-      ]
+      ],
+      "unbound_references": 0
     },
     {
       "assertions": {},
@@ -679,6 +701,7 @@
       "file": "language_features/src/services/mod.rs",
       "language": "Rust",
       "re_exports": [],
+      "references_counted": true,
       "relationships": [],
       "symbols": [
         {
@@ -691,7 +714,8 @@
           "name": "module",
           "signature": null
         }
-      ]
+      ],
+      "unbound_references": 0
     },
     {
       "assertions": {},
@@ -700,6 +724,7 @@
       "file": "language_features/src/services/reporting.rs",
       "language": "Rust",
       "re_exports": [],
+      "references_counted": true,
       "relationships": [
         {
           "alias": null,
@@ -819,7 +844,8 @@
           "name": "label",
           "signature": "impl Reporter :: pub fn label<T: Identify>(&self, subject: &T) -> String {"
         }
-      ]
+      ],
+      "unbound_references": 0
     },
     {
       "assertions": {},
@@ -828,6 +854,7 @@
       "file": "workspace/crates/app/src/lib.rs",
       "language": "Rust",
       "re_exports": [],
+      "references_counted": true,
       "relationships": [],
       "symbols": [
         {
@@ -840,7 +867,8 @@
           "name": "module",
           "signature": null
         }
-      ]
+      ],
+      "unbound_references": 0
     },
     {
       "assertions": {},
@@ -849,6 +877,7 @@
       "file": "workspace/crates/app/src/main.rs",
       "language": "Rust",
       "re_exports": [],
+      "references_counted": true,
       "relationships": [
         {
           "alias": null,
@@ -883,7 +912,8 @@
           "name": "main",
           "signature": "fn main() {"
         }
-      ]
+      ],
+      "unbound_references": 0
     },
     {
       "assertions": {},
@@ -892,6 +922,7 @@
       "file": "workspace/crates/app/src/service.rs",
       "language": "Rust",
       "re_exports": [],
+      "references_counted": true,
       "relationships": [
         {
           "alias": null,
@@ -1025,7 +1056,8 @@
           "name": "kernel_id",
           "signature": "impl Service :: pub fn kernel_id(&self, k: Kernel) -> u32 {"
         }
-      ]
+      ],
+      "unbound_references": 0
     },
     {
       "assertions": {},
@@ -1034,6 +1066,7 @@
       "file": "workspace/crates/core-lib/src/lib.rs",
       "language": "Rust",
       "re_exports": [],
+      "references_counted": true,
       "relationships": [],
       "symbols": [
         {
@@ -1046,7 +1079,8 @@
           "name": "module",
           "signature": null
         }
-      ]
+      ],
+      "unbound_references": 0
     },
     {
       "assertions": {},
@@ -1055,6 +1089,7 @@
       "file": "workspace/crates/core-lib/src/models/mod.rs",
       "language": "Rust",
       "re_exports": [],
+      "references_counted": true,
       "relationships": [
         {
           "alias": null,
@@ -1079,7 +1114,8 @@
           "name": "module",
           "signature": null
         }
-      ]
+      ],
+      "unbound_references": 0
     },
     {
       "assertions": {},
@@ -1088,6 +1124,7 @@
       "file": "workspace/crates/core-lib/src/models/payload.rs",
       "language": "Rust",
       "re_exports": [],
+      "references_counted": true,
       "relationships": [],
       "symbols": [
         {
@@ -1110,7 +1147,8 @@
           "name": "UserPayload",
           "signature": "pub struct UserPayload {"
         }
-      ]
+      ],
+      "unbound_references": 0
     },
     {
       "assertions": {},
@@ -1119,6 +1157,7 @@
       "file": "workspace/crates/legacy/src/api.rs",
       "language": "Rust",
       "re_exports": [],
+      "references_counted": true,
       "relationships": [
         {
           "alias": null,
@@ -1168,7 +1207,8 @@
           "name": "describe",
           "signature": "pub fn describe(store: LegacyStore) -> String {"
         }
-      ]
+      ],
+      "unbound_references": 0
     },
     {
       "assertions": {},
@@ -1177,6 +1217,7 @@
       "file": "workspace/crates/legacy/src/lib.rs",
       "language": "Rust",
       "re_exports": [],
+      "references_counted": true,
       "relationships": [],
       "symbols": [
         {
@@ -1189,7 +1230,8 @@
           "name": "module",
           "signature": null
         }
-      ]
+      ],
+      "unbound_references": 0
     },
     {
       "assertions": {},
@@ -1198,6 +1240,7 @@
       "file": "workspace/crates/legacy/src/store.rs",
       "language": "Rust",
       "re_exports": [],
+      "references_counted": true,
       "relationships": [],
       "symbols": [
         {
@@ -1220,7 +1263,8 @@
           "name": "LegacyStore",
           "signature": "pub struct LegacyStore {"
         }
-      ]
+      ],
+      "unbound_references": 0
     },
     {
       "assertions": {},
@@ -1229,6 +1273,7 @@
       "file": "workspace/crates/renamed-lib/src/lib.rs",
       "language": "Rust",
       "re_exports": [],
+      "references_counted": true,
       "relationships": [],
       "symbols": [
         {
@@ -1251,7 +1296,8 @@
           "name": "Kernel",
           "signature": "pub struct Kernel {"
         }
-      ]
+      ],
+      "unbound_references": 0
     }
   ],
   "language_stats": {

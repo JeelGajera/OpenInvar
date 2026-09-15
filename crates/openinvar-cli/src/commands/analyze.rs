@@ -463,6 +463,11 @@ pub fn build_graph(repo_ir: &RepoIR) -> (InvarGraph, AnalyzeStats) {
         graph
             .assertions_counted
             .insert(file_ir.file.clone(), file_ir.assertions_counted);
+        if file_ir.references_counted {
+            graph
+                .unbound_references
+                .insert(file_ir.file.clone(), file_ir.unbound_references);
+        }
 
         resolver.ingest_relationships(&graph, &file_ir.relationships);
     }

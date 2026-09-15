@@ -114,6 +114,43 @@ pub fn run(path: &str) -> Result<(), Box<dyn std::error::Error>> {
         );
     }
 
+    // ── reference-level coverage ─────────────────────────────
+    //
+    // The figure above is the share of *recorded edges* that resolved, and an
+    // edge exists only once something bound it. A reference the analysis could
+    // not place leaves no edge, so it never enters that denominator — which
+    // means failing to bind more references raises the percentage. On this
+    // repository the two figures are 99.8% and 69.6%, and only the second is a
+    // statement about the source.
+    //
+    // Reported second and named differently, because they answer different
+    // questions: "can a gate act on what is here" and "how much of the source
+    // is here at all".
+    let unbound: u32 = graph.unbound_references.iter().map(|e| *e.value()).sum();
+    let counted_files: usize = graph.unbound_references.len();
+    if counted_files > 0 {
+        let bound = overall.resolved as u32;
+        let attempted = bound + unbound;
+        if attempted > 0 {
+            output::stat_highlight(
+                "References bound",
+                &format!(
+                    "{:.1}% ({bound} of {attempted} reference(s))",
+                    bound as f64 * 100.0 / attempted as f64
+                ),
+            );
+            output::dim_line(&format!(
+                "  {unbound} reference(s) named in source bound to nothing in the graph."
+            ));
+            output::dim_line(
+                "  Includes code outside the repository — a type from an unanalysed",
+            );
+            output::dim_line(
+                "  package is indistinguishable from one that should have been found.",
+            );
+        }
+    }
+
     if overall.structural > 0 {
         output::dim_line(&format!(
             "  {} edge(s) are structural: matched by name within one file.",

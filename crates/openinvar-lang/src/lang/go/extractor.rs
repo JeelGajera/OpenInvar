@@ -100,6 +100,8 @@ pub fn extract_file_ir(parsed: &ParsedFile) -> FileIR {
         re_exports: Vec::new(),
         assertions,
         assertions_counted: crate::assertions::counts_assertions(&Language::Go),
+        unbound_references: 0,
+        references_counted: false,
     }
 }
 

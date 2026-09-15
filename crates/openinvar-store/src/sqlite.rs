@@ -42,7 +42,7 @@ const SCHEMA_VERSION: i32 = 1;
 /// `Structural` — the weaker value — so a graph written before this existed is
 /// never treated as gate-safe on the strength of a field it does not have.
 /// Re-analysing rewrites it at the current version.
-const SNAPSHOT_VERSION: u8 = 4;
+const SNAPSHOT_VERSION: u8 = 5;
 
 #[derive(Debug)]
 pub enum StoreError {
@@ -110,6 +110,8 @@ pub struct GraphSnapshot {
     /// which is read back as "nothing was counted", so a detector declines to
     /// conclude rather than reporting every test as emptied.
     pub assertions_counted: Vec<(String, bool)>,
+    /// References each file's adapter could not place, by file.
+    pub unbound_references: Vec<(String, u32)>,
 }
 
 pub struct GraphStore {
@@ -476,6 +478,16 @@ impl GraphSnapshot {
             .collect();
         assertions_counted.sort_by(|a, b| a.0.cmp(&b.0));
 
+        // Sorted, like every other collection that reaches these bytes: a
+        // `DashMap` iterates in whatever order it likes, and two snapshots of
+        // one graph have to be byte-identical.
+        let mut unbound_references: Vec<(String, u32)> = graph
+            .unbound_references
+            .iter()
+            .map(|e| (e.key().clone(), *e.value()))
+            .collect();
+        unbound_references.sort_by(|a, b| a.0.cmp(&b.0));
+
         Ok(Self {
             symbols,
             relationships,
@@ -483,6 +495,7 @@ impl GraphSnapshot {
             file_reexports,
             assertions,
             assertions_counted,
+            unbound_references,
         })
     }
 
@@ -509,6 +522,9 @@ impl GraphSnapshot {
             graph.assertions.insert(symbol, count);
         }
 
+        for (file, count) in self.unbound_references {
+            graph.unbound_references.insert(file, count);
+        }
         for (file, counted) in self.assertions_counted {
             graph.assertions_counted.insert(file, counted);
         }
@@ -582,6 +598,12 @@ impl GraphSnapshot {
         for (file, counted) in &self.assertions_counted {
             write_string(&mut out, file)?;
             write_u8(&mut out, u8::from(*counted));
+        }
+
+        write_u32(&mut out, self.unbound_references.len() as u32);
+        for (file, count) in &self.unbound_references {
+            write_string(&mut out, file)?;
+            write_u32(&mut out, *count);
         }
 
         Ok(out)
@@ -700,6 +722,19 @@ impl GraphSnapshot {
             }
         }
 
+        // Version 5 added the unbound-reference counts. An older snapshot
+        // simply has none, which reads as "this graph does not know" rather
+        // than as zero — the same way `assertions` handles a version-3 file.
+        let mut unbound_references = Vec::new();
+        if version >= 5 {
+            let count = cursor.read_u32()? as usize;
+            unbound_references.reserve(count);
+            for _ in 0..count {
+                let file = cursor.read_string()?;
+                unbound_references.push((file, cursor.read_u32()?));
+            }
+        }
+
         if !cursor.is_at_end() {
             return Err(StoreError::Serialization(
                 "trailing bytes found in snapshot".to_string(),
@@ -713,6 +748,7 @@ impl GraphSnapshot {
             file_reexports,
             assertions,
             assertions_counted,
+            unbound_references,
         })
     }
 }

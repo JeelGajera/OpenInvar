@@ -7,6 +7,7 @@
       "file": "astro_component/src/components/Card.ts",
       "language": "TypeScript",
       "re_exports": [],
+      "references_counted": true,
       "relationships": [],
       "symbols": [
         {
@@ -29,7 +30,8 @@
           "name": "module",
           "signature": "module"
         }
-      ]
+      ],
+      "unbound_references": 0
     },
     {
       "assertions": {},
@@ -38,6 +40,7 @@
       "file": "astro_component/src/layouts/Layout.astro",
       "language": "TypeScript",
       "re_exports": [],
+      "references_counted": true,
       "relationships": [
         {
           "alias": null,
@@ -83,7 +86,8 @@
           "name": "module",
           "signature": "module"
         }
-      ]
+      ],
+      "unbound_references": 0
     },
     {
       "assertions": {},
@@ -100,6 +104,7 @@
       "file": "astro_component/src/pages/index.astro",
       "language": "TypeScript",
       "re_exports": [],
+      "references_counted": true,
       "relationships": [
         {
           "alias": null,
@@ -156,7 +161,8 @@
           "name": "module",
           "signature": "module"
         }
-      ]
+      ],
+      "unbound_references": 1
     },
     {
       "assertions": {},
@@ -165,6 +171,7 @@
       "file": "astro_component/src/types/index.ts",
       "language": "TypeScript",
       "re_exports": [],
+      "references_counted": true,
       "relationships": [],
       "symbols": [
         {
@@ -197,7 +204,8 @@
           "name": "module",
           "signature": "module"
         }
-      ]
+      ],
+      "unbound_references": 0
     },
     {
       "assertions": {},
@@ -206,6 +214,7 @@
       "file": "astro_component/src/types/layout.ts",
       "language": "TypeScript",
       "re_exports": [],
+      "references_counted": true,
       "relationships": [],
       "symbols": [
         {
@@ -238,7 +247,8 @@
           "name": "module",
           "signature": "module"
         }
-      ]
+      ],
+      "unbound_references": 0
     },
     {
       "assertions": {},
@@ -247,6 +257,7 @@
       "file": "barrel_chain/src/app.ts",
       "language": "TypeScript",
       "re_exports": [],
+      "references_counted": true,
       "relationships": [
         {
           "alias": null,
@@ -314,7 +325,8 @@
           "name": "module",
           "signature": "module"
         }
-      ]
+      ],
+      "unbound_references": 0
     },
     {
       "assertions": {},
@@ -323,6 +335,7 @@
       "file": "barrel_chain/src/components/blockquote.ts",
       "language": "TypeScript",
       "re_exports": [],
+      "references_counted": true,
       "relationships": [],
       "symbols": [
         {
@@ -345,7 +358,8 @@
           "name": "module",
           "signature": "module"
         }
-      ]
+      ],
+      "unbound_references": 0
     },
     {
       "assertions": {},
@@ -354,6 +368,7 @@
       "file": "barrel_chain/src/components/code.ts",
       "language": "TypeScript",
       "re_exports": [],
+      "references_counted": true,
       "relationships": [],
       "symbols": [
         {
@@ -376,7 +391,8 @@
           "name": "module",
           "signature": "module"
         }
-      ]
+      ],
+      "unbound_references": 0
     },
     {
       "assertions": {},
@@ -394,6 +410,7 @@
           "source_module": "./code"
         }
       ],
+      "references_counted": true,
       "relationships": [
         {
           "alias": null,
@@ -429,7 +446,8 @@
           "name": "module",
           "signature": "module"
         }
-      ]
+      ],
+      "unbound_references": 0
     },
     {
       "assertions": {},
@@ -438,6 +456,7 @@
       "file": "builtin_types/src/app.ts",
       "language": "TypeScript",
       "re_exports": [],
+      "references_counted": true,
       "relationships": [
         {
           "alias": "Config",
@@ -544,7 +563,8 @@
           "name": "module",
           "signature": "module"
         }
-      ]
+      ],
+      "unbound_references": 0
     },
     {
       "assertions": {},
@@ -553,6 +573,7 @@
       "file": "call_edges/src/consumer.ts",
       "language": "TypeScript",
       "re_exports": [],
+      "references_counted": true,
       "relationships": [
         {
           "alias": null,
@@ -640,7 +661,8 @@
           "name": "module",
           "signature": "module"
         }
-      ]
+      ],
+      "unbound_references": 0
     },
     {
       "assertions": {},
@@ -649,6 +671,7 @@
       "file": "call_edges/src/services.ts",
       "language": "TypeScript",
       "re_exports": [],
+      "references_counted": true,
       "relationships": [],
       "symbols": [
         {
@@ -701,7 +724,8 @@
           "name": "module",
           "signature": "module"
         }
-      ]
+      ],
+      "unbound_references": 0
     },
     {
       "assertions": {},
@@ -710,6 +734,7 @@
       "file": "collision/src/models/a.ts",
       "language": "TypeScript",
       "re_exports": [],
+      "references_counted": true,
       "relationships": [],
       "symbols": [
         {
@@ -742,7 +767,8 @@
           "name": "module",
           "signature": "module"
         }
-      ]
+      ],
+      "unbound_references": 0
     },
     {
       "assertions": {},
@@ -751,6 +777,7 @@
       "file": "collision/src/models/b.ts",
       "language": "TypeScript",
       "re_exports": [],
+      "references_counted": true,
       "relationships": [],
       "symbols": [
         {
@@ -783,7 +810,8 @@
           "name": "module",
           "signature": "module"
         }
-      ]
+      ],
+      "unbound_references": 0
     },
     {
       "assertions": {},
@@ -800,6 +828,7 @@
       "file": "collision/src/usage.ts",
       "language": "TypeScript",
       "re_exports": [],
+      "references_counted": true,
       "relationships": [],
       "symbols": [
         {
@@ -822,7 +851,8 @@
           "name": "module",
           "signature": "module"
         }
-      ]
+      ],
+      "unbound_references": 1
     },
     {
       "assertions": {},
@@ -851,6 +881,7 @@
           "source_module": "./b"
         }
       ],
+      "references_counted": true,
       "relationships": [],
       "symbols": [
         {
@@ -863,7 +894,8 @@
           "name": "module",
           "signature": "module"
         }
-      ]
+      ],
+      "unbound_references": 1
     },
     {
       "assertions": {},
@@ -887,6 +919,7 @@
       "file": "cyclic_barrel/src/app.ts",
       "language": "TypeScript",
       "re_exports": [],
+      "references_counted": true,
       "relationships": [],
       "symbols": [
         {
@@ -909,7 +942,8 @@
           "name": "module",
           "signature": "module"
         }
-      ]
+      ],
+      "unbound_references": 1
     },
     {
       "assertions": {},
@@ -938,6 +972,7 @@
           "source_module": "./a"
         }
       ],
+      "references_counted": true,
       "relationships": [],
       "symbols": [
         {
@@ -950,7 +985,8 @@
           "name": "module",
           "signature": "module"
         }
-      ]
+      ],
+      "unbound_references": 1
     },
     {
       "assertions": {},
@@ -959,6 +995,7 @@
       "file": "deep_barrel/src/app.ts",
       "language": "TypeScript",
       "re_exports": [],
+      "references_counted": true,
       "relationships": [
         {
           "alias": null,
@@ -1004,7 +1041,8 @@
           "name": "module",
           "signature": "module"
         }
-      ]
+      ],
+      "unbound_references": 0
     },
     {
       "assertions": {},
@@ -1018,6 +1056,7 @@
           "source_module": "./renderers"
         }
       ],
+      "references_counted": true,
       "relationships": [
         {
           "alias": null,
@@ -1042,7 +1081,8 @@
           "name": "module",
           "signature": "module"
         }
-      ]
+      ],
+      "unbound_references": 0
     },
     {
       "assertions": {},
@@ -1051,6 +1091,7 @@
       "file": "deep_barrel/src/lib/renderers/blockquote.ts",
       "language": "TypeScript",
       "re_exports": [],
+      "references_counted": true,
       "relationships": [],
       "symbols": [
         {
@@ -1073,7 +1114,8 @@
           "name": "module",
           "signature": "module"
         }
-      ]
+      ],
+      "unbound_references": 0
     },
     {
       "assertions": {},
@@ -1087,6 +1129,7 @@
           "source_module": "./blockquote"
         }
       ],
+      "references_counted": true,
       "relationships": [
         {
           "alias": null,
@@ -1111,7 +1154,8 @@
           "name": "module",
           "signature": "module"
         }
-      ]
+      ],
+      "unbound_references": 0
     },
     {
       "assertions": {},
@@ -1120,6 +1164,7 @@
       "file": "deep_dependency/src/a/b/mapper.ts",
       "language": "TypeScript",
       "re_exports": [],
+      "references_counted": true,
       "relationships": [
         {
           "alias": "DeepAccount",
@@ -1169,7 +1214,8 @@
           "name": "module",
           "signature": "module"
         }
-      ]
+      ],
+      "unbound_references": 0
     },
     {
       "assertions": {},
@@ -1178,6 +1224,7 @@
       "file": "deep_dependency/src/models/account.ts",
       "language": "TypeScript",
       "re_exports": [],
+      "references_counted": true,
       "relationships": [],
       "symbols": [
         {
@@ -1210,7 +1257,8 @@
           "name": "module",
           "signature": "module"
         }
-      ]
+      ],
+      "unbound_references": 0
     },
     {
       "assertions": {},
@@ -1219,6 +1267,7 @@
       "file": "di_injection/src/email.service.ts",
       "language": "TypeScript",
       "re_exports": [],
+      "references_counted": true,
       "relationships": [],
       "symbols": [
         {
@@ -1261,7 +1310,8 @@
           "name": "module",
           "signature": "module"
         }
-      ]
+      ],
+      "unbound_references": 0
     },
     {
       "assertions": {},
@@ -1270,6 +1320,7 @@
       "file": "di_injection/src/payment.service.ts",
       "language": "TypeScript",
       "re_exports": [],
+      "references_counted": true,
       "relationships": [
         {
           "alias": null,
@@ -1401,7 +1452,8 @@
           "name": "module",
           "signature": "module"
         }
-      ]
+      ],
+      "unbound_references": 0
     },
     {
       "assertions": {},
@@ -1410,6 +1462,7 @@
       "file": "di_injection/src/user.repository.ts",
       "language": "TypeScript",
       "re_exports": [],
+      "references_counted": true,
       "relationships": [],
       "symbols": [
         {
@@ -1482,7 +1535,8 @@
           "name": "module",
           "signature": "module"
         }
-      ]
+      ],
+      "unbound_references": 0
     },
     {
       "assertions": {},
@@ -1491,6 +1545,7 @@
       "file": "dist_excluded/src/app.ts",
       "language": "TypeScript",
       "re_exports": [],
+      "references_counted": true,
       "relationships": [],
       "symbols": [
         {
@@ -1513,7 +1568,8 @@
           "name": "module",
           "signature": "module"
         }
-      ]
+      ],
+      "unbound_references": 0
     },
     {
       "assertions": {},
@@ -1522,6 +1578,7 @@
       "file": "esm_extensions/src/config.mjs",
       "language": "JavaScript",
       "re_exports": [],
+      "references_counted": true,
       "relationships": [],
       "symbols": [
         {
@@ -1544,7 +1601,8 @@
           "name": "module",
           "signature": "module"
         }
-      ]
+      ],
+      "unbound_references": 0
     },
     {
       "assertions": {},
@@ -1553,6 +1611,7 @@
       "file": "esm_extensions/src/handler.cts",
       "language": "TypeScript",
       "re_exports": [],
+      "references_counted": true,
       "relationships": [],
       "symbols": [
         {
@@ -1575,7 +1634,8 @@
           "name": "module",
           "signature": "module"
         }
-      ]
+      ],
+      "unbound_references": 0
     },
     {
       "assertions": {},
@@ -1584,6 +1644,7 @@
       "file": "esm_extensions/src/server.mts",
       "language": "TypeScript",
       "re_exports": [],
+      "references_counted": true,
       "relationships": [
         {
           "alias": null,
@@ -1629,7 +1690,8 @@
           "name": "module",
           "signature": "module"
         }
-      ]
+      ],
+      "unbound_references": 0
     },
     {
       "assertions": {},
@@ -1638,6 +1700,7 @@
       "file": "external_imports/src/app.ts",
       "language": "TypeScript",
       "re_exports": [],
+      "references_counted": true,
       "relationships": [
         {
           "alias": "React",
@@ -1737,7 +1800,8 @@
           "name": "module",
           "signature": "module"
         }
-      ]
+      ],
+      "unbound_references": 0
     },
     {
       "assertions": {},
@@ -1746,6 +1810,7 @@
       "file": "external_imports/src/utils.ts",
       "language": "TypeScript",
       "re_exports": [],
+      "references_counted": true,
       "relationships": [],
       "symbols": [
         {
@@ -1768,7 +1833,8 @@
           "name": "module",
           "signature": "module"
         }
-      ]
+      ],
+      "unbound_references": 0
     },
     {
       "assertions": {},
@@ -1777,6 +1843,7 @@
       "file": "ignore_filters/src/included.ts",
       "language": "TypeScript",
       "re_exports": [],
+      "references_counted": true,
       "relationships": [],
       "symbols": [
         {
@@ -1799,7 +1866,8 @@
           "name": "module",
           "signature": "module"
         }
-      ]
+      ],
+      "unbound_references": 0
     },
     {
       "assertions": {},
@@ -1808,6 +1876,7 @@
       "file": "ignore_filters/src/included_dir/keep.ts",
       "language": "TypeScript",
       "re_exports": [],
+      "references_counted": true,
       "relationships": [],
       "symbols": [
         {
@@ -1830,7 +1899,8 @@
           "name": "module",
           "signature": "module"
         }
-      ]
+      ],
+      "unbound_references": 0
     },
     {
       "assertions": {},
@@ -1839,6 +1909,7 @@
       "file": "multiline_import/src/model.ts",
       "language": "TypeScript",
       "re_exports": [],
+      "references_counted": true,
       "relationships": [],
       "symbols": [
         {
@@ -1881,7 +1952,8 @@
           "name": "module",
           "signature": "module"
         }
-      ]
+      ],
+      "unbound_references": 0
     },
     {
       "assertions": {},
@@ -1890,6 +1962,7 @@
       "file": "multiline_import/src/use.ts",
       "language": "TypeScript",
       "re_exports": [],
+      "references_counted": true,
       "relationships": [
         {
           "alias": "AuthSession",
@@ -1941,7 +2014,8 @@
           "name": "module",
           "signature": "module"
         }
-      ]
+      ],
+      "unbound_references": 0
     },
     {
       "assertions": {},
@@ -1950,6 +2024,7 @@
       "file": "nestjs_di/src/app.module.ts",
       "language": "TypeScript",
       "re_exports": [],
+      "references_counted": true,
       "relationships": [
         {
           "alias": null,
@@ -2028,7 +2103,8 @@
           "name": "module",
           "signature": "module"
         }
-      ]
+      ],
+      "unbound_references": 0
     },
     {
       "assertions": {},
@@ -2037,6 +2113,7 @@
       "file": "nestjs_di/src/user.repository.ts",
       "language": "TypeScript",
       "re_exports": [],
+      "references_counted": true,
       "relationships": [],
       "symbols": [
         {
@@ -2069,7 +2146,8 @@
           "name": "module",
           "signature": "module"
         }
-      ]
+      ],
+      "unbound_references": 0
     },
     {
       "assertions": {},
@@ -2078,6 +2156,7 @@
       "file": "nestjs_di/src/user.service.ts",
       "language": "TypeScript",
       "re_exports": [],
+      "references_counted": true,
       "relationships": [
         {
           "alias": null,
@@ -2171,7 +2250,8 @@
           "name": "module",
           "signature": "module"
         }
-      ]
+      ],
+      "unbound_references": 0
     },
     {
       "assertions": {},
@@ -2180,6 +2260,7 @@
       "file": "property_access/src/types.ts",
       "language": "TypeScript",
       "re_exports": [],
+      "references_counted": true,
       "relationships": [],
       "symbols": [
         {
@@ -2222,7 +2303,8 @@
           "name": "module",
           "signature": "module"
         }
-      ]
+      ],
+      "unbound_references": 0
     },
     {
       "assertions": {},
@@ -2231,6 +2313,7 @@
       "file": "property_access/src/usage.ts",
       "language": "TypeScript",
       "re_exports": [],
+      "references_counted": true,
       "relationships": [
         {
           "alias": null,
@@ -2282,7 +2365,8 @@
           "name": "module",
           "signature": "module"
         }
-      ]
+      ],
+      "unbound_references": 0
     },
     {
       "assertions": {},
@@ -2296,6 +2380,7 @@
           "source_module": "./user_payload"
         }
       ],
+      "references_counted": true,
       "relationships": [
         {
           "alias": "PublicUser",
@@ -2342,7 +2427,8 @@
           "name": "module",
           "signature": "module"
         }
-      ]
+      ],
+      "unbound_references": 0
     },
     {
       "assertions": {},
@@ -2351,6 +2437,7 @@
       "file": "re_exports/src/user_payload.ts",
       "language": "TypeScript",
       "re_exports": [],
+      "references_counted": true,
       "relationships": [],
       "symbols": [
         {
@@ -2383,7 +2470,8 @@
           "name": "module",
           "signature": "module"
         }
-      ]
+      ],
+      "unbound_references": 0
     },
     {
       "assertions": {},
@@ -2392,6 +2480,7 @@
       "file": "svelte_component/src/App.svelte",
       "language": "TypeScript",
       "re_exports": [],
+      "references_counted": true,
       "relationships": [
         {
           "alias": null,
@@ -2437,7 +2526,8 @@
           "name": "module",
           "signature": "module"
         }
-      ]
+      ],
+      "unbound_references": 0
     },
     {
       "assertions": {},
@@ -2446,6 +2536,7 @@
       "file": "svelte_component/src/stores/UserStore.ts",
       "language": "TypeScript",
       "re_exports": [],
+      "references_counted": true,
       "relationships": [],
       "symbols": [
         {
@@ -2488,7 +2579,8 @@
           "name": "module",
           "signature": "module"
         }
-      ]
+      ],
+      "unbound_references": 0
     },
     {
       "assertions": {},
@@ -2505,6 +2597,7 @@
       "file": "tsconfig_paths/src/app.ts",
       "language": "TypeScript",
       "re_exports": [],
+      "references_counted": true,
       "relationships": [
         {
           "alias": null,
@@ -2562,7 +2655,8 @@
           "name": "module",
           "signature": "module"
         }
-      ]
+      ],
+      "unbound_references": 1
     },
     {
       "assertions": {},
@@ -2571,6 +2665,7 @@
       "file": "tsconfig_paths/src/config.ts",
       "language": "TypeScript",
       "re_exports": [],
+      "references_counted": true,
       "relationships": [],
       "symbols": [
         {
@@ -2603,7 +2698,8 @@
           "name": "module",
           "signature": "module"
         }
-      ]
+      ],
+      "unbound_references": 0
     },
     {
       "assertions": {},
@@ -2612,6 +2708,7 @@
       "file": "tsconfig_paths/src/utils/helpers.ts",
       "language": "TypeScript",
       "re_exports": [],
+      "references_counted": true,
       "relationships": [],
       "symbols": [
         {
@@ -2634,7 +2731,8 @@
           "name": "module",
           "signature": "module"
         }
-      ]
+      ],
+      "unbound_references": 0
     },
     {
       "assertions": {},
@@ -2643,6 +2741,7 @@
       "file": "tsx_jsx/src/component.tsx",
       "language": "TypeScript",
       "re_exports": [],
+      "references_counted": true,
       "relationships": [
         {
           "alias": "React",
@@ -2710,7 +2809,8 @@
           "name": "module",
           "signature": "module"
         }
-      ]
+      ],
+      "unbound_references": 0
     },
     {
       "assertions": {},
@@ -2719,6 +2819,7 @@
       "file": "tsx_jsx/src/view.jsx",
       "language": "JavaScript",
       "re_exports": [],
+      "references_counted": true,
       "relationships": [],
       "symbols": [
         {
@@ -2741,7 +2842,8 @@
           "name": "module",
           "signature": "module"
         }
-      ]
+      ],
+      "unbound_references": 0
     },
     {
       "assertions": {},
@@ -2758,6 +2860,7 @@
       "file": "vue_component/src/App.vue",
       "language": "TypeScript",
       "re_exports": [],
+      "references_counted": true,
       "relationships": [
         {
           "alias": null,
@@ -2803,7 +2906,8 @@
           "name": "module",
           "signature": "module"
         }
-      ]
+      ],
+      "unbound_references": 1
     },
     {
       "assertions": {},
@@ -2812,6 +2916,7 @@
       "file": "vue_component/src/components/UserCard.vue",
       "language": "TypeScript",
       "re_exports": [],
+      "references_counted": true,
       "relationships": [
         {
           "alias": null,
@@ -2857,7 +2962,8 @@
           "name": "module",
           "signature": "module"
         }
-      ]
+      ],
+      "unbound_references": 0
     },
     {
       "assertions": {},
@@ -2866,6 +2972,7 @@
       "file": "vue_component/src/services/user-service.ts",
       "language": "TypeScript",
       "re_exports": [],
+      "references_counted": true,
       "relationships": [
         {
           "alias": null,
@@ -2921,7 +3028,8 @@
           "name": "module",
           "signature": "module"
         }
-      ]
+      ],
+      "unbound_references": 0
     },
     {
       "assertions": {},
@@ -2930,6 +3038,7 @@
       "file": "vue_component/src/types/user.ts",
       "language": "TypeScript",
       "re_exports": [],
+      "references_counted": true,
       "relationships": [],
       "symbols": [
         {
@@ -2982,7 +3091,8 @@
           "name": "module",
           "signature": "module"
         }
-      ]
+      ],
+      "unbound_references": 0
     }
   ],
   "language_stats": {

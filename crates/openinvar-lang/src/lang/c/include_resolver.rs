@@ -241,6 +241,9 @@ pub fn resolve_repo_ir(_root: &std::path::Path, repo_ir: &mut RepoIR) {
         let mut aliases: HashMap<String, String> = HashMap::new();
         let mut resolved_props: HashMap<String, BTreeSet<String>> = HashMap::new();
         let mut drop = BTreeSet::new();
+        // References this file named that nothing here could place. Counted at
+        // the point of the decision; what gets emitted is unchanged.
+        let mut unbound: u32 = 0;
         let mut diagnostics = Vec::new();
 
         // Aliases must be resolved before the accesses that use them, and the
@@ -292,8 +295,12 @@ pub fn resolve_repo_ir(_root: &std::path::Path, repo_ir: &mut RepoIR) {
                         rel.to = id;
                     }
                     Some(id) => rel.to = id,
+                    // Counted: a callee this adapter could not place is a
+                    // reference the graph does not describe, whether it is a
+                    // libc function or a local one whose header was not found.
                     None => {
                         drop.insert(position);
+                        unbound += 1;
                     }
                 }
                 continue;
@@ -311,6 +318,11 @@ pub fn resolve_repo_ir(_root: &std::path::Path, repo_ir: &mut RepoIR) {
                 }
                 None => {
                     drop.insert(position);
+                    // A builtin names code outside the repository, so it is not
+                    // a reference anything failed to bind.
+                    if !crate::lang::c::scope_analyzer::is_builtin_type(&type_name) {
+                        unbound += 1;
+                    }
                     if !crate::lang::c::scope_analyzer::is_builtin_type(&type_name) {
                         diagnostics.push(Diagnostic {
                             level: DiagnosticLevel::Warning,
@@ -338,6 +350,8 @@ pub fn resolve_repo_ir(_root: &std::path::Path, repo_ir: &mut RepoIR) {
         }
 
         file.diagnostics.extend(diagnostics);
+
+        file.unbound_references = unbound;
 
         if !drop.is_empty() {
             let mut position = 0usize;

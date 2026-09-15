@@ -29,6 +29,11 @@ pub fn replace_file_ir(graph: &mut InvarGraph, file_ir: &FileIR) -> IncrementalU
     graph
         .assertions_counted
         .insert(file_ir.file.clone(), file_ir.assertions_counted);
+    if file_ir.references_counted {
+        graph
+            .unbound_references
+            .insert(file_ir.file.clone(), file_ir.unbound_references);
+    }
 
     let mut added_symbol_ids = Vec::new();
     for symbol in &file_ir.symbols {

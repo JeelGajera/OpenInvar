@@ -105,6 +105,9 @@ pub fn resolve_repo_ir(root: &Path, repo_ir: &mut RepoIR) {
         // alias (or default package name) → import path
         let mut alias_to_package: HashMap<String, String> = HashMap::new();
         let mut drop = BTreeSet::new();
+        // References this file named that nothing here could place. Counted at
+        // the point of the decision; what gets emitted is unchanged.
+        let mut unbound: u32 = 0;
 
         for rel in file.relationships.iter_mut() {
             if rel.kind != RelationshipKind::Imports {
@@ -187,8 +190,12 @@ pub fn resolve_repo_ir(root: &Path, repo_ir: &mut RepoIR) {
                     // graph. No diagnostic, because there is nothing a user
                     // could fix, and a warning per `len()` would bury the
                     // resolution warnings that matter.
+                    // Counted: this arm cannot tell `len()` from a local
+                    // function the resolver missed, and excluding what it
+                    // cannot classify would measure confidence, not coverage.
                     None => {
                         drop.insert(index);
+                        unbound += 1;
                     }
                 }
                 continue;
@@ -207,11 +214,15 @@ pub fn resolve_repo_ir(root: &Path, repo_ir: &mut RepoIR) {
                 None => {
                     drop.insert(index);
                     // A qualified name whose package is a third-party import is
-                    // an ordinary external reference, not a failure.
+                    // an ordinary external reference, not a failure — and so is
+                    // not counted as unbound.
                     let is_external_reference = type_name
                         .split_once('.')
                         .map(|(alias, _)| !alias_to_package.contains_key(alias))
                         .unwrap_or(false);
+                    if !is_external_reference && !is_builtin_type(&type_name) {
+                        unbound += 1;
+                    }
                     if !is_external_reference && !is_builtin_type(&type_name) {
                         file.diagnostics.push(Diagnostic {
                             level: DiagnosticLevel::Warning,
@@ -244,6 +255,8 @@ pub fn resolve_repo_ir(root: &Path, repo_ir: &mut RepoIR) {
                 rel.properties_accessed = props.into_iter().collect();
             }
         }
+
+        file.unbound_references = unbound;
 
         if !drop.is_empty() {
             let mut index = 0usize;

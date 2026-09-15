@@ -175,6 +175,8 @@ fn test_incremental_replace_file_preserves_indexes() {
         re_exports: vec![],
         assertions: Default::default(),
         assertions_counted: false,
+        unbound_references: 0,
+        references_counted: false,
     };
 
     let result = replace_file_ir(&mut graph, &file_ir);
