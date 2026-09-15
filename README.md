@@ -614,6 +614,7 @@ Tier 2, carried by the released binary and reported as tier 2 wherever they appe
 | Language | Tier | Extensions |
 | --- | --- | --- |
 | Ruby | 2 | `.rb` |
+| PHP | 2 | `.php` |
 
 Every Tier 1 adapter resolves import aliases and attributes member access to
 the type a value was declared as, so `payload.user_id` is recorded against
@@ -788,14 +789,15 @@ it. On a Tier 2 repository that correctly returns nothing.
 Tier 2 today: Ruby, which has its own feature for a narrowed source build and
 is in the released binary.
 
-Still planned as Tier 2: Kotlin, PHP, Swift, Scala, SQL, Lua, Bash. These are
+Still planned as Tier 2: Kotlin, Swift, Scala, SQL, Lua, Bash. These are
 not held up by OpenInvar's architecture but by the grammar crates. Adding one
 needs a crate that works against the `tree-sitter` version OpenInvar pins and
 *exposes* its `tags.scm` as a `TAGS_QUERY` constant. Shipping the file is not
 enough: a language's spec hands over the crate's constant — Ruby's is
 `Some(tree_sitter_ruby::TAGS_QUERY)` — and nothing reads the packaged file.
 
-The version conflict that blocked all seven is gone. Every crate below now
+The version conflict that blocked every one of them, PHP included, is gone.
+Every crate below now
 depends on `tree-sitter-language` rather than on the runtime, so a grammar and
 a runtime no longer have to agree on a version. Surveyed against the index
 after the move to `tree-sitter` 0.27 and verified by parsing a sample with
@@ -803,7 +805,6 @@ each:
 
 | Language | Crate | Parses | `TAGS_QUERY` |
 | --- | --- | --- | --- |
-| PHP | `tree-sitter-php` 0.24 | yes | yes, 12 patterns |
 | Swift | `tree-sitter-swift` 0.7 | yes | yes, 7 patterns |
 | Lua | `tree-sitter-lua` 0.5 | yes | yes, 5 patterns |
 | Scala | `tree-sitter-scala` 0.26 | yes | ships `queries/tags.scm`, exports no constant |
@@ -811,7 +812,8 @@ each:
 | SQL | `tree-sitter-sequel` 0.3 | yes | no tags query |
 | Bash | `tree-sitter-bash` 0.25 | yes | no tags query |
 
-So PHP, Swift and Lua are ready to add. Scala needs one constant upstream, or a
+PHP is added, and is in the Tier 2 table above. Swift and Lua are ready to add
+on the same evidence. Scala needs one constant upstream, or a
 vendored copy of a query its own crate already contains — which trades "adding
 a language is a dependency" for a file to keep in step with a grammar that
 moves. Kotlin, SQL and Bash need a tags query to exist at all before there is

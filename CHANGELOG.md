@@ -12,6 +12,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **PHP, as a Tier 2 language.** Symbols and within-file references, analysed
+  through the structural analyzer on the `tags.scm` the grammar already ships.
+  No parser, extractor or resolver was written: nothing here resolves a `use`
+  statement, follows an alias, or binds a declared type, and gates fail open on
+  a Tier 2 region exactly as they do for Ruby.
+
+  The grammar ships two dialects and the choice is load-bearing.
+  `LANGUAGE_PHP` parses PHP embedded in text, which is what a `.php` file on
+  disk is; `LANGUAGE_PHP_ONLY` parses the code alone and produces parse errors
+  on a file that closes its tag and emits markup. Both extract the same symbols
+  from that file, because tree-sitter recovers and the tags query still matches
+  — so the wrong dialect produces an identical IR and every behavioural test
+  passes. The test that pins the choice asserts on the parse tree, and asserts
+  that the two dialects still differ on the fixture, so it cannot start passing
+  for the wrong reason.
+
 ### Changed
 
 - **The README's language-support note reflects what the crates now do.** It
