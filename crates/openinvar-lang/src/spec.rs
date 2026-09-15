@@ -174,6 +174,8 @@ pub fn specs() -> Vec<&'static dyn LanguageSpec> {
     out.push(&crate::lang::ruby::Spec as &'static dyn LanguageSpec);
     #[cfg(feature = "php")]
     out.push(&crate::lang::php::Spec as &'static dyn LanguageSpec);
+    #[cfg(feature = "swift")]
+    out.push(&crate::lang::swift::Spec as &'static dyn LanguageSpec);
     #[cfg(feature = "csharp")]
     out.push(&crate::lang::csharp::Spec as &'static dyn LanguageSpec);
     out

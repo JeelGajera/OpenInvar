@@ -14,6 +14,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Swift, as a Tier 2 language — symbols only.** Analysed through the
+  structural analyzer on the `tags.scm` the grammar already ships, like every
+  Tier 2 language.
+
+  It gives less than the others, and the README says so in its own paragraph
+  rather than leaving it to be discovered. `tree-sitter-swift`'s tags query has
+  `@definition` captures and no `@reference` ones, where Ruby, PHP and Lua all
+  provide at least `@reference.call` — so a Swift file yields declarations and
+  **no edges at all**. Definition lookup and "what does this file declare"
+  work; intra-file usage does not.
+
+  Writing the missing query here was the alternative, and it is the one thing a
+  Tier 2 adapter is meant not to do: the tier's claim is that adding a language
+  is a dependency rather than a query to maintain against a grammar that moves.
+
+  The test says this outright instead of asserting it sideways. The two tests
+  carried over from the PHP adapter — every edge is structural, nothing
+  resolves across files — are both vacuously true of a language with no edges,
+  and would have read as coverage that did not exist.
+
 - **PHP, as a Tier 2 language.** Symbols and within-file references, analysed
   through the structural analyzer on the `tags.scm` the grammar already ships.
   No parser, extractor or resolver was written: nothing here resolves a `use`

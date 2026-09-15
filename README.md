@@ -615,6 +615,7 @@ Tier 2, carried by the released binary and reported as tier 2 wherever they appe
 | --- | --- | --- |
 | Ruby | 2 | `.rb` |
 | PHP | 2 | `.php` |
+| Swift | 2 | `.swift` |
 
 Every Tier 1 adapter resolves import aliases and attributes member access to
 the type a value was declared as, so `payload.user_id` is recorded against
@@ -623,6 +624,16 @@ the type a value was declared as, so `payload.user_id` is recorded against
 **What Tier 2 gives you, plainly.** Symbols, and references *within a single
 file*. You can locate a definition, list what a file declares, and see
 intra-file usage.
+
+**Swift gives less: symbols only, no references at all.** A Tier 2 language is
+analysed entirely through the `tags.scm` its grammar ships, and
+`tree-sitter-swift`'s has `@definition` captures but no `@reference` ones —
+where Ruby, PHP and Lua all provide at least `@reference.call`. So a Swift file
+yields declarations and no edges. Definition lookup and "what does this file
+declare" work; intra-file usage does not. That is a property of the upstream
+query rather than of the adapter, and writing the missing query here would
+trade the one thing the tier is for — that adding a language is a dependency,
+not a query to keep in step with a grammar that moves.
 
 **What it does not.** No import resolution, no aliases, no declared types — so
 no cross-file reference of any kind. A tags query reports that a call to `foo`
@@ -789,7 +800,7 @@ it. On a Tier 2 repository that correctly returns nothing.
 Tier 2 today: Ruby, which has its own feature for a narrowed source build and
 is in the released binary.
 
-Still planned as Tier 2: Kotlin, Swift, Scala, SQL, Lua, Bash. These are
+Still planned as Tier 2: Kotlin, Scala, SQL, Lua, Bash. These are
 not held up by OpenInvar's architecture but by the grammar crates. Adding one
 needs a crate that works against the `tree-sitter` version OpenInvar pins and
 *exposes* its `tags.scm` as a `TAGS_QUERY` constant. Shipping the file is not
@@ -805,15 +816,15 @@ each:
 
 | Language | Crate | Parses | `TAGS_QUERY` |
 | --- | --- | --- | --- |
-| Swift | `tree-sitter-swift` 0.7 | yes | yes, 7 patterns |
 | Lua | `tree-sitter-lua` 0.5 | yes | yes, 5 patterns |
 | Scala | `tree-sitter-scala` 0.26 | yes | ships `queries/tags.scm`, exports no constant |
 | Kotlin | `tree-sitter-kotlin-ng` 1.1 | yes | no tags query |
 | SQL | `tree-sitter-sequel` 0.3 | yes | no tags query |
 | Bash | `tree-sitter-bash` 0.25 | yes | no tags query |
 
-PHP is added, and is in the Tier 2 table above. Swift and Lua are ready to add
-on the same evidence. Scala needs one constant upstream, or a
+PHP and Swift are added, and are in the Tier 2 table above — Swift with the
+reference limit noted there. Lua is ready to add on the same evidence. Scala
+needs one constant upstream, or a
 vendored copy of a query its own crate already contains — which trades "adding
 a language is a dependency" for a file to keep in step with a grammar that
 moves. Kotlin, SQL and Bash need a tags query to exist at all before there is

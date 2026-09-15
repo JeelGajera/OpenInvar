@@ -35,6 +35,8 @@ pub mod typescript;
 pub mod php;
 #[cfg(feature = "ruby")]
 pub mod ruby;
+#[cfg(feature = "swift")]
+pub mod swift;
 
 
 #[cfg(feature = "csharp")]
