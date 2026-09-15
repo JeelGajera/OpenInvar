@@ -14,6 +14,33 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **A Java method's plain return type is recorded.** `List<Thing> get()`
+  recorded a reference to `Thing`; `Thing get()` recorded nothing. Both went
+  through the same code, and the difference was entirely how deep the name sat:
+  the walk that collected type names skipped the node it started from, and for
+  an unwrapped return type that node *is* the name.
+
+  On `google/gson` that is a net **257 edges**: 227 return types and 32 `tests`
+  edges that follow from them, less two `tests` edges that now carry the
+  declaration's line instead of the body's. No relationship is removed. 121 of
+  the 227 cross a file boundary, and the plainest case is
+  `JsonSerializer.serialize`, the interface every custom serializer in gson
+  implements: it returns `JsonElement`, and the graph did not know it.
+  `impact` on `JsonElement.java` goes from 3,015 dependent edges across 135
+  files to 3,295 across 138.
+
+  **R′ goes down** — 65.7% to 65.5% on gson — and that is the honest reading
+  rather than a regression. The fix makes 469 references visible where there
+  were none before, so both sides of the ratio grow at once: 257 of them bind,
+  210 of the remaining 212 are classified as naming something outside the
+  repository, and the unexplained count moves by 2. A reference that was never
+  counted never cost anything either.
+
+  A missing edge is the worse direction here. `blast-radius` answers "what
+  breaks if I change this", and a method returning a type is the most ordinary
+  way for a caller to depend on it; reported as safe to modify, that is a wrong
+  answer in the direction a gate acts on.
+
 - **A Java nested class is indexed under the name an import can spell.** Java's
   canonical name for a nested class is `Outer.Inner`, and that is what an
   import names. The index was built from each type's *simple* name, so

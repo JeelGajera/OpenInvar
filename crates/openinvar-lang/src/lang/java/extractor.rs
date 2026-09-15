@@ -433,7 +433,8 @@ fn generic_parameter_names(node: Node<'_>, source: &str) -> BTreeSet<String> {
     out
 }
 
-/// Every `type_identifier` under a node that is not a type parameter in scope.
+/// Every `type_identifier` in a type expression that is not a type parameter
+/// in scope.
 fn type_references(node: Node<'_>, source: &str, generics: &BTreeSet<String>) -> Vec<String> {
     type_identifiers(node, source)
         .into_iter()
@@ -441,11 +442,28 @@ fn type_references(node: Node<'_>, source: &str, generics: &BTreeSet<String>) ->
         .collect()
 }
 
-/// Every `type_identifier` under a node, in source order.
+/// Every `type_identifier` in the expression rooted at `node`, in source order.
+///
+/// `node` counts as part of its own expression. That is the whole of the
+/// distinction from [`descendants_of_kind`], which deliberately skips the node
+/// it starts from, and it is the difference between `List<Thing>` and `Thing`:
+/// the first roots the expression at a `generic_type` and finds both names
+/// below it, while the second *is* the `type_identifier` and had nothing below
+/// it to find. So a method returning a plain type recorded no reference at all,
+/// while the same type wrapped in anything — a generic, an array, a qualified
+/// name — was recorded.
+///
+/// The other callers pass a wrapper node (`superclass`, `super_interfaces`, an
+/// `object_creation_expression`), which is never a `type_identifier`, so for
+/// them this is the same traversal it always was.
 fn type_identifiers(node: Node<'_>, source: &str) -> Vec<String> {
-    descendants_of_kind(node, "type_identifier")
-        .into_iter()
-        .map(|n| text(n, source).to_string())
+    let own = (node.kind() == "type_identifier").then(|| text(node, source).to_string());
+    own.into_iter()
+        .chain(
+            descendants_of_kind(node, "type_identifier")
+                .into_iter()
+                .map(|n| text(n, source).to_string()),
+        )
         .collect()
 }
 
