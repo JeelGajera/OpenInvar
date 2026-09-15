@@ -51,7 +51,26 @@ fn test_unresolved_local_type_does_not_bind_to_random_global_symbol() {
         .find(|r| r.kind == RelationshipKind::AccessesProperty)
         .expect("property access relationship exists");
 
-    assert!(prop_rel.to.starts_with("__UNRESOLVED_LOCAL_TYPE__|Payload"));
+    // `usage.ts` names `Payload` without importing it, and two files under
+    // models/ each declare one. The property being asserted is that the
+    // reference binds to *neither*: picking one would be a coin flip presented
+    // as a fact, and `blast-radius` would then point at a file the code never
+    // mentions.
+    //
+    // It is still a placeholder at this layer because this calls the adapter
+    // directly. `dispatch` drops every placeholder before the graph is built —
+    // see `no_unresolved_reference_reaches_the_graph` — so what this pins is
+    // the adapter refusing to guess, not an id that survives anywhere.
+    assert!(
+        openinvar_core::symbol_id::is_placeholder(&prop_rel.to),
+        "an ambiguous type reference was bound to one of the candidates: {}",
+        prop_rel.to
+    );
+    assert!(
+        !prop_rel.to.contains("models/"),
+        "the reference bound to a declaration in models/: {}",
+        prop_rel.to
+    );
     assert!(usage.diagnostics.iter().any(|d| d
         .message
         .contains("unable to resolve property-access type 'Payload'")));

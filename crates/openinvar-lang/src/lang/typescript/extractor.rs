@@ -5,9 +5,6 @@ use tree_sitter::Node;
 
 use crate::lang::typescript::parser::ParsedFile;
 
-const UNRESOLVED_IMPORT_PREFIX: &str = "__UNRESOLVED_IMPORT__";
-const UNRESOLVED_LOCAL_TYPE_PREFIX: &str = "__UNRESOLVED_LOCAL_TYPE__";
-
 // Layer 1: TypeScript language primitives
 const TS_PRIMITIVES: &[&str] = &[
     "any",
@@ -276,32 +273,31 @@ fn collect_method_scoped_accesses(parsed: &ParsedFile, symbols: &[Symbol]) -> Ve
     out
 }
 
+// Placeholder ids come from `openinvar_core::symbol_id`, like every other
+// adapter's. This module used to mint its own — the same shape with a
+// `__UNRESOLVED_LOCAL_TYPE__` prefix instead of `unresolved_local_type` — and
+// the cost was not the duplication. It was that `is_placeholder`, the shared
+// check every layer above uses to tell a bound target from an unbound one,
+// did not recognise them: an unresolved TypeScript type reference passed every
+// guard in the codebase and reached the graph stamped gate-safe.
+//
+// These wrappers keep the adapter's own call sites reading as they did.
+
 pub fn unresolved_import_symbol_id(module_specifier: &str, symbol_name: &str) -> String {
-    format!("{UNRESOLVED_IMPORT_PREFIX}|{module_specifier}|{symbol_name}")
+    openinvar_core::symbol_id::unresolved_import_id(module_specifier, symbol_name)
 }
 
 pub fn unresolved_local_type_symbol_id(type_name: &str) -> String {
-    format!("{UNRESOLVED_LOCAL_TYPE_PREFIX}|{type_name}")
+    openinvar_core::symbol_id::unresolved_local_type_id(type_name)
 }
 
 pub fn parse_unresolved_import_symbol_id(raw: &str) -> Option<(String, String)> {
-    let mut parts = raw.splitn(3, '|');
-    let prefix = parts.next()?;
-    if prefix != UNRESOLVED_IMPORT_PREFIX {
-        return None;
-    }
-    let module = parts.next()?.to_string();
-    let symbol = parts.next()?.to_string();
-    Some((module, symbol))
+    openinvar_core::symbol_id::parse_unresolved_import_id(raw)
+        .map(|(module, symbol)| (module.to_string(), symbol.to_string()))
 }
 
 pub fn parse_unresolved_local_type_symbol_id(raw: &str) -> Option<String> {
-    let mut parts = raw.splitn(2, '|');
-    let prefix = parts.next()?;
-    if prefix != UNRESOLVED_LOCAL_TYPE_PREFIX {
-        return None;
-    }
-    Some(parts.next()?.to_string())
+    openinvar_core::symbol_id::parse_unresolved_local_type_id(raw).map(str::to_string)
 }
 
 #[derive(Debug, Clone)]

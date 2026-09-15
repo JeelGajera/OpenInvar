@@ -103,17 +103,6 @@
       "relationships": [
         {
           "alias": null,
-          "context": "import { Layout } from \"../layouts/Layout.astro\";",
-          "file": "astro_component/src/pages/index.astro",
-          "from": "astro_component/src/pages/index.astro::data::variable",
-          "kind": "Imports",
-          "line": 2,
-          "properties_accessed": [],
-          "resolution": "resolved",
-          "to": "__UNRESOLVED_IMPORT__|../layouts/Layout.astro|Layout"
-        },
-        {
-          "alias": null,
           "context": "import { Card } from \"../components/Card\";",
           "file": "astro_component/src/pages/index.astro",
           "from": "astro_component/src/pages/index.astro::data::variable",
@@ -811,21 +800,7 @@
       "file": "collision/src/usage.ts",
       "language": "TypeScript",
       "re_exports": [],
-      "relationships": [
-        {
-          "alias": "Payload",
-          "context": "property access",
-          "file": "collision/src/usage.ts",
-          "from": "collision/src/usage.ts::consume::function",
-          "kind": "AccessesProperty",
-          "line": 2,
-          "properties_accessed": [
-            "id"
-          ],
-          "resolution": "resolved",
-          "to": "__UNRESOLVED_LOCAL_TYPE__|Payload"
-        }
-      ],
+      "relationships": [],
       "symbols": [
         {
           "file": "collision/src/usage.ts",
@@ -876,19 +851,7 @@
           "source_module": "./b"
         }
       ],
-      "relationships": [
-        {
-          "alias": null,
-          "context": "export { foo } from './b';",
-          "file": "cyclic_barrel/src/a.ts",
-          "from": "cyclic_barrel/src/a.ts::module::module",
-          "kind": "ReExports",
-          "line": 1,
-          "properties_accessed": [],
-          "resolution": "resolved",
-          "to": "__UNRESOLVED_IMPORT__|./b|foo"
-        }
-      ],
+      "relationships": [],
       "symbols": [
         {
           "file": "cyclic_barrel/src/a.ts",
@@ -924,19 +887,7 @@
       "file": "cyclic_barrel/src/app.ts",
       "language": "TypeScript",
       "re_exports": [],
-      "relationships": [
-        {
-          "alias": null,
-          "context": "import { foo } from './a';",
-          "file": "cyclic_barrel/src/app.ts",
-          "from": "cyclic_barrel/src/app.ts::main::function",
-          "kind": "Imports",
-          "line": 1,
-          "properties_accessed": [],
-          "resolution": "resolved",
-          "to": "__UNRESOLVED_IMPORT__|./a|foo"
-        }
-      ],
+      "relationships": [],
       "symbols": [
         {
           "file": "cyclic_barrel/src/app.ts",
@@ -987,19 +938,7 @@
           "source_module": "./a"
         }
       ],
-      "relationships": [
-        {
-          "alias": null,
-          "context": "export { foo } from './a';",
-          "file": "cyclic_barrel/src/b.ts",
-          "from": "cyclic_barrel/src/b.ts::module::module",
-          "kind": "ReExports",
-          "line": 1,
-          "properties_accessed": [],
-          "resolution": "resolved",
-          "to": "__UNRESOLVED_IMPORT__|./a|foo"
-        }
-      ],
+      "relationships": [],
       "symbols": [
         {
           "file": "cyclic_barrel/src/b.ts",
@@ -2590,19 +2529,6 @@
           ],
           "resolution": "resolved",
           "to": "ext::@/config::package"
-        },
-        {
-          "alias": "AppConfig",
-          "context": "property access",
-          "file": "tsconfig_paths/src/app.ts",
-          "from": "tsconfig_paths/src/app.ts::cfg::variable",
-          "kind": "AccessesProperty",
-          "line": 6,
-          "properties_accessed": [
-            "name"
-          ],
-          "resolution": "resolved",
-          "to": "__UNRESOLVED_LOCAL_TYPE__|AppConfig"
         }
       ],
       "symbols": [
@@ -2843,17 +2769,6 @@
           "properties_accessed": [],
           "resolution": "resolved",
           "to": "ext::vue::package"
-        },
-        {
-          "alias": null,
-          "context": "import { UserCard } from \"./components/UserCard.vue\";",
-          "file": "vue_component/src/App.vue",
-          "from": "vue_component/src/App.vue::currentUser::variable",
-          "kind": "Imports",
-          "line": 9,
-          "properties_accessed": [],
-          "resolution": "resolved",
-          "to": "__UNRESOLVED_IMPORT__|./components/UserCard.vue|UserCard"
         },
         {
           "alias": null,

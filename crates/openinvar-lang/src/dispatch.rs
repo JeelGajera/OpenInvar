@@ -12,6 +12,7 @@ use std::path::{Path, PathBuf};
 
 use openinvar_core::ir::{FileIR, Language, Relationship, RepoIR, Resolution};
 use openinvar_core::scan::detect_language_from_extension;
+use openinvar_core::symbol_id::is_placeholder;
 use rayon::prelude::*;
 
 #[derive(Debug)]
@@ -251,7 +252,26 @@ fn run_adapter(
     // the author having to remember — and `Resolution::default()` is the
     // *weaker* value, so the failure mode of forgetting is under-claiming
     // rather than marking an unresolved edge gate-safe.
+    //
+    // Which is exactly why an edge still carrying a placeholder target must go
+    // first. Every adapter extracts with a placeholder id and replaces it once
+    // it knows the answer, so a surviving placeholder means the adapter could
+    // not bind that reference. Stamping one `Resolved` would put a name where a
+    // symbol belongs and call it a fact a gate may act on.
+    //
+    // TypeScript did precisely that. Its resolver dropped an unbound *call*
+    // but not an unbound type reference, so `x.field` on a parameter typed by
+    // an untyped package recorded an `AccessesProperty` edge to
+    // `__UNRESOLVED_LOCAL_TYPE__|Unknowable`, stamped gate-safe, and
+    // `blast-radius` counted that name as a dependent symbol.
+    //
+    // Enforced here rather than in each adapter because seven adapters
+    // remembering is seven chances to forget, and the one that forgot was the
+    // oldest and most used.
     for file_ir in &mut files_ir {
+        file_ir
+            .relationships
+            .retain(|rel| !is_placeholder(&rel.to));
         for rel in &mut file_ir.relationships {
             rel.resolution = Resolution::Resolved;
         }
